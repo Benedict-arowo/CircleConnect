@@ -9,7 +9,7 @@ const port = process.env.PORT;
 app.use('', morgan('dev'))
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
+  res.json({ msg: 'Hello World!' })
 });
 
 app.listen(port, () => {

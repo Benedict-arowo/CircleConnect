@@ -11,7 +11,7 @@ const app = (0, express_1.default)();
 const port = process.env.PORT;
 app.use('', (0, morgan_1.default)('dev'));
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+    res.json({ msg: 'Hello World!' });
 });
 app.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
