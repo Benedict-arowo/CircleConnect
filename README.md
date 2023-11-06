@@ -1,7 +1,7 @@
-# Project Name: CircleConnect
+# CircleConnect
 
 ## Description
-CircleConnect is a web application designed to facilitate the creation, management, and collaboration within circles or groups of users. The project provides a platform where users can register, join specific circles, and showcase their projects. Circle leaders and co-leaders have the authority to manage the circle's members and content, while members can collaborate on projects within the circle. The platform also allows non-registered users to access publicly shared circle projects.
+**CircleConnect** is a versatile web application designed to empower users to effortlessly create and manage circles or groups, facilitating project sharing, collaboration, and transparency. Mainly developed as part of a backend engineering course I am currently taking, this platform is tailored to course participants looking to showcase their projects and collaborate with peers.
 
 ## Tech Stack
 - **ExpressJS:** A robust and popular Node.js web application framework for building the backend.
@@ -13,40 +13,38 @@ CircleConnect is a web application designed to facilitate the creation, manageme
 
 ## Features
 
-### User Registration and Authentication
+#### User Registration and Authentication
 - Users can create accounts and log in using OAuth for a secure and seamless registration process.
 
-### Circles
+#### Circles
 - Users can create circles or groups, serving as a space for collaboration and project sharing.
 - Each circle has a designated leader and co-leader who can manage circle membership and content.
 
-### Circle Membership
+#### Circle Membership
 - Users can request to join a circle or be invited by a circle leader.
 - Circle leaders have the authority to approve or reject membership requests.
 
-### Project Showcase
+#### Project Showcase
 - Circle members can showcase their projects within the circle.
 - Projects can be categorized and presented in an organized manner.
 
-### Public Access to Circle Projects
+#### Public Access to Circle Projects 
 - Circle leaders can choose to make specific projects publicly accessible, allowing non-registered users or users not in the circle to view them.
 - Public projects are displayed on a dedicated page for each circle, promoting transparency and collaboration.
 
+#### Project Page
+- Displays more information about the specified project.
+- Review Component where outsiders can leave their reviews and rate 
+the project.
+
+#### Circle Settings Page:
+- Make circle private or public. (If circle is private, that means it will only be accessible by circle members.)
+- Ability for circle leader to toggle between allowing user’s to be able to make projects private themselves or require permission from the circle leader.
+- Ability to generate circle invite link which they can send to their 
+members.
+
+#### About Us Page:
+- A page about the project, why we built it, and our socials.
+
 ## Setup and Installation
-1. Clone the repository from GitHub: `git clone <repository_url>`
-2. Navigate to the project directory: `cd CircleConnect`
-3. Install the required dependencies for the backend using npm or yarn: `npm install` or `yarn install`
-4. Navigate to the client directory: `cd client`
-5. Install the required dependencies for the frontend: `npm install` or `yarn install`
-6. Set up your PostgreSQL database and Cloudinary account, and update the configuration files accordingly.
-7. Create a `.env` file in the root directory and configure environment variables, including database credentials, OAuth settings, and Cloudinary API keys.
-8. Start the server and frontend development servers separately.
-
-```bash
-# Start the server
-cd ../
-npm start
-
-# Start the client (in another terminal)
-cd client/
-npm start
+- Coming Soon
