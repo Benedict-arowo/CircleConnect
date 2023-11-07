@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const morgan_1 = __importDefault(require("morgan"));
 const wrapper_1 = __importDefault(require("./middlewear/wrapper"));
+const ErrorHandler_1 = __importDefault(require("./middlewear/ErrorHandler"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT;

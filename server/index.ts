@@ -2,6 +2,8 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
 import wrapper from "./middlewear/wrapper";
+import ErrorHandler from "./middlewear/ErrorHandler";
+import CustomError from "./middlewear/CustomError";
 
 dotenv.config();
 const app: Express = express();
@@ -16,6 +18,8 @@ app.get(
 		res.json({ msg: "Hello World!" });
 	})
 );
+
+app.use(ErrorHandler);
 
 app.listen(port, () => {
 	console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
