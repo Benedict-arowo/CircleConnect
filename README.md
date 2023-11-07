@@ -13,6 +13,12 @@
 
 ## Features
 
+#### Sets
+- Circle's and their project's being categorized into sets. Eg (2020 Set, 2021 Set)
+
+#### Semester
+- Have circle's be categorized into semesters. Since there are three semesters per sets.
+
 #### User Registration and Authentication
 - Users can create accounts and log in using OAuth for a secure and seamless registration process.
 
