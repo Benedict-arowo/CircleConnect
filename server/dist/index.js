@@ -16,6 +16,7 @@ app.get("/", (0, wrapper_1.default)((req, res) => {
     throw new Error("Test");
     res.json({ msg: "Hello World!" });
 }));
+app.use(ErrorHandler_1.default);
 app.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 });
