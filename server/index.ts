@@ -4,13 +4,14 @@ import morgan from "morgan";
 import wrapper from "./middlewear/wrapper";
 import ErrorHandler from "./middlewear/ErrorHandler";
 import CustomError from "./middlewear/CustomError";
+import authRouter from "./routes/auth-route";
 
 dotenv.config();
 const app: Express = express();
 const port = process.env.PORT;
 
 app.use("", morgan("dev"));
-
+app.use("/", authRouter);
 app.get(
 	"/",
 	wrapper((req: Request, res: Response) => {

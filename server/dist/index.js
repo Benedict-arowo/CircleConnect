@@ -8,10 +8,12 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const morgan_1 = __importDefault(require("morgan"));
 const wrapper_1 = __importDefault(require("./middlewear/wrapper"));
 const ErrorHandler_1 = __importDefault(require("./middlewear/ErrorHandler"));
+const auth_route_1 = __importDefault(require("./routes/auth-route"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT;
 app.use("", (0, morgan_1.default)("dev"));
+app.use("/", auth_route_1.default);
 app.get("/", (0, wrapper_1.default)((req, res) => {
     throw new Error("Test");
     res.json({ msg: "Hello World!" });
