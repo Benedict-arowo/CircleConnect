@@ -5,18 +5,50 @@ import wrapper from "./middlewear/wrapper";
 import ErrorHandler from "./middlewear/ErrorHandler";
 import CustomError from "./middlewear/CustomError";
 import authRouter from "./routes/auth-route";
+import { Req } from "./types";
+import isLoggedIn from "./middlewear/isLoggedIn";
+const passport = require("passport");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const pgSession = require("connect-pg-simple")(session);
+const { PrismaClient } = require("@prisma/client");
+
+require("./passport");
 
 dotenv.config();
 const app: Express = express();
-const port = process.env.PORT;
+const prisma = new PrismaClient();
+
+app.use(
+	session({
+		secret: process.env.SESSION_SECRET,
+		resave: false, // don't save session if unmodified
+		saveUninitialized: false, // don't create session until something stored
+		store: new pgSession({
+			prisma, // Prisma client instance
+			tableName: process.env.SESSION_TABLE_NAME, // Name of the session table in database
+		}),
+	})
+);
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("", morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
+const port = process.env.PORT;
+
 app.use("/", authRouter);
+
 app.get(
 	"/",
-	wrapper((req: Request, res: Response) => {
-		throw new Error("Test");
-		res.json({ msg: "Hello World!" });
+	isLoggedIn,
+	wrapper((req: Req, res: Response) => {
+		res.json({ msg: "Hello World!", user: req.user });
 	})
 );
 
