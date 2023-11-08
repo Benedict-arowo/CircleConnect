@@ -6,6 +6,11 @@ export type User = {
 		familyName: string;
 		givenName: string;
 	};
+	_json: {
+		given_name: string;
+		family_name: string;
+		picture: string;
+	};
 	google_id: string;
 	emails: [{ value: string }];
 };

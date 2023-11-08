@@ -58,6 +58,7 @@ passport.use(new GoogleStrategy({
     // });
     const existingUser = yield prisma.user.findUnique({
         where: {
+            google_id,
             OR: [
                 {
                     google_id,
@@ -69,16 +70,25 @@ passport.use(new GoogleStrategy({
         },
     });
     if (existingUser) {
-        // User already exists, log them in
-        return done(null, existingUser);
+        console.log("Logging in an existing user.");
+        const user = yield prisma.user.update({
+            where: { google_id },
+            data: {
+                profile_picture: profile._json.picture,
+                last_login: new Date(),
+            },
+        });
+        return done(null, user);
     }
     // User doesn't exist, create a new user
+    console.log("Creating a new user.");
     const newUser = yield prisma.user.create({
         data: {
             google_id: google_id,
             email,
-            first_name: profile.name.givenName,
-            last_name: profile.name.familyName,
+            first_name: profile._json.given_name,
+            last_name: profile._json.family_name,
+            profile_picture: profile._json.picture,
             joined: new Date(),
             last_login: new Date(),
         },
