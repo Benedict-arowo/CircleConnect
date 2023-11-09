@@ -3,11 +3,12 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import wrapper from "./middlewear/wrapper";
 import ErrorHandler from "./middlewear/ErrorHandler";
-import CustomError from "./middlewear/CustomError";
 import authRouter from "./routes/Auth/auth-route";
 import { Req } from "./types";
 import isLoggedIn from "./middlewear/isLoggedIn";
 import googleRouter from "./routes/Auth/google-route";
+import githubRouter from "./routes/Auth/github-route";
+
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -16,6 +17,7 @@ const pgSession = require("connect-pg-simple")(session);
 const { PrismaClient } = require("@prisma/client");
 
 require("./controllers/Auth/google-passport");
+require("./controllers/Auth/github-passport");
 
 dotenv.config();
 const app: Express = express();
@@ -32,10 +34,6 @@ app.use(
 		}),
 	})
 );
-
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
 
 app.use("", morgan("dev"));
 app.use(
@@ -55,6 +53,7 @@ app.use(passport.session());
 const port = process.env.PORT;
 
 app.use("/auth/google", googleRouter);
+app.use("/auth/github", githubRouter);
 
 app.use("/", authRouter);
 
