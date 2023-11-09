@@ -1,21 +1,22 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import CustomError from "./middlewear/CustomError";
-import { User } from "./types";
+import CustomError from "../../middlewear/CustomError";
+import { User } from "../../types";
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const prisma = new PrismaClient();
 
 passport.serializeUser(function (user: User, done: Function) {
-	done(null, user.google_id);
+	console.log(`User-google ${user}`);
+	done(null, user.id);
 });
 
 //on the every request deserialize function checks user whether in database
 passport.deserializeUser(async (id: string, done: Function) => {
+	console.log(`Id-google ${id}`);
 	try {
-		console.log(id);
 		const user = await prisma.user.findUnique({
-			where: { google_id: id },
+			where: { id: parseInt(id) },
 		});
 
 		if (!user) {
@@ -25,7 +26,6 @@ passport.deserializeUser(async (id: string, done: Function) => {
 		// If the user is found, pass the user object to the next middleware
 		done(null, user);
 	} catch (error: any) {
-		console.log("here");
 		done(error);
 	}
 });
@@ -33,8 +33,8 @@ passport.deserializeUser(async (id: string, done: Function) => {
 passport.use(
 	new GoogleStrategy(
 		{
-			clientID: process.env.GOOGLE_CLIENT_ID,
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+			clientID: process.env.GOOGLE_CLIENT_ID as string,
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
 			callbackURL: "http://localhost:8000/auth/google/callback",
 		},
 		async (
@@ -49,37 +49,16 @@ passport.use(
 			const email = profile.emails[0].value; // User's email
 
 			// Check if the user exists
-			// prisma.user.findFirst({
-			// 	where: {
-			// 		OR: [
-			// 			{
-			// 				google_id,
-			// 			},
-			// 			{
-			// 				email,
-			// 			},
-			// 		],
-			// 	},
-			// });
-
 			const existingUser = await prisma.user.findUnique({
 				where: {
-					google_id,
-					OR: [
-						{
-							google_id,
-						},
-						{
-							email,
-						},
-					],
+					email: email,
 				},
 			});
 
 			if (existingUser) {
-				console.log("Logging in an existing user.");
+				console.log("Logging in an existing user using google.");
 				const user = await prisma.user.update({
-					where: { google_id },
+					where: { email },
 					data: {
 						profile_picture: profile._json.picture,
 						last_login: new Date(),
@@ -90,7 +69,7 @@ passport.use(
 			}
 
 			// User doesn't exist, create a new user
-			console.log("Creating a new user.");
+			console.log("Creating a new user using google.");
 			const newUser = await prisma.user.create({
 				data: {
 					google_id: google_id,

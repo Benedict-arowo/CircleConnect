@@ -4,16 +4,18 @@ import morgan from "morgan";
 import wrapper from "./middlewear/wrapper";
 import ErrorHandler from "./middlewear/ErrorHandler";
 import CustomError from "./middlewear/CustomError";
-import authRouter from "./routes/auth-route";
+import authRouter from "./routes/Auth/auth-route";
 import { Req } from "./types";
 import isLoggedIn from "./middlewear/isLoggedIn";
+import googleRouter from "./routes/Auth/google-route";
+const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
 const { PrismaClient } = require("@prisma/client");
 
-require("./passport");
+require("./controllers/Auth/google-passport");
 
 dotenv.config();
 const app: Express = express();
@@ -36,11 +38,23 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("", morgan("dev"));
+app.use(
+	cors({
+		origin: "http://localhost:5173",
+		credentials: true,
+	})
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 const port = process.env.PORT;
+
+app.use("/auth/google", googleRouter);
 
 app.use("/", authRouter);
 
