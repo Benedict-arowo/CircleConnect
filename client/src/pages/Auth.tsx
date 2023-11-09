@@ -7,9 +7,45 @@ const Auth = () => {
 	const Navigate = useNavigate();
 
 	const handleGoogleAuth = async () => {
+		let timer: NodeJS.Timeout | null = null;
+		const googleAuthURL = "http://localhost:8000/auth/google";
+		const loginWindow = window.open(
+			googleAuthURL,
+			"_blank",
+			"width=500,height=600"
+		);
+		timer = setInterval(() => {
+			if (loginWindow && loginWindow.closed) {
+				console.log("You are authenticated.");
+				Navigate("/");
+
+				if (timer) {
+					clearInterval(timer);
+				}
+			}
+		}, 500);
 	};
+
 	const handleGithubAuth = async () => {
+		let timer: NodeJS.Timeout | null = null;
+		const githubAuthURL = "http://localhost:8000/auth/github";
+		const loginWindow = window.open(
+			githubAuthURL,
+			"_blank",
+			"width=500,height=600"
+		);
+		timer = setInterval(() => {
+			if (loginWindow && loginWindow.closed) {
+				console.log("You are authenticated.");
+				Navigate("/");
+				// const user = fetchUser();
+				if (timer) {
+					clearInterval(timer);
+				}
+			}
+		}, 500);
 	};
+
 	return (
 		<div>
 			<div>
