@@ -21,13 +21,6 @@ export type User = {
 };
 
 export interface Req extends Request {
-	user: {
-		id: string;
-		name: {
-			familyName: string;
-			givenName: string;
-		};
-		emails: [{ value: string }];
-	};
+	user: User;
 	logout: Function;
 }
