@@ -12,14 +12,14 @@ const auth_route_1 = __importDefault(require("./routes/Auth/auth-route"));
 const isLoggedIn_1 = __importDefault(require("./middlewear/isLoggedIn"));
 const google_route_1 = __importDefault(require("./routes/Auth/google-route"));
 const github_route_1 = __importDefault(require("./routes/Auth/github-route"));
+const jwt_route_1 = __importDefault(require("./routes/Auth/jwt-route"));
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
 const { PrismaClient } = require("@prisma/client");
-require("./controllers/Auth/google-passport");
-require("./controllers/Auth/github-passport");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const prisma = new PrismaClient();
@@ -40,12 +40,16 @@ app.use(cors({
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: false }));
 app.use(cookieParser());
+require("./controllers/Auth/google-passport");
+require("./controllers/Auth/github-passport");
+require("./controllers/Auth/jwt-passport");
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 const port = process.env.PORT;
 app.use("/auth/google", google_route_1.default);
 app.use("/auth/github", github_route_1.default);
+app.use("/auth/jwt", jwt_route_1.default);
 app.use("/", auth_route_1.default);
 app.get("/", isLoggedIn_1.default, (0, wrapper_1.default)((req, res) => {
     res.json({ msg: "Hello World!", user: req.user });

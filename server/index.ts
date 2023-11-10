@@ -8,16 +8,15 @@ import { Req } from "./types";
 import isLoggedIn from "./middlewear/isLoggedIn";
 import googleRouter from "./routes/Auth/google-route";
 import githubRouter from "./routes/Auth/github-route";
+import jwtRouter from "./routes/Auth/jwt-route";
 
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
 const { PrismaClient } = require("@prisma/client");
-
-require("./controllers/Auth/google-passport");
-require("./controllers/Auth/github-passport");
 
 dotenv.config();
 const app: Express = express();
@@ -46,6 +45,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+require("./controllers/Auth/google-passport");
+require("./controllers/Auth/github-passport");
+require("./controllers/Auth/jwt-passport");
+
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
@@ -54,6 +57,7 @@ const port = process.env.PORT;
 
 app.use("/auth/google", googleRouter);
 app.use("/auth/github", githubRouter);
+app.use("/auth/jwt", jwtRouter);
 
 app.use("/", authRouter);
 
