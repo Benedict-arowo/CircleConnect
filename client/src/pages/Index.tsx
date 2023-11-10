@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 
+type User = {
+	id: string;
+	first_name: string;
+};
+
 const Index = () => {
-	const [user, setUser] = useState(null);
+	const [user, setUser] = useState<null | User>(null);
 
 	const fetchUser = () => {
 		fetch("http://localhost:8000/user", {
@@ -40,9 +45,9 @@ const Index = () => {
 				</div>
 			)}
 			{!user && (
-				<div>
+				<div className="my-2">
 					<p>You are currently not logged in.</p>
-					<a href="/auth">Login here</a>
+					<a href="/login">Login here</a>
 				</div>
 			)}
 			<h1 className="text-2xl font-bold w-full text-center">
