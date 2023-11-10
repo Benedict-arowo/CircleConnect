@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const wrapper_1 = __importDefault(require("../../middlewear/wrapper"));
 const isLoggedIn_1 = __importDefault(require("../../middlewear/isLoggedIn"));
+const CustomError_1 = __importDefault(require("../../middlewear/CustomError"));
+const http_status_codes_1 = require("http-status-codes");
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
@@ -25,9 +27,11 @@ router.get("/user", isLoggedIn_1.default, (req, res) => __awaiter(void 0, void 0
     res.status(200).json(user);
 }));
 router.get("/logout", isLoggedIn_1.default, (req, res, next) => {
+    res.clearCookie("jwtToken");
     req.logout((err) => {
         if (err)
-            next(err);
+            throw new CustomError_1.default(err, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
+        res.clearCookie("jwtToken");
         res.redirect(process.env.LOGOUT_REDIRECT_ROUTE);
     });
 });
