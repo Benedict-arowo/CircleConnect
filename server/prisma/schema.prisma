@@ -11,6 +11,7 @@ model User {
   id         Int    @id @default(autoincrement())
   google_id String? @unique
   github_id String? @unique
+  password String?
   first_name String 
   last_name String
   email String @unique
