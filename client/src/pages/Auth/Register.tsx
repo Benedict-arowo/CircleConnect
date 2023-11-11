@@ -4,10 +4,10 @@ import authBackground from "../../assets/authBackground.png";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertIcon, Spinner } from "@chakra-ui/react";
-import Logo_Black from "../../Components/Logo_Black";
 import { GITHUB_AUTH_URL, GOOGLE_AUTH_URL } from "../../../config";
 import { Alert as AlertType } from "../../types";
 import UseFetch from "../../Components/Fetch";
+import Nav from "../../Components/Nav";
 
 const Register = () => {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -123,23 +123,7 @@ const Register = () => {
 				/>
 			</aside>
 			<main className="flex-1 h-screen px-12 overflow-y-auto">
-				<header className="flex flex-row justify-between pt-4 lg:hidden">
-					{/* TODO: Turn it into a component */}
-					<Logo_Black />
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						strokeWidth={1.5}
-						stroke="currentColor"
-						className="w-6 h-6">
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-						/>
-					</svg>
-				</header>
+				<Nav />
 				<section className="mt-20 mb-8">
 					<h1 className="font-bold text-4xl font-['Jua']">
 						Register
