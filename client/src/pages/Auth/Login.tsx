@@ -1,12 +1,14 @@
 import GithubButton from "react-github-login-button";
 import GoogleButton from "react-google-button";
-import registerBackground from "../../assets/Register.png";
+import authBackground from "../../assets/authBackground.png";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Spinner } from "@chakra-ui/react";
 import Logo_Black from "../../Components/Logo_Black";
-import { SERVER_URL } from "../../../config";
+import { GITHUB_AUTH_URL, GOOGLE_AUTH_URL } from "../../../config";
 import { Alert, AlertIcon, AlertDescription } from "@chakra-ui/react";
+import { Alert as AlertType } from "../../types";
+import UseFetch from "../../Components/Fetch";
 
 const Login = () => {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -14,7 +16,7 @@ const Login = () => {
 		email: "",
 		password: "",
 	});
-	const [alert, setAlert] = useState({
+	const [alert, setAlert] = useState<AlertType>({
 		status: null,
 		description: null,
 	});
@@ -23,9 +25,8 @@ const Login = () => {
 	const handleGoogleAuth = async () => {
 		setIsLoading(() => true);
 		let timer: NodeJS.Timeout | null = null;
-		const googleAuthURL = "http://localhost:8000/auth/google";
 		const loginWindow = window.open(
-			googleAuthURL,
+			GOOGLE_AUTH_URL,
 			"_blank",
 			"width=500,height=600"
 		);
@@ -45,9 +46,8 @@ const Login = () => {
 	const handleGithubAuth = async () => {
 		setIsLoading(() => true);
 		let timer: NodeJS.Timeout | null = null;
-		const githubAuthURL = "http://localhost:8000/auth/github";
 		const loginWindow = window.open(
-			githubAuthURL,
+			GITHUB_AUTH_URL,
 			"_blank",
 			"width=500,height=600"
 		);
@@ -65,58 +65,54 @@ const Login = () => {
 		}, 500);
 	};
 
-	const SubmitForm = (e) => {
+	const SubmitForm = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setIsLoading(() => true);
 
 		setAlert(() => {
 			return {
 				status: null,
-				message: null,
+				description: null,
 			};
 		});
 
-		fetch(`${SERVER_URL}/auth/jwt/login`, {
-			method: "POST",
-			credentials: "include",
-			headers: {
-				"Content-Type": "Application/json",
-			},
-			body: JSON.stringify(formData),
-		})
-			.then((response) => {
-				return response.json();
-			})
-			.then((data) => {
-				if (!data.success) throw new Error(data.message);
-				setAlert(() => {
-					return {
-						status: "success",
-						description: "Successfully signed in!",
-					};
-				});
-				Navigate("/");
-			})
-			.catch((err) => {
-				setAlert(() => {
-					return {
-						status: "error",
-						description: err.message,
-					};
-				});
-			})
-			.finally(() => {
-				setTimeout(() => {
-					setIsLoading(() => false);
-				}, 1000);
+		try {
+			// Sends data to backend to be verified.
+			// If not successful, an error will be thrown by the UseFetch function, which will fall in the catch block below.
+			await UseFetch({
+				url: "auth/jwt/login",
+				options: {
+					body: formData,
+					method: "POST",
+					useServerUrl: true,
+				},
 			});
+			// No error is found, hence it's successful.
+			setAlert(() => {
+				return {
+					status: "success",
+					description: "Successfully signed in.",
+				};
+			});
+			Navigate("/");
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		} catch (error: any) {
+			setAlert(() => {
+				return {
+					status: "error",
+					description: error.message,
+				};
+			});
+		} finally {
+			setIsLoading(() => false);
+		}
 	};
 
 	return (
 		<div className="flex flex-row overflow-hidden">
 			<aside className="w-3/6 bg-red-300 h-screen hidden lg:block">
 				<img
-					src={registerBackground}
+					src={authBackground}
 					className="w-full h-full object-cover"
 					draggable="false"
 					alt=""
