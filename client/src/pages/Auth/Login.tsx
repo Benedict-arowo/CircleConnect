@@ -9,6 +9,8 @@ import { Alert, AlertIcon, AlertDescription } from "@chakra-ui/react";
 import { Alert as AlertType } from "../../types";
 import UseFetch from "../../Components/Fetch";
 import Nav from "../../Components/Nav";
+import { useDispatch } from "react-redux";
+import { saveUser } from "./userSlice";
 
 const Login = () => {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -21,6 +23,7 @@ const Login = () => {
 		description: null,
 	});
 	const Navigate = useNavigate();
+	const Dispatch = useDispatch();
 
 	const handleGoogleAuth = async () => {
 		setIsLoading(() => true);
@@ -79,7 +82,7 @@ const Login = () => {
 		try {
 			// Sends data to backend to be verified.
 			// If not successful, an error will be thrown by the UseFetch function, which will fall in the catch block below.
-			await UseFetch({
+			const data = await UseFetch({
 				url: "auth/jwt/login",
 				options: {
 					body: formData,
@@ -87,7 +90,19 @@ const Login = () => {
 					useServerUrl: true,
 				},
 			});
+			console.log(data);
+
 			// No error is found, hence it's successful.
+			Dispatch(
+				saveUser({
+					id: data.id,
+					email: data.email,
+					profile_picture: data.profile_picture,
+					first_name: data.first_name,
+					last_name: data.last_name,
+				})
+			);
+
 			setAlert(() => {
 				return {
 					status: "success",

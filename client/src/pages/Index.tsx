@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 type User = {
 	id: string;
@@ -7,6 +8,8 @@ type User = {
 
 const Index = () => {
 	const [user, setUser] = useState<null | User>(null);
+	const User = useSelector((state) => state.user);
+	console.log(User);
 
 	const fetchUser = () => {
 		fetch("http://localhost:8000/user", {
@@ -33,7 +36,6 @@ const Index = () => {
 		fetchUser();
 	}, []);
 
-	console.log(user);
 	return (
 		<div>
 			{user && (
@@ -53,6 +55,16 @@ const Index = () => {
 			<h1 className="text-2xl font-bold w-full text-center">
 				Circle Connect
 			</h1>
+
+			<div>
+				{/* <h2>TODO</h2> */}
+				{/* <ul>
+					<li>Authenticate user with JWT</li>
+					<li>Refactor authentication code (Backend)</li>
+					<li>Write tests for authentication (frontend & backend)</li>
+					<li>Learn Redux</li>
+				</ul> */}
+			</div>
 		</div>
 	);
 };
