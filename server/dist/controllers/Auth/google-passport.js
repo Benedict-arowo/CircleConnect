@@ -14,15 +14,13 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const prisma = new client_1.PrismaClient();
 passport.serializeUser(function (user, done) {
-    console.log(`User-google ${user}`);
     done(null, user.id);
 });
 //on the every request deserialize function checks user whether in database
 passport.deserializeUser((id, done) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(`Id-google ${id}`);
     try {
         const user = yield prisma.user.findUnique({
-            where: { id: parseInt(id) },
+            where: { id },
         });
         if (!user) {
             return done(null, false); // User not found
@@ -54,6 +52,7 @@ passport.use(new GoogleStrategy({
         const user = yield prisma.user.update({
             where: { email },
             data: {
+                google_id: google_id,
                 profile_picture: profile._json.picture,
                 last_login: new Date(),
             },

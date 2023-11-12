@@ -12,7 +12,9 @@ githubRouter.get(
 
 githubRouter.get(
 	"/callback",
-	passport.authenticate("github", { failureRedirect: "/login" }),
+	passport.authenticate("github", {
+		failureRedirect: process.env.FAILURE_REDIRECT || "/",
+	}),
 	function (req: Req, res: Response) {
 		// Successful authentication, redirect home.
 		res.redirect(process.env.SIGN_IN_SUCCESSFULL_ROUTE as string);

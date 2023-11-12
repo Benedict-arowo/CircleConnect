@@ -6,14 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const morgan_1 = __importDefault(require("morgan"));
-const wrapper_1 = __importDefault(require("./middlewear/wrapper"));
 const ErrorHandler_1 = __importDefault(require("./middlewear/ErrorHandler"));
 const auth_route_1 = __importDefault(require("./routes/Auth/auth-route"));
-const isLoggedIn_1 = __importDefault(require("./middlewear/isLoggedIn"));
 const google_route_1 = __importDefault(require("./routes/Auth/google-route"));
 const github_route_1 = __importDefault(require("./routes/Auth/github-route"));
 const jwt_route_1 = __importDefault(require("./routes/Auth/jwt-route"));
-const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -51,9 +48,6 @@ app.use("/auth/google", google_route_1.default);
 app.use("/auth/github", github_route_1.default);
 app.use("/auth/jwt", jwt_route_1.default);
 app.use("/", auth_route_1.default);
-app.get("/", isLoggedIn_1.default, (0, wrapper_1.default)((req, res) => {
-    res.json({ msg: "Hello World!", user: req.user });
-}));
 app.use(ErrorHandler_1.default);
 app.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);

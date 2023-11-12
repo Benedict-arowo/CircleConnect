@@ -14,10 +14,8 @@ interface Req extends Request {
 }
 
 const cookieExtractor = (req: Req) => {
-	console.log(1);
 	let token = null;
 	if (req && req.cookies) {
-		console.log(req.cookies);
 		token = req.cookies["jwtToken"];
 	}
 	return token;
@@ -30,12 +28,12 @@ passport.use(
 			secretOrKey: process.env.JWT_SECRET,
 		},
 		async (jwt_payload: User, done: Function) => {
-			console.log(jwt_payload);
+			// Checks if the user id provided in the payload matches any existing user's id. And if it does, it logs them in.
 			try {
 				const { id } = jwt_payload;
 
 				const user = await prisma.user.findUnique({
-					where: { id: parseInt(id) },
+					where: { id },
 				});
 
 				if (user) {

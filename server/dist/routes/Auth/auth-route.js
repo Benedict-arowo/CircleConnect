@@ -14,25 +14,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const wrapper_1 = __importDefault(require("../../middlewear/wrapper"));
 const isLoggedIn_1 = __importDefault(require("../../middlewear/isLoggedIn"));
-const CustomError_1 = __importDefault(require("../../middlewear/CustomError"));
 const http_status_codes_1 = require("http-status-codes");
+const logout_1 = __importDefault(require("../../controllers/Auth/logout"));
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
-router.route("/login").get((0, wrapper_1.default)((req, res) => {
-    return res.json({ message: "Login" });
-}));
-router.get("/user", isLoggedIn_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/user", isLoggedIn_1.default, (0, wrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // TODO: This route is currently just for testing purposes.
     let user = req.user;
-    res.status(200).json(user);
-}));
-router.get("/logout", isLoggedIn_1.default, (req, res, next) => {
-    res.clearCookie("jwtToken");
-    req.logout((err) => {
-        if (err)
-            throw new CustomError_1.default(err, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
-        res.clearCookie("jwtToken");
-        res.redirect(process.env.LOGOUT_REDIRECT_ROUTE);
-    });
-});
+    res.status(http_status_codes_1.StatusCodes.OK).json(user);
+})));
+router.get("/logout", isLoggedIn_1.default, (0, wrapper_1.default)(logout_1.default));
 exports.default = router;

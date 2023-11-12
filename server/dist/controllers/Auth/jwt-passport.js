@@ -17,10 +17,8 @@ const JwtStrategy = require("passport-jwt").Strategy;
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const prisma = new client_1.PrismaClient();
 const cookieExtractor = (req) => {
-    console.log(1);
     let token = null;
     if (req && req.cookies) {
-        console.log(req.cookies);
         token = req.cookies["jwtToken"];
     }
     return token;
@@ -29,11 +27,11 @@ passport.use(new JwtStrategy({
     jwtFromRequest: cookieExtractor,
     secretOrKey: process.env.JWT_SECRET,
 }, (jwt_payload, done) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(jwt_payload);
+    // Checks if the user id provided in the payload matches any existing user's id. And if it does, it logs them in.
     try {
         const { id } = jwt_payload;
         const user = yield prisma.user.findUnique({
-            where: { id: parseInt(id) },
+            where: { id },
         });
         if (user) {
             return done(null, user);

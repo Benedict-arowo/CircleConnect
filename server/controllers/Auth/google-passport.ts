@@ -7,16 +7,14 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const prisma = new PrismaClient();
 
 passport.serializeUser(function (user: User, done: Function) {
-	console.log(`User-google ${user}`);
 	done(null, user.id);
 });
 
 //on the every request deserialize function checks user whether in database
 passport.deserializeUser(async (id: string, done: Function) => {
-	console.log(`Id-google ${id}`);
 	try {
 		const user = await prisma.user.findUnique({
-			where: { id: parseInt(id) },
+			where: { id },
 		});
 
 		if (!user) {
@@ -60,6 +58,7 @@ passport.use(
 				const user = await prisma.user.update({
 					where: { email },
 					data: {
+						google_id: google_id,
 						profile_picture: profile._json.picture,
 						last_login: new Date(),
 					},

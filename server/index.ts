@@ -1,16 +1,12 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import wrapper from "./middlewear/wrapper";
 import ErrorHandler from "./middlewear/ErrorHandler";
 import authRouter from "./routes/Auth/auth-route";
-import { Req } from "./types";
-import isLoggedIn from "./middlewear/isLoggedIn";
 import googleRouter from "./routes/Auth/google-route";
 import githubRouter from "./routes/Auth/github-route";
 import jwtRouter from "./routes/Auth/jwt-route";
 
-const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -29,7 +25,7 @@ app.use(
 		saveUninitialized: false, // don't create session until something stored
 		store: new pgSession({
 			prisma, // Prisma client instance
-			tableName: process.env.SESSION_TABLE_NAME, // Name of the session table in database
+			tableName: process.env.SESSION_TABLE_NAME as string, // Name of the session table in database
 		}),
 	})
 );
@@ -60,14 +56,6 @@ app.use("/auth/github", githubRouter);
 app.use("/auth/jwt", jwtRouter);
 
 app.use("/", authRouter);
-
-app.get(
-	"/",
-	isLoggedIn,
-	wrapper((req: Req, res: Response) => {
-		res.json({ msg: "Hello World!", user: req.user });
-	})
-);
 
 app.use(ErrorHandler);
 

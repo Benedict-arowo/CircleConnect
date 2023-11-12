@@ -13,8 +13,11 @@ googleRouter.get(
 
 googleRouter.get(
 	"/callback",
-	passport.authenticate("google", { failureRedirect: "/login" }),
+	passport.authenticate("google", {
+		failureRedirect: process.env.FAILURE_REDIRECT || "/",
+	}),
 	function (req: Request, res: Response) {
+		// Successful authentication, redirect home.
 		res.redirect(process.env.SIGN_IN_SUCCESSFULL_ROUTE as string);
 	}
 );
