@@ -8,14 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require("@prisma/client");
+const db_1 = __importDefault(require("../../model/db"));
 const http_status_codes_1 = require("http-status-codes");
-const argon = require("argon2");
 const passport = require("passport");
 const JwtStrategy = require("passport-jwt").Strategy;
-const ExtractJwt = require("passport-jwt").ExtractJwt;
-const prisma = new client_1.PrismaClient();
 const cookieExtractor = (req) => {
     let token = null;
     if (req && req.cookies) {
@@ -30,7 +30,7 @@ passport.use(new JwtStrategy({
     // Checks if the user id provided in the payload matches any existing user's id. And if it does, it logs them in.
     try {
         const { id } = jwt_payload;
-        const user = yield prisma.user.findUnique({
+        const user = yield db_1.default.user.findUnique({
             where: { id },
         });
         if (user) {

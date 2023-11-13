@@ -15,19 +15,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerJWT = exports.loginJWT = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const CustomError_1 = __importDefault(require("../../middlewear/CustomError"));
+const db_1 = __importDefault(require("../../model/db"));
 const client_1 = require("@prisma/client");
+const auth_1 = require("../../model/auth");
+const utils_1 = require("../../utils");
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
-const prisma = new client_1.PrismaClient();
-const tokenGenerator = (payload, expiresIn) => {
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
-};
 const loginJWT = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     if (!email || !password) {
         throw new CustomError_1.default("Email, and password must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     }
-    const User = yield prisma.user.findUnique({
+    const user = yield (0, auth_1.findUser)({ where: { email } });
+    const User = yield db_1.default.user.findUnique({
         where: { email },
     });
     if (!User) {
@@ -35,13 +35,16 @@ const loginJWT = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     if (!User.password)
         throw new CustomError_1.default("Try using google or github to sign into this account.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    let passwordIsValid = yield argon.verify(User.password, password);
+    let passwordIsValid = yield (0, utils_1.verifyHash)(User.password, password);
+    console.log(passwordIsValid);
+    // TODO: fix the verifyHash function, and replace it with the function above.
+    // passwordIsValid = await argon.verify(User.password, password);
     if (passwordIsValid) {
-        const token = tokenGenerator({ id: User.id }, "1h");
+        const token = yield (0, utils_1.tokenGenerator)({ id: User.id }, "1h");
         console.log(`TOKEN: ${token}`);
         return res
             .cookie("jwtToken", token, { httpOnly: true })
-            .status(http_status_codes_1.StatusCodes.ACCEPTED)
+            .status(http_status_codes_1.StatusCodes.OK)
             .json({
             success: true,
             message: "Successfully logged in.",
@@ -59,9 +62,9 @@ const registerJWT = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         throw new CustomError_1.default("Email, password, last name, and first name must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     }
     try {
-        // Todo: Make sure password is strong.
-        const hashedPassword = yield argon.hash(password);
-        const User = yield prisma.user.create({
+        const hashedPassword = yield (0, utils_1.hash)(password);
+        console.log(hashedPassword);
+        const User = yield db_1.default.user.create({
             data: {
                 email,
                 first_name,
@@ -69,10 +72,10 @@ const registerJWT = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 password: hashedPassword,
             },
         });
-        const token = tokenGenerator({ id: User.id }, "1h");
+        const token = (0, utils_1.tokenGenerator)({ id: User.id }, "1h");
         return res
             .cookie("jwtToken", token, { httpOnly: true })
-            .status(http_status_codes_1.StatusCodes.ACCEPTED)
+            .status(http_status_codes_1.StatusCodes.CREATED)
             .json({
             success: true,
             message: "Successfully registered user.",

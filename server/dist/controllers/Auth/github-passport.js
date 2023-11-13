@@ -8,18 +8,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require("@prisma/client");
+const db_1 = __importDefault(require("../../model/db"));
 const passport = require("passport");
 const GithubStrategy = require("passport-github2").Strategy;
-const prisma = new client_1.PrismaClient();
 passport.serializeUser(function (user, done) {
     done(null, user.id);
 });
 //on the every request deserialize function checks user whether in database
 passport.deserializeUser((id, done) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield db_1.default.user.findUnique({
             where: { id },
         });
         if (!user) {
@@ -45,14 +47,14 @@ passport.use(new GithubStrategy({
             return done(new Error("An email address is required."));
         }
         // Check if user exists, and if it does update user. If not create the user and log the user in.
-        let user = yield prisma.user.findUnique({
+        let user = yield db_1.default.user.findUnique({
             where: {
                 email: userEmail.value,
             },
         });
         if (user) {
             console.log("Logining existing user using github...");
-            user = yield prisma.user.update({
+            user = yield db_1.default.user.update({
                 where: {
                     email: userEmail.value,
                 },
@@ -65,7 +67,7 @@ passport.use(new GithubStrategy({
         }
         else {
             console.log("Creating new user using github...");
-            user = yield prisma.user.create({
+            user = yield db_1.default.user.create({
                 data: {
                     email: userEmail.value,
                     first_name: profile.displayName || profile.username,

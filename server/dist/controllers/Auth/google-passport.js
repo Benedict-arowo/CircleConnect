@@ -8,18 +8,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const client_1 = require("@prisma/client");
+const db_1 = __importDefault(require("../../model/db"));
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const prisma = new client_1.PrismaClient();
 passport.serializeUser(function (user, done) {
     done(null, user.id);
 });
 //on the every request deserialize function checks user whether in database
 passport.deserializeUser((id, done) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield db_1.default.user.findUnique({
             where: { id },
         });
         if (!user) {
@@ -42,14 +44,14 @@ passport.use(new GoogleStrategy({
     const google_id = profile.id; // Unique Google ID
     const email = profile.emails[0].value; // User's email
     // Check if the user exists
-    const existingUser = yield prisma.user.findUnique({
+    const existingUser = yield db_1.default.user.findUnique({
         where: {
             email: email,
         },
     });
     if (existingUser) {
         console.log("Logging in an existing user using google.");
-        const user = yield prisma.user.update({
+        const user = yield db_1.default.user.update({
             where: { email },
             data: {
                 google_id: google_id,
@@ -61,7 +63,7 @@ passport.use(new GoogleStrategy({
     }
     // User doesn't exist, create a new user
     console.log("Creating a new user using google.");
-    const newUser = yield prisma.user.create({
+    const newUser = yield db_1.default.user.create({
         data: {
             google_id: google_id,
             email,
