@@ -1,13 +1,8 @@
-import { PrismaClient, Prisma } from "@prisma/client";
-import CustomError from "../../middlewear/CustomError";
+import prisma from "../../model/db";
 import { User } from "../../types";
 import { ReasonPhrases } from "http-status-codes";
-const argon = require("argon2");
 const passport = require("passport");
 const JwtStrategy = require("passport-jwt").Strategy;
-const ExtractJwt = require("passport-jwt").ExtractJwt;
-
-const prisma = new PrismaClient();
 
 interface Req extends Request {
 	cookies: Record<string, string>;

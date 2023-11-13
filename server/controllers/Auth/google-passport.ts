@@ -1,10 +1,7 @@
-import { PrismaClient, Prisma } from "@prisma/client";
-import CustomError from "../../middlewear/CustomError";
+import prisma from "../../model/db";
 import { User } from "../../types";
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-
-const prisma = new PrismaClient();
 
 passport.serializeUser(function (user: User, done: Function) {
 	done(null, user.id);

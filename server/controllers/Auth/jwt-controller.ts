@@ -1,16 +1,14 @@
 import { StatusCodes } from "http-status-codes";
 import CustomError from "../../middlewear/CustomError";
-import { Prisma, PrismaClient } from "@prisma/client";
 import { Req } from "../../types";
 import { Response } from "express";
+import prisma from "../../model/db";
+import { Prisma } from "@prisma/client";
+import { findUser } from "../../model/auth";
+import { hash, tokenGenerator, verifyHash } from "../../utils";
 
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
-const prisma = new PrismaClient();
-
-const tokenGenerator = (payload: any, expiresIn: string | number) => {
-	return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
-};
 
 export const loginJWT = async (req: Req, res: Response) => {
 	const { email, password } = req.body;
@@ -21,7 +19,7 @@ export const loginJWT = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 	}
-
+	const user = await findUser({ where: { email } });
 	const User = await prisma.user.findUnique({
 		where: { email },
 	});
@@ -36,14 +34,17 @@ export const loginJWT = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	let passwordIsValid = await argon.verify(User.password, password);
+	let passwordIsValid = await verifyHash(User.password, password);
+	console.log(passwordIsValid);
+	// TODO: fix the verifyHash function, and replace it with the function above.
+	// passwordIsValid = await argon.verify(User.password, password);
 
 	if (passwordIsValid) {
-		const token = tokenGenerator({ id: User.id }, "1h");
+		const token = await tokenGenerator({ id: User.id }, "1h");
 		console.log(`TOKEN: ${token}`);
 		return res
 			.cookie("jwtToken", token, { httpOnly: true })
-			.status(StatusCodes.ACCEPTED)
+			.status(StatusCodes.OK)
 			.json({
 				success: true,
 				message: "Successfully logged in.",
@@ -70,8 +71,9 @@ export const registerJWT = async (req: Req, res: Response) => {
 	}
 
 	try {
-		// Todo: Make sure password is strong.
-		const hashedPassword = await argon.hash(password);
+		const hashedPassword = await hash(password);
+		console.log(hashedPassword);
+
 		const User = await prisma.user.create({
 			data: {
 				email,
@@ -85,7 +87,7 @@ export const registerJWT = async (req: Req, res: Response) => {
 
 		return res
 			.cookie("jwtToken", token, { httpOnly: true })
-			.status(StatusCodes.ACCEPTED)
+			.status(StatusCodes.CREATED)
 			.json({
 				success: true,
 				message: "Successfully registered user.",
