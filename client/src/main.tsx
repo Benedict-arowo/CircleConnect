@@ -9,12 +9,12 @@ import { store } from "./store.ts";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
-		<ChakraProvider>
-			<BrowserRouter>
-				<Provider store={store}>
+		<Provider store={store}>
+			<ChakraProvider>
+				<BrowserRouter>
 					<App />
-				</Provider>
-			</BrowserRouter>
-		</ChakraProvider>
+				</BrowserRouter>
+			</ChakraProvider>
+		</Provider>
 	</React.StrictMode>
 );

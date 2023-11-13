@@ -1,34 +1,22 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-	id: null,
-	email: null,
-	first_name: null,
-	last_name: null,
-	profile_picture: null,
+	count: 0,
 };
 
 export const userSlice = createSlice({
 	name: "User",
 	initialState,
 	reducers: {
-		saveUser: (state, action) => {
-			state.id = action.payload.id;
-			state.email = action.payload.email;
-			state.first_name = action.payload.first_name;
-			state.last_name = action.payload.last_name;
-			state.profile_picture = action.payload.profile_picture;
+		increment: (state) => {
+			state.count += 1;
 		},
-		logoutUser: (state) => {
-			state.id = null;
-			state.email = null;
-			state.first_name = null;
-			state.last_name = null;
-			state.profile_picture = null;
+		decrement: (state) => {
+			state.count -= 1;
 		},
 	},
 });
 
-export const { saveUser, logoutUser } = userSlice.actions;
+export const { increment, decrement } = userSlice.actions;
 
 export default userSlice.reducer;

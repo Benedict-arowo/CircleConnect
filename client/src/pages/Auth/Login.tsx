@@ -23,7 +23,18 @@ const Login = () => {
 		description: null,
 	});
 	const Navigate = useNavigate();
-	const Dispatch = useDispatch();
+	// const Dispatch = useDispatch();
+
+	const fetchUser = async () => {
+		const { data, response } = await UseFetch({
+			url: "/user",
+			options: {
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+		console.log(data, response);
+	};
 
 	const handleGoogleAuth = async () => {
 		setIsLoading(() => true);
@@ -57,6 +68,7 @@ const Login = () => {
 		timer = setInterval(() => {
 			if (loginWindow && loginWindow.closed) {
 				setIsLoading(() => false);
+				data = fetchUser();
 				// TODO: Check if user is actually authenticated before redirecting
 				console.log("You are authenticated.");
 				Navigate("/");
@@ -93,15 +105,15 @@ const Login = () => {
 			console.log(data);
 
 			// No error is found, hence it's successful.
-			Dispatch(
-				saveUser({
-					id: data.id,
-					email: data.email,
-					profile_picture: data.profile_picture,
-					first_name: data.first_name,
-					last_name: data.last_name,
-				})
-			);
+			// Dispatch(
+			// 	saveUser({
+			// 		id: data.id,
+			// 		email: data.email,
+			// 		profile_picture: data.profile_picture,
+			// 		first_name: data.first_name,
+			// 		last_name: data.last_name,
+			// 	})
+			// );
 
 			setAlert(() => {
 				return {

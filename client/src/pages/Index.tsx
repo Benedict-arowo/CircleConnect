@@ -8,8 +8,7 @@ type User = {
 
 const Index = () => {
 	const [user, setUser] = useState<null | User>(null);
-	const User = useSelector((state) => state.user);
-	console.log(User);
+	const count = useSelector((state) => state.user.count);
 
 	const fetchUser = () => {
 		fetch("http://localhost:8000/user", {
@@ -55,6 +54,7 @@ const Index = () => {
 			<h1 className="text-2xl font-bold w-full text-center">
 				Circle Connect
 			</h1>
+			{count}
 
 			<div>
 				{/* <h2>TODO</h2> */}
