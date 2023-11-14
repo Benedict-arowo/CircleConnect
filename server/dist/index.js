@@ -11,6 +11,7 @@ const google_route_1 = __importDefault(require("./routes/Auth/google-route"));
 const github_route_1 = __importDefault(require("./routes/Auth/github-route"));
 const jwt_route_1 = __importDefault(require("./routes/Auth/jwt-route"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const circle_route_1 = __importDefault(require("./routes/circle-route"));
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -46,6 +47,7 @@ const makeApp = (database) => {
     app.use("/auth/github", github_route_1.default);
     app.use("/auth/jwt", jwt_route_1.default);
     app.use("/", auth_route_1.default);
+    app.use("/circle", circle_route_1.default);
     app.use(ErrorHandler_1.default);
     return app;
 };
