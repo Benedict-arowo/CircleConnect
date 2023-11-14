@@ -17,7 +17,6 @@ const http_status_codes_1 = require("http-status-codes");
 const CustomError_1 = __importDefault(require("../../middlewear/CustomError"));
 const db_1 = __importDefault(require("../../model/db"));
 const client_1 = require("@prisma/client");
-const auth_1 = require("../../model/auth");
 const utils_1 = require("../../utils");
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
@@ -26,9 +25,8 @@ const loginJWT = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!email || !password) {
         throw new CustomError_1.default("Email, and password must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     }
-    const user = yield (0, auth_1.findUser)({ where: { email } });
     const User = yield db_1.default.user.findUnique({
-        where: { email },
+        where: { email }
     });
     if (!User) {
         throw new CustomError_1.default("User not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
@@ -63,7 +61,6 @@ const registerJWT = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     try {
         const hashedPassword = yield (0, utils_1.hash)(password);
-        console.log(hashedPassword);
         const User = yield db_1.default.user.create({
             data: {
                 email,
@@ -72,7 +69,7 @@ const registerJWT = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 password: hashedPassword,
             },
         });
-        const token = (0, utils_1.tokenGenerator)({ id: User.id }, "1h");
+        const token = yield (0, utils_1.tokenGenerator)({ id: User.id }, "1h");
         return res
             .cookie("jwtToken", token, { httpOnly: true })
             .status(http_status_codes_1.StatusCodes.CREATED)

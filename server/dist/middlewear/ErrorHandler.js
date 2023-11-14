@@ -16,13 +16,13 @@ const ErrorHandler = (err, req, res, next) => {
         return res.status(404).json({
             success: false,
             message: process.env.DEFAULT_ERROR_MESSAGE,
-            stack: process.env.NODE_ENV === "dev" ? err.stack : null,
+            stack: process.env.NODE_ENV === "test" ? err.stack : null,
         });
     }
     return res.status(code || 404).json({
         success: false,
         message: message || process.env.DEFAULT_ERROR_MESSAGE,
-        stack: process.env.NODE_ENV === "dev" ? err.stack : null,
+        stack: process.env.NODE_ENV === "test" ? err.stack : null,
     });
 };
 exports.default = ErrorHandler;

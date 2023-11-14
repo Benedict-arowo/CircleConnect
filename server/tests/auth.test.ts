@@ -133,6 +133,7 @@ describe("Authentication tests", () => {
 				where: { email: localUserData.email },
 			});
 
+			// Tries to login 
 			const response = await request(app)
 				.post("/auth/jwt/login")
 				.send({
@@ -185,4 +186,30 @@ describe("Authentication tests", () => {
 			}
 		});
 	});
+
+
+	describe("Google authentication tests", () => {
+		it('should redirect to google accounts page', async () => {
+			// Use supertest to simulate an authentication request
+			const response = await request(app).get('/auth/google');
+			console.log(response.body)
+			// Check if the response is a redirect (Google OAuth login page)
+			expect(response.status).toBe(302);
+			expect(response.header.location).toContain('accounts.google.com');
+			expect(response.header.location).toBeDefined()			
+			})
+	})
+
+
+	describe("Github authentication tests", () => {
+		test('should redirect to github accounts page', async () => {
+			// Use supertest to simulate an authentication request
+			const response = await request(app).get('/auth/github');
+			
+			// Check if the response is a redirect (Google OAuth login page)
+			expect(response.status).toBe(302);
+			expect(response.header.location).toContain('github.com/login/oauth');
+			expect(response.header.location).toBeDefined()
+			})
+	})
 });

@@ -38,6 +38,7 @@ const userData = {
 describe("Authentication tests", () => {
     describe("JWT authentication tests", () => {
         beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
+            yield db_1.default.user.deleteMany({});
             jest.clearAllMocks();
         }));
         afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
@@ -89,6 +90,8 @@ describe("Authentication tests", () => {
                 .set("Accept", "application/json");
             console.log(response.body);
             const { id: userId } = response.body.data;
+            // Makes sure the user password isn't being sent back to the client.
+            expect(response.body.data).not.toHaveProperty("password");
             // Expecting a userId to have been sent back from the user upon successful registration.
             expect(userId).toBeDefined();
             // Check if the password has been hashed.
@@ -102,33 +105,38 @@ describe("Authentication tests", () => {
             const jwtTokenCookie = response.headers["set-cookie"][0];
             const decodedCookie = decodeURIComponent(jwtTokenCookie);
             expect(decodedCookie).toMatch(/^\s*jwtToken=[^;]+; Path=\/; HttpOnly\s*$/);
-            const getUser = yield db_1.default.user.findUnique({
-                where: { email: userData.email },
-            });
         }));
         it("should ensure that user successfully logs in using JWT", () => __awaiter(void 0, void 0, void 0, function* () {
-            yield db_1.default.user.deleteMany({});
-            const email = userData.email;
-            const password = userData.password;
-            const user = yield db_1.default.user.create({
-                data: {
-                    email: email,
-                    password: password,
-                    first_name: userData.first_name,
-                    last_name: userData.last_name,
-                },
+            const localUserData = {
+                email: "user1@example.com",
+                password: "password",
+                first_name: "user1",
+                last_name: "user2",
+            };
+            // Creates a user
+            yield request(app)
+                .post("/auth/jwt/register")
+                .send({
+                email: localUserData.email,
+                password: localUserData.password,
+                first_name: localUserData.first_name,
+                last_name: localUserData.last_name,
+            })
+                .set("Accept", "application/json");
+            const user = yield db_1.default.user.findUnique({
+                where: { email: localUserData.email },
             });
+            // Tries to login 
             const response = yield request(app)
                 .post("/auth/jwt/login")
                 .send({
-                email: email,
-                password: password,
+                email: localUserData.email,
+                password: localUserData.password,
             })
                 .set("Accept", "application/json");
-            console.log(response.body);
             const { id: userId } = response.body.data;
             expect(userId).toBeDefined();
-            expect(utils_1.verifyHash).toHaveBeenCalledWith(user === null || user === void 0 ? void 0 : user.password, userData.password);
+            expect(utils_1.verifyHash).toHaveBeenCalledWith(user === null || user === void 0 ? void 0 : user.password, localUserData.password);
             expect(utils_1.verifyHash).toHaveBeenCalledTimes(1);
             expect(utils_1.tokenGenerator).toHaveBeenCalledWith({ id: userId }, "1h");
             // Check if the HTTP-only token is set in the cookies
@@ -138,11 +146,47 @@ describe("Authentication tests", () => {
             expect(response.statusCode).toBe(200);
             expect(response.body.success).toBe(true);
         }));
-        it("should give an error when trying to logout without being logged in", () => {
+        it("should give an error when trying to logout without being logged in", (done) => {
             const response = request(app)
                 .get("/logout")
-                .expect("Content-Type", /json/);
-            console.log(response.body);
+                .expect("Content-Type", /json/)
+                .expect(() => {
+                if (response.headers) {
+                    // Ensure that the jwtToken cookie is not set when attempting to logout
+                    expect(response.headers["set-cookie"]).toBeUndefined();
+                }
+            })
+                .end(function (err, res) {
+                if (err)
+                    return done(err);
+                return done();
+            });
+            // Ensure that the jwtToken cookie is not set when attempting to logout
+            if (response.headers) {
+                // Ensure that the jwtToken cookie is not set when attempting to logout
+                expect(response.headers["set-cookie"]).toBeUndefined();
+            }
         });
+    });
+    describe("Google authentication tests", () => {
+        it('should redirect to google accounts page', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Use supertest to simulate an authentication request
+            const response = yield request(app).get('/auth/google');
+            console.log(response.body);
+            // Check if the response is a redirect (Google OAuth login page)
+            expect(response.status).toBe(302);
+            expect(response.header.location).toContain('accounts.google.com');
+            expect(response.header.location).toBeDefined();
+        }));
+    });
+    describe("Github authentication tests", () => {
+        test('should redirect to github accounts page', () => __awaiter(void 0, void 0, void 0, function* () {
+            // Use supertest to simulate an authentication request
+            const response = yield request(app).get('/auth/github');
+            // Check if the response is a redirect (Google OAuth login page)
+            expect(response.status).toBe(302);
+            expect(response.header.location).toContain('github.com/login/oauth');
+            expect(response.header.location).toBeDefined();
+        }));
     });
 });

@@ -19,11 +19,11 @@ export const loginJWT = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 	}
-	const user = await findUser({ where: { email } });
 	const User = await prisma.user.findUnique({
-		where: { email },
+		where: { email }
 	});
 
+	
 	if (!User) {
 		throw new CustomError("User not found.", StatusCodes.BAD_REQUEST);
 	}
@@ -72,7 +72,6 @@ export const registerJWT = async (req: Req, res: Response) => {
 
 	try {
 		const hashedPassword = await hash(password);
-		console.log(hashedPassword);
 
 		const User = await prisma.user.create({
 			data: {
@@ -83,7 +82,7 @@ export const registerJWT = async (req: Req, res: Response) => {
 			},
 		});
 
-		const token = tokenGenerator({ id: User.id }, "1h");
+		const token = await tokenGenerator({ id: User.id }, "1h");
 
 		return res
 			.cookie("jwtToken", token, { httpOnly: true })
