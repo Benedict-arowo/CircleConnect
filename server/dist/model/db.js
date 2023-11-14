@@ -8,8 +8,7 @@ const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 let prisma;
-console.log(process.env.NODE_ENV);
-if (process.env.NODE_ENV === "test") {
+if (process.env.USE_TEST_DB === "true") {
     console.log("dev");
     // Use mock database configuration for testing
     prisma = new client_1.PrismaClient({
