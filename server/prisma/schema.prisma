@@ -7,7 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model test {
-  id   Int    @id @default(autoincrement())
-  name String @db.VarChar(255)
+model User {
+  id             String       @id @default(uuid())
+  google_id String? @unique
+  github_id String? @unique
+  password String?
+  first_name String 
+  last_name String?
+  email String @unique
+  profile_picture String?
+  joined DateTime @updatedAt()
+  last_login DateTime?
+}
+
+model Session {
+  sid        String   @unique @id
+  sess       Json
+  expire     DateTime
 }
