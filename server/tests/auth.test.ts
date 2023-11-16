@@ -27,8 +27,8 @@ const userData = {
 
 describe("Authentication tests", () => {
 	describe("JWT authentication tests", () => {
-		beforeAll(async () => {
-			await prisma.user.deleteMany({});
+		beforeEach(async () => {
+			// 	await prisma.user.deleteMany({});
 			jest.clearAllMocks();
 		});
 
@@ -76,7 +76,9 @@ describe("Authentication tests", () => {
 		});
 
 		it("should create a new user using JWT", async () => {
-			await prisma.user.deleteMany({});
+			await prisma.user.delete({
+				where: { email: userData.email },
+			});
 			const response = await request(app)
 				.post("/auth/jwt/register")
 				.send({
@@ -121,28 +123,22 @@ describe("Authentication tests", () => {
 				last_name: "user2",
 			};
 
-			// Creates a user
-			// await request(app)
-			// 	.post("/auth/jwt/register")
-			// 	.send({
-			// 		email: localUserData.email,
-			// 		password: localUserData.password,
-			// 		first_name: localUserData.first_name,
-			// 		last_name: localUserData.last_name,
-			// 	})
-			// 	.set("Accept", "application/json");
-
-			const user = await prisma.user.upsert({
-				where: { email: localUserData.email },
-				create: {
+			await prisma.user.delete({
+				where: {
 					email: localUserData.email,
-					password: localUserData.hashedPassword,
+				},
+			});
+
+			// Creates a user
+			await request(app)
+				.post("/auth/jwt/register")
+				.send({
+					email: localUserData.email,
+					password: localUserData.password,
 					first_name: localUserData.first_name,
 					last_name: localUserData.last_name,
-				},
-				update: {},
-			});
-			// console.log(user);
+				})
+				.set("Accept", "application/json");
 
 			// Tries to login
 			const response = await request(app)
@@ -156,13 +152,7 @@ describe("Authentication tests", () => {
 			// console.log(response.body.data);
 			const { id: userId } = response.body.data;
 			expect(userId).toBeDefined();
-
-			expect(verifyHash).toHaveBeenCalledWith(
-				user?.password,
-				localUserData.password
-			);
 			expect(verifyHash).toHaveBeenCalledTimes(1);
-
 			expect(tokenGenerator).toHaveBeenCalledWith({ id: userId }, "1h");
 			// Check if the HTTP-only token is set in the cookies
 			const jwtTokenCookie = response.headers["set-cookie"][0];

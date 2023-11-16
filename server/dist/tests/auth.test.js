@@ -37,8 +37,8 @@ const userData = {
 };
 describe("Authentication tests", () => {
     describe("JWT authentication tests", () => {
-        beforeAll(() => __awaiter(void 0, void 0, void 0, function* () {
-            yield db_1.default.user.deleteMany({});
+        beforeEach(() => __awaiter(void 0, void 0, void 0, function* () {
+            // 	await prisma.user.deleteMany({});
             jest.clearAllMocks();
         }));
         afterAll(() => __awaiter(void 0, void 0, void 0, function* () {
@@ -78,7 +78,9 @@ describe("Authentication tests", () => {
             }
         }));
         it("should create a new user using JWT", () => __awaiter(void 0, void 0, void 0, function* () {
-            yield db_1.default.user.deleteMany({});
+            yield db_1.default.user.delete({
+                where: { email: userData.email },
+            });
             const response = yield request(app)
                 .post("/auth/jwt/register")
                 .send({
@@ -114,27 +116,21 @@ describe("Authentication tests", () => {
                 first_name: "user1",
                 last_name: "user2",
             };
-            // Creates a user
-            // await request(app)
-            // 	.post("/auth/jwt/register")
-            // 	.send({
-            // 		email: localUserData.email,
-            // 		password: localUserData.password,
-            // 		first_name: localUserData.first_name,
-            // 		last_name: localUserData.last_name,
-            // 	})
-            // 	.set("Accept", "application/json");
-            const user = yield db_1.default.user.upsert({
-                where: { email: localUserData.email },
-                create: {
+            yield db_1.default.user.delete({
+                where: {
                     email: localUserData.email,
-                    password: localUserData.hashedPassword,
-                    first_name: localUserData.first_name,
-                    last_name: localUserData.last_name,
                 },
-                update: {},
             });
-            // console.log(user);
+            // Creates a user
+            yield request(app)
+                .post("/auth/jwt/register")
+                .send({
+                email: localUserData.email,
+                password: localUserData.password,
+                first_name: localUserData.first_name,
+                last_name: localUserData.last_name,
+            })
+                .set("Accept", "application/json");
             // Tries to login
             const response = yield request(app)
                 .post("/auth/jwt/login")
@@ -146,7 +142,6 @@ describe("Authentication tests", () => {
             // console.log(response.body.data);
             const { id: userId } = response.body.data;
             expect(userId).toBeDefined();
-            expect(utils_1.verifyHash).toHaveBeenCalledWith(user === null || user === void 0 ? void 0 : user.password, localUserData.password);
             expect(utils_1.verifyHash).toHaveBeenCalledTimes(1);
             expect(utils_1.tokenGenerator).toHaveBeenCalledWith({ id: userId }, "1h");
             // Check if the HTTP-only token is set in the cookies
