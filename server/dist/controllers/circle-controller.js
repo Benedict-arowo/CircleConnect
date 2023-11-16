@@ -144,8 +144,20 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const { description } = req.body;
     if (!id)
         throw new CustomError_1.default("An ID must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    console.log(req.user);
-    // TODO: Check if the user has permission to edit the circle
+    const circle = yield db_1.default.circle.findUnique({
+        where: { id },
+        select: {
+            member: true,
+        },
+    });
+    if (!circle)
+        throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    circle.member.map((member) => {
+        if (!(member.userId === req.user.id &&
+            (member.role === "LEAD" || member.role === "COLEAD"))) {
+            throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.UNAUTHORIZED, http_status_codes_1.StatusCodes.UNAUTHORIZED);
+        }
+    });
     const Circle = yield db_1.default.circle.update({
         where: {
             id,
@@ -194,11 +206,9 @@ const deleteCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     });
     if (!Circle)
         throw new CustomError_1.default("Circle does not exist.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    // Loops through the circle members, and checks if the current user is the circle lead
-    // TODO: implement permissions
     for (const member of Circle.member) {
         if (member.userId === userId && member.role === "LEAD") {
-            // Delete circle members first, then delete the circle because you can't delete the circle without first deleting the circle members.
+            // Delete circle members first, then delete the circle because you can't delete the circle without first deleting the circle members. foreignKey...
             yield db_1.default.member.deleteMany({
                 where: {
                     circleId: Circle.id,

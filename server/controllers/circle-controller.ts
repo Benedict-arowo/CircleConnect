@@ -2,8 +2,9 @@ import { Response } from "express";
 import { Req } from "../types";
 import prisma from "../model/db";
 import { UserSelectMinimized } from "../utils";
-import { StatusCodes } from "http-status-codes";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
+import { STATUS_CODES } from "http";
 
 export const getCircles = async (req: Req, res: Response) => {
 	const { circle_num: num } = req.query;
@@ -162,9 +163,30 @@ export const editCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	console.log(req.user);
+	const circle = await prisma.circle.findUnique({
+		where: { id },
+		select: {
+			member: true,
+		},
+	});
 
-	// TODO: Check if the user has permission to edit the circle
+	if (!circle)
+		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
+
+	circle.member.map((member) => {
+		if (
+			!(
+				member.userId === req.user.id &&
+				(member.role === "LEAD" || member.role === "COLEAD")
+			)
+		) {
+			throw new CustomError(
+				ReasonPhrases.UNAUTHORIZED,
+				StatusCodes.UNAUTHORIZED
+			);
+		}
+	});
+
 	const Circle = await prisma.circle.update({
 		where: {
 			id,
@@ -220,11 +242,9 @@ export const deleteCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	// Loops through the circle members, and checks if the current user is the circle lead
-	// TODO: implement permissions
 	for (const member of Circle.member) {
 		if (member.userId === userId && member.role === "LEAD") {
-			// Delete circle members first, then delete the circle because you can't delete the circle without first deleting the circle members.
+			// Delete circle members first, then delete the circle because you can't delete the circle without first deleting the circle members. foreignKey...
 			await prisma.member.deleteMany({
 				where: {
 					circleId: Circle.id,
