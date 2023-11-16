@@ -1,3 +1,5 @@
+import { User } from "./types";
+
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 
@@ -18,4 +20,11 @@ export const tokenGenerator = async (
 export const hash = async (value: any) => {
 	const hashedValue = await argon.hash(value);
 	return hashedValue;
+};
+
+export const UserSelectMinimized = {
+	email: true,
+	id: true,
+	profile_picture: true,
+	first_name: true,
 };

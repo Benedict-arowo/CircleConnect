@@ -21,6 +21,19 @@ export type User = {
 };
 
 export interface Req extends Request {
+	query: {
+		circle_num?: string;
+		id?: string;
+		circle_id?: string;
+	};
+	body: {
+		description?: string;
+		circle_num?: number;
+		email?: string;
+		password?: string;
+		first_name?: string;
+		last_name?: string;
+	};
 	user: User;
 	logout: Function;
 }

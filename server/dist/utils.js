@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hash = exports.tokenGenerator = exports.verifyHash = void 0;
+exports.UserSelectMinimized = exports.hash = exports.tokenGenerator = exports.verifyHash = void 0;
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 const verifyHash = (hashedValue, unhashedValue) => __awaiter(void 0, void 0, void 0, function* () {
@@ -25,3 +25,9 @@ const hash = (value) => __awaiter(void 0, void 0, void 0, function* () {
     return hashedValue;
 });
 exports.hash = hash;
+exports.UserSelectMinimized = {
+    email: true,
+    id: true,
+    profile_picture: true,
+    first_name: true,
+};
