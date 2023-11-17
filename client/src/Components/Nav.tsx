@@ -22,7 +22,6 @@ const Nav = (props: Props) => {
 						<li className="text-red-500 font-normal cursor-default">
 							Home
 						</li>
-						<li className="cursor-pointer">Projects</li>
 						<li className="cursor-pointer">Circle</li>
 					</ul>
 

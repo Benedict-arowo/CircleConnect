@@ -4,16 +4,38 @@ import prisma from "../model/db";
 import { UserSelectMinimized } from "../utils";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
-import { STATUS_CODES } from "http";
 
 export const getCircles = async (req: Req, res: Response) => {
-	const { circle_num: num } = req.query;
+	const { limit = "10", sortedBy } = req.query;
+	const sortedByValues = ["num-asc", "num-desc"];
+
+	if (isNaN(parseInt(limit)))
+		throw new CustomError(
+			"Invalid limit provided",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (sortedBy && !sortedByValues.includes(sortedBy)) {
+		throw new CustomError(
+			"Invalid sorting parameters",
+			StatusCodes.BAD_REQUEST
+		);
+	}
+
+	if (Number(limit) > 25 || Number(limit) < 1)
+		throw new CustomError(
+			"Invalid limit, must be between 1 and 25",
+			StatusCodes.BAD_REQUEST
+		);
 
 	const Circles = await prisma.circle.findMany({
-		where: {
-			num: {
-				equals: num ? parseInt(num) : undefined,
-			},
+		where: {},
+		orderBy: {
+			num: sortedBy?.startsWith("num")
+				? sortedBy === "num-asc"
+					? "asc"
+					: "desc"
+				: undefined,
 		},
 		select: {
 			id: true,
@@ -39,8 +61,10 @@ export const getCircles = async (req: Req, res: Response) => {
 					name: true,
 				},
 			},
+			_count: true,
 			createdAt: true,
 		},
+		take: limit ? parseInt(limit) : undefined,
 	});
 	res.status(StatusCodes.OK).json({ status: true, data: Circles });
 };
@@ -112,6 +136,8 @@ export const createCircle = async (req: Req, res: Response) => {
 			"Circle number must be greater than zero.",
 			StatusCodes.BAD_REQUEST
 		);
+
+	// TODO: Check if the user is already a member of another circle, and if so return an error otherwise continue.
 
 	try {
 		const Circle = await prisma.circle.create({

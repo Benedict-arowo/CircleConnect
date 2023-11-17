@@ -25,6 +25,8 @@ export interface Req extends Request {
 		circle_num?: string;
 		id?: string;
 		circle_id?: string;
+		sortedBy?: string;
+		limit?: string;
 	};
 	body: {
 		description?: string;

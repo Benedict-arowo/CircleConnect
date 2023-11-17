@@ -18,12 +18,23 @@ const utils_1 = require("../utils");
 const http_status_codes_1 = require("http-status-codes");
 const CustomError_1 = __importDefault(require("../middlewear/CustomError"));
 const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { circle_num: num } = req.query;
+    const { limit = "10", sortedBy } = req.query;
+    const sortedByValues = ["num-asc", "num-desc"];
+    if (isNaN(parseInt(limit)))
+        throw new CustomError_1.default("Invalid limit provided", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (sortedBy && !sortedByValues.includes(sortedBy)) {
+        throw new CustomError_1.default("Invalid sorting parameters", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
+    if (Number(limit) > 25 || Number(limit) < 1)
+        throw new CustomError_1.default("Invalid limit, must be between 1 and 25", http_status_codes_1.StatusCodes.BAD_REQUEST);
     const Circles = yield db_1.default.circle.findMany({
-        where: {
-            num: {
-                equals: num ? parseInt(num) : undefined,
-            },
+        where: {},
+        orderBy: {
+            num: (sortedBy === null || sortedBy === void 0 ? void 0 : sortedBy.startsWith("num"))
+                ? sortedBy === "num-asc"
+                    ? "asc"
+                    : "desc"
+                : undefined,
         },
         select: {
             id: true,
@@ -49,8 +60,10 @@ const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     name: true,
                 },
             },
+            _count: true,
             createdAt: true,
         },
+        take: limit ? parseInt(limit) : undefined,
     });
     res.status(http_status_codes_1.StatusCodes.OK).json({ status: true, data: Circles });
 });
@@ -109,6 +122,7 @@ const createCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         throw new CustomError_1.default("Circle number must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     if (num < 0)
         throw new CustomError_1.default("Circle number must be greater than zero.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    // TODO: Check if the user is already a member of another circle, and if so return an error otherwise continue.
     try {
         const Circle = yield db_1.default.circle.create({
             data: {
