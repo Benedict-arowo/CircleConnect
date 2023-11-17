@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import banner from "../assets/desola-lanre-ologun-IgUR1iX0mqM-unsplash.jpg";
 import Nav from "../Components/Nav";
+import userImage from "../assets/Image-32.png";
+import Star from "../Components/Star";
+import UseFetch from "../Components/Fetch";
 
 type User = {
 	id: string;
@@ -33,8 +36,22 @@ const Index = () => {
 			});
 	};
 
+	const fetchCircles = async () => {
+		const response = await UseFetch({
+			url: "circle",
+			options: {
+				method: "GET",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		console.log(response);
+	};
+
 	useEffect(() => {
-		fetchUser();
+		// fetchUser();
+		fetchCircles();
 	}, []);
 
 	return (
@@ -133,30 +150,586 @@ const Index = () => {
 					<h3 className="font-light mb-2 text-3xl text-gray-800">
 						Featured Circles
 					</h3>
-					<div className="flex flex-row gap-6 overflow-x-scroll snap-mandatory custom-scroll pb-1">
-						<div className="min-w-[350px] h-[400px] bg-black scroll-snap-align-start"></div>
-						<div className="min-w-[350px] h-[400px] bg-black scroll-snap-align-start"></div>
-						<div className="min-w-[350px] h-[400px] bg-black scroll-snap-align-start"></div>
-						<div className="min-w-[350px] h-[400px] bg-black scroll-snap-align-start"></div>
-						<div className="min-w-[350px] h-[400px] bg-black scroll-snap-align-start"></div>
-						<div className="min-w-[350px] h-[400px] bg-black scroll-snap-align-start"></div>
-						<div className="min-w-[350px] h-[400px] bg-black scroll-snap-align-start"></div>
+					<div className="flex flex-row gap-6 overflow-x-auto snap-x snap-proximity custom-scroll pt-2 pb-7 px-16">
+						<div className="snap-normal snap-center w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+
+						<div className="snap-normal snap-center w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+
+						<div className="snap-normal snap-center w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+
+						<div className="snap-normal snap-center w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4 hover:scale-110 transition-all duration-300">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+
+						<div className="snap-normal snap-center w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4 hover:scale-110 transition-all duration-300">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
 					</div>
 				</section>
 
 				<section className="px-16">
-					<h3 className="font-light mb-2 text-3xl text-gray-800">
+					<a
+						href="#circles"
+						id="circles"
+						className="font-light mb-2 text-3xl text-gray-800">
 						Circles
-					</h3>
-					<div className="flex flex-row gap-6 flex-wrap justify-center">
-						<div className="min-w-[350px] h-[400px]"></div>
-						<div className="min-w-[350px] h-[400px]"></div>
-						<div className="min-w-[350px] h-[400px]"></div>
-						<div className="min-w-[350px] h-[400px]"></div>
-						<div className="min-w-[350px] h-[400px]"></div>
-						<div className="min-w-[350px] h-[400px]"></div>
-						<div className="min-w-[350px] h-[400px]"></div>
-						<div className="min-w-[350px] h-[400px]"></div>
+					</a>
+					<div className="flex flex-row gap-6 flex-wrap justify-center pt-2">
+						<div className="w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+						<div className="w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+						<div className="w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+						<div className="w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+						<div className="w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+						<div className="w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
+						<div className="w-[400px] h-fit rounded-sm border flex-shrink-0 border-gray-300 shadow-md flex flex-col gap-2 items-center text-center px-4 py-4">
+							<h3 className="font-bold py-4 px-5 bg-red-500 w-fit h-fit rounded-full text-2xl text-white">
+								21
+							</h3>
+							<p className="font-light text-gray-600">
+								Lorem ipsum dolor sit amet consectetur
+								adipisicing elit. Quisquam corporis dolores
+								eveniet deserunt nesciunt maiores officia fugiat
+								sunt laborum doloremque?
+							</p>
+
+							<div className="flex flex-row gap-2">
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+								<Star />
+							</div>
+
+							<section className="flex flex-row gap-2 justify-center w-full mt-4">
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+								<img
+									src={userImage}
+									alt="User's profile picture"
+									className="w-[32px] h-[32px] object-cover"
+								/>
+							</section>
+						</div>
 					</div>
 				</section>
 			</section>
