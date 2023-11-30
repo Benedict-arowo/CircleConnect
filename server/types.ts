@@ -27,6 +27,8 @@ export interface Req extends Request {
 		circle_id?: string;
 		sortedBy?: string;
 		limit?: string;
+		circleId?: string;
+		userId?: string;
 	};
 	body: {
 		description?: string;
@@ -35,6 +37,9 @@ export interface Req extends Request {
 		password?: string;
 		first_name?: string;
 		last_name?: string;
+		rating?: number;
+		circleId?: string;
+		body?: string;
 	};
 	user: User;
 	logout: Function;

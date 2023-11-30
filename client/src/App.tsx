@@ -4,16 +4,20 @@ import Success from "./pages/Auth/Success";
 import Register from "./pages/Auth/Register";
 import Login from "./pages/Auth/Login";
 import Test from "./pages/Test";
+import Circle from "./pages/Circle_page";
 
 const App = () => {
 	return (
-		<Routes>
-			<Route path="/" element={<Index />} />
-			<Route path="/test" element={<Test />} />
-			<Route path="/login" element={<Login />} />
-			<Route path="/register" element={<Register />} />
-			<Route path="/auth/success" element={<Success />} />
-		</Routes>
+		<div className="max-w-screen-2xl mx-auto">
+			<Routes>
+				<Route path="/" element={<Index />} />
+				<Route path="/circle/:id" element={<Circle />} />
+				<Route path="/test" element={<Test />} />
+				<Route path="/login" element={<Login />} />
+				<Route path="/register" element={<Register />} />
+				<Route path="/auth/success" element={<Success />} />
+			</Routes>
+		</div>
 	);
 };
 

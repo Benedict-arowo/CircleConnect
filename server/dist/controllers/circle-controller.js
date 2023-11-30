@@ -19,7 +19,7 @@ const http_status_codes_1 = require("http-status-codes");
 const CustomError_1 = __importDefault(require("../middlewear/CustomError"));
 const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { limit = "10", sortedBy } = req.query;
-    const sortedByValues = ["num-asc", "num-desc"];
+    const sortedByValues = ["num-asc", "num-desc", "rating-asc", "rating-desc"];
     if (isNaN(parseInt(limit)))
         throw new CustomError_1.default("Invalid limit provided", http_status_codes_1.StatusCodes.BAD_REQUEST);
     if (sortedBy && !sortedByValues.includes(sortedBy)) {
@@ -35,11 +35,19 @@ const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     ? "asc"
                     : "desc"
                 : undefined,
+            averageUserRating: (sortedBy === null || sortedBy === void 0 ? void 0 : sortedBy.startsWith("rating"))
+                ? sortedBy === "rating-asc"
+                    ? "asc"
+                    : "desc"
+                : undefined,
         },
         select: {
             id: true,
             description: true,
             num: true,
+            visibility: true,
+            averageUserRating: true,
+            rating: true,
             member: {
                 select: {
                     id: true,
@@ -80,7 +88,7 @@ const getCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
                 {
                     num: {
-                        equals: isNaN(parseInt(id)) ? undefined : parseInt(id),
+                        equals: isNaN(Number(id)) ? undefined : Number(id),
                     },
                 },
             ],
@@ -98,6 +106,9 @@ const getCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     },
                 },
             },
+            rating: true,
+            visibility: true,
+            averageUserRating: true,
             projects: {
                 select: {
                     description: true,
@@ -112,6 +123,8 @@ const getCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             createdAt: true,
         },
     });
+    if (!Circle)
+        throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.NOT_FOUND);
     res.status(http_status_codes_1.StatusCodes.OK).json({ success: true, data: Circle });
 });
 exports.getCircle = getCircle;

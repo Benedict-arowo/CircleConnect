@@ -7,7 +7,7 @@ import CustomError from "../middlewear/CustomError";
 
 export const getCircles = async (req: Req, res: Response) => {
 	const { limit = "10", sortedBy } = req.query;
-	const sortedByValues = ["num-asc", "num-desc"];
+	const sortedByValues = ["num-asc", "num-desc", "rating-asc", "rating-desc"];
 
 	if (isNaN(parseInt(limit)))
 		throw new CustomError(
@@ -36,11 +36,19 @@ export const getCircles = async (req: Req, res: Response) => {
 					? "asc"
 					: "desc"
 				: undefined,
+			averageUserRating: sortedBy?.startsWith("rating")
+				? sortedBy === "rating-asc"
+					? "asc"
+					: "desc"
+				: undefined,
 		},
 		select: {
 			id: true,
 			description: true,
 			num: true,
+			visibility: true,
+			averageUserRating: true,
+			rating: true,
 			member: {
 				select: {
 					id: true,
@@ -71,7 +79,6 @@ export const getCircles = async (req: Req, res: Response) => {
 
 export const getCircle = async (req: Req, res: Response) => {
 	const { id } = req.params;
-
 	if (!id)
 		throw new CustomError(
 			"An ID must be provided.",
@@ -86,7 +93,7 @@ export const getCircle = async (req: Req, res: Response) => {
 				},
 				{
 					num: {
-						equals: isNaN(parseInt(id)) ? undefined : parseInt(id),
+						equals: isNaN(Number(id)) ? undefined : Number(id),
 					},
 				},
 			],
@@ -104,6 +111,9 @@ export const getCircle = async (req: Req, res: Response) => {
 					},
 				},
 			},
+			rating: true,
+			visibility: true,
+			averageUserRating: true,
 			projects: {
 				select: {
 					description: true,
@@ -118,6 +128,9 @@ export const getCircle = async (req: Req, res: Response) => {
 			createdAt: true,
 		},
 	});
+
+	if (!Circle)
+		throw new CustomError("Circle not found.", StatusCodes.NOT_FOUND);
 
 	res.status(StatusCodes.OK).json({ success: true, data: Circle });
 };

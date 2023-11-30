@@ -7,6 +7,7 @@ interface FetchParams {
 		method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 		body?: object | undefined;
 		returnResponse?: boolean;
+		handleError?: boolean;
 	};
 }
 
@@ -26,7 +27,7 @@ const UseFetch = async ({ url, options }: FetchParams) => {
 
 		const data = await response.json();
 
-		if (!response.ok) {
+		if (!response.ok && options.handleError) {
 			if (data.message) throw new Error(data.message);
 			else
 				throw new Error(

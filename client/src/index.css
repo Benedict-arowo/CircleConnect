@@ -4,8 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
+body {
     font-family: 'Poppins', sans-serif;
+    /* background-color: #eaeaea !important; */
+    background: rgb(249 250 251 / 1);
 }
 
 /* Scrollbar styles */
@@ -30,4 +32,8 @@
     scrollbar-width: thin;
     scrollbar-color: #684a59 #cbd5e0;
     /* Tailwind CSS color codes */
+}
+
+.nav_background {
+    background: linear-gradient(90deg, #FDF5EB 0.45%, #BF9592 103.57%);
 }

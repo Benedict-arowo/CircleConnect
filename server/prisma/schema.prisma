@@ -20,6 +20,7 @@ model User {
   last_login      DateTime?
   circles         Member[]
   projects        Project[]
+  ratings CircleRating[]
   createdAt       DateTime  @default(now())
 }
 
@@ -35,6 +36,21 @@ enum Role {
   LEAD
 }
 
+enum circleVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+model CircleRating {
+  id String @id @default(uuid())
+  rating Int @default(0)
+  user User @relation(fields: [userId], references: [id])
+  userId String
+  circle Circle @relation(fields: [circleId], references: [id])
+  circleId String
+
+   @@unique([userId, circleId])
+}
 model Member {
   id        String   @id @unique @default(uuid())
   role      Role     @default(MEMBER)
@@ -64,5 +80,15 @@ model Circle {
   member      Member[]
   projects    Project[]
   description String?
+  averageUserRating Float @default(0.0)
+  rating CircleRating[]
+  visibility circleVisibility @default(PUBLIC)
+
   createdAt   DateTime  @default(now())
+}
+
+model Search {
+  id String @id @default(uuid()) 
+  search String @unique
+  count Int @default(0)
 }
