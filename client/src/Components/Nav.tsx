@@ -1,8 +1,10 @@
 import { Button } from "@chakra-ui/react";
 import Logo from "./Logo";
-import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { SERVER_URL } from "../../config";
+import { Link, NavLink } from "react-router-dom";
+import UseFetch from "./Fetch";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../pages/Auth/userSlice";
+import defaultProfilePicture from "../assets/Image-32.png";
 
 type Props = {
 	className?: string;
@@ -15,61 +17,111 @@ type User = {
 	first_name: string;
 };
 
-const Nav = (props: Props) => {
-	const { className, type = "dark", useBackground = true } = props;
-	const [user, setUser] = useState<null | User>(null);
+const activeStyles = {
+	color: "#E53E3E",
+	fontWeight: "normal",
+};
 
-	useEffect(() => {
-		const fetchUser = () => {
-			fetch("http://localhost:8000/user", {
-				credentials: "include",
-				headers: {
-					Accept: "application/json",
-				},
-			})
-				.then((response) => {
-					console.log(response);
-					if (!response.ok) throw new Error(response.statusText);
-					return response.json();
-				})
-				.then((data) => {
-					setUser(data);
-				})
-				.catch((error) => {
-					setUser(null);
-					console.log(error);
-				});
-		};
-		fetchUser();
-	}, []);
+const Nav = (props: Props) => {
+	const dispatch = useDispatch();
+	const { className, type = "dark", useBackground = true } = props;
+	const user = useSelector((state) => state.user);
+
+	const logoutHandler = async () => {
+		dispatch(logoutUser());
+		const { data, response } = await UseFetch({
+			url: "logout",
+			options: {
+				method: "GET",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+	};
+
+	// useEffect(() => {
+	// 	const fetchUser = () => {
+	// 		fetch("http://localhost:8000/user", {
+	// 			credentials: "include",
+	// 			headers: {
+	// 				Accept: "application/json",
+	// 			},
+	// 		})
+	// 			.then((response) => {
+	// 				console.log(response);
+	// 				if (!response.ok) throw new Error(response.statusText);
+	// 				return response.json();
+	// 			})
+	// 			.then((data) => {
+	// 				setUser(data);
+	// 			})
+	// 			.catch((error) => {
+	// 				setUser(null);
+	// 				console.log(error);
+	// 			});
+	// 	};
+	// 	fetchUser();
+	// }, []);
 
 	return (
 		<>
 			<header
-				className={`flex flex-row justify-between py-4 px-8 md:px-16 items-center ${className} ${
+				className={`flex flex-row justify-between py-4 px-8 md:px-8 items-center ${className} ${
 					useBackground && "nav_background"
 				}`}>
 				<div className="flex-1 sm:flex hidden justify-between mx-auto items-center">
 					<Logo type={type} />
 					<ul
-						className={`flex flex-row gap-6 font-light text-xl ${
+						className={`flex flex-row gap-6 font-light ${
 							type === "dark" ? "text-black" : "text-white"
 						}`}>
-						<li className="text-red-500 font-normal cursor-default">
-							Home
+						<li className="cursor-pointer text-lg">
+							<NavLink
+								to="/"
+								style={({ isActive }) => {
+									return isActive ? activeStyles : {};
+								}}>
+								Home
+							</NavLink>
 						</li>
-						<li className="cursor-pointer">Circle</li>
+						<li className="cursor-pointer text-lg">
+							<NavLink
+								to="/discover"
+								style={({ isActive }) => {
+									return isActive ? activeStyles : {};
+								}}>
+								Discover
+							</NavLink>
+						</li>
+						<li className="cursor-pointer text-lg">
+							<NavLink
+								to="/circle"
+								style={({ isActive }) => {
+									return isActive ? activeStyles : {};
+								}}>
+								Circle
+							</NavLink>
+						</li>
 					</ul>
 
 					<div>
-						{user && (
-							<a href={`${SERVER_URL}/logout`}>
-								<Button colorScheme="red" variant="ghost">
-									Logout
-								</Button>
+						{user.isLoggedIn && (
+							<a
+								onClick={logoutHandler}
+								className="cursor-pointer">
+								<img
+									src={
+										user.info.profile_picture ||
+										defaultProfilePicture
+									}
+									alt="My profile picture"
+									width="48px"
+									height="48px"
+									className="rounded-full"
+								/>
 							</a>
 						)}
-						{!user && (
+						{!user.isLoggedIn && (
 							<Link to={"/login"}>
 								<Button colorScheme="red" variant="outline">
 									Login
