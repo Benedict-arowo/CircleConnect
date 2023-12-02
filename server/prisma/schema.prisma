@@ -8,20 +8,25 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(uuid())
-  google_id       String?   @unique
-  github_id       String?   @unique
+  id              String         @id @default(uuid())
+  google_id       String?        @unique
+  github_id       String?        @unique
   password        String?
   first_name      String
   last_name       String?
-  email           String    @unique
+  email           String         @unique
   profile_picture String?
-  joined          DateTime  @updatedAt()
+  joined          DateTime       @updatedAt()
   last_login      DateTime?
-  circles         Member[]
+  leadOf          Circle?        @relation(fields: [leadOfId], references: [id], name: "leader of")
+  leadOfId        String?        @unique
+  coleadOf        Circle?        @relation(fields: [coleadOfId], references: [id], name: "coleader of")
+  coleadOfId      String?        @unique
+  memberOf        Circle?        @relation(fields: [memberOfId], references: [id], name: "member of")
+  memberOfId      String?
   projects        Project[]
-  ratings CircleRating[]
-  createdAt       DateTime  @default(now())
+  ratings         CircleRating[]
+  createdAt       DateTime       @default(now())
 }
 
 model Session {
@@ -30,36 +35,31 @@ model Session {
   expire DateTime
 }
 
-enum Role {
-  MEMBER
-  COLEAD
-  LEAD
-}
-
 enum circleVisibility {
   PUBLIC
   PRIVATE
 }
 
 model CircleRating {
-  id String @id @default(uuid())
-  rating Int @default(0)
-  user User @relation(fields: [userId], references: [id])
-  userId String
-  circle Circle @relation(fields: [circleId], references: [id])
+  id       String @id @default(uuid())
+  rating   Int    @default(0)
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  circle   Circle @relation(fields: [circleId], references: [id])
   circleId String
 
-   @@unique([userId, circleId])
+  @@unique([userId, circleId])
 }
-model Member {
-  id        String   @id @unique @default(uuid())
-  role      Role     @default(MEMBER)
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  circleId  String
-  circle    Circle   @relation(fields: [circleId], references: [id])
-  createdAt DateTime @default(now())
-}
+
+// model Member {
+//   id        String   @id @unique @default(uuid())
+//   role      Role     @default(MEMBER)
+//   user      User     @relation(fields: [userId], references: [id])
+//   userId    String
+//   circleId  String
+//   circle    Circle   @relation(fields: [circleId], references: [id])
+//   createdAt DateTime @default(now())
+// }
 
 model Project {
   id          String   @id @unique @default(uuid())
@@ -75,20 +75,22 @@ model Project {
 }
 
 model Circle {
-  id          String    @id @unique @default(uuid())
-  num         Int       @unique
-  member      Member[]
-  projects    Project[]
-  description String?
-  averageUserRating Float @default(0.0)
-  rating CircleRating[]
-  visibility circleVisibility @default(PUBLIC)
+  id                String           @id @unique @default(uuid())
+  num               Int              @unique
+  members           User[]           @relation(name: "member of")
+  lead              User?            @relation(name: "leader of")
+  colead            User?            @relation(name: "coleader of")
+  projects          Project[]
+  description       String           @db.VarChar(300)
+  averageUserRating Float            @default(0.0)
+  rating            CircleRating[]
+  visibility        circleVisibility @default(PUBLIC)
 
-  createdAt   DateTime  @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Search {
-  id String @id @default(uuid()) 
+  id     String @id @default(uuid())
   search String @unique
-  count Int @default(0)
+  count  Int    @default(0)
 }

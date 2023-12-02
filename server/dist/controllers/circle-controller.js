@@ -48,14 +48,17 @@ const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             visibility: true,
             averageUserRating: true,
             rating: true,
-            member: {
-                select: {
-                    id: true,
-                    role: true,
-                    user: {
-                        select: utils_1.UserSelectMinimized,
-                    },
+            members: {
+                select: utils_1.UserSelectMinimized,
+                orderBy: {
+                    first_name: "desc",
                 },
+            },
+            lead: {
+                select: utils_1.UserSelectMinimized,
+            },
+            colead: {
+                select: utils_1.UserSelectMinimized,
             },
             projects: {
                 select: {
@@ -97,14 +100,17 @@ const getCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             id: true,
             description: true,
             num: true,
-            member: {
-                select: {
-                    id: true,
-                    role: true,
-                    user: {
-                        select: utils_1.UserSelectMinimized,
-                    },
+            members: {
+                select: utils_1.UserSelectFull,
+                orderBy: {
+                    first_name: "desc",
                 },
+            },
+            lead: {
+                select: utils_1.UserSelectFull,
+            },
+            colead: {
+                select: utils_1.UserSelectFull,
             },
             rating: true,
             visibility: true,
@@ -131,6 +137,10 @@ exports.getCircle = getCircle;
 const createCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const { circle_num: num, description } = req.body;
+    if (!description)
+        throw new CustomError_1.default("Circle description must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (description.length <= utils_1.minimumCircleDescriptionLength)
+        throw new CustomError_1.default(`Description is too short, it must be at least ${utils_1.minimumCircleDescriptionLength} characters`, http_status_codes_1.StatusCodes.BAD_REQUEST);
     if (!num)
         throw new CustomError_1.default("Circle number must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     if (num < 0)
@@ -139,20 +149,17 @@ const createCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const Circle = yield db_1.default.circle.create({
             data: {
-                description: description ? description : undefined,
+                description: description,
                 num,
+                lead: {
+                    connect: {
+                        id: req.user.id,
+                    },
+                },
             },
         });
         if (!Circle)
             throw new CustomError_1.default("Error while trying to create circle", http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
-        // Add the current user as the circle lead.
-        yield db_1.default.member.create({
-            data: {
-                circleId: Circle.id,
-                userId: req.user.id,
-                role: "LEAD",
-            },
-        });
         res.status(http_status_codes_1.StatusCodes.CREATED).json({ success: true, data: Circle });
     }
     catch (error) {
@@ -168,41 +175,81 @@ const createCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.createCircle = createCircle;
 const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
+    const { addUser, removeUser } = req.query;
     const { description } = req.body;
+    const responseObj = { success: true };
     if (!id)
         throw new CustomError_1.default("An ID must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     const circle = yield db_1.default.circle.findUnique({
         where: { id },
         select: {
-            member: true,
+            members: {
+                select: utils_1.UserSelectMinimized,
+                orderBy: {
+                    first_name: "desc",
+                },
+            },
+            lead: {
+                select: utils_1.UserSelectMinimized,
+            },
+            colead: {
+                select: utils_1.UserSelectMinimized,
+            },
         },
     });
     if (!circle)
         throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    circle.member.map((member) => {
-        if (!(member.userId === req.user.id &&
-            (member.role === "LEAD" || member.role === "COLEAD"))) {
-            throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.UNAUTHORIZED, http_status_codes_1.StatusCodes.UNAUTHORIZED);
+    if (!circle.lead)
+        throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.INTERNAL_SERVER_ERROR, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
+    if (addUser === "true" && removeUser === "true")
+        throw new CustomError_1.default("You cannot add and remove yourself from a circle at the same time.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (addUser === "true" || removeUser === "true") {
+        //* Makes sure the user making the request is not the circle lead trying to add or remove themselves from the circle member list.
+        if (req.user.id === circle.lead.id || req.user.id === circle.lead.id)
+            throw new CustomError_1.default("You cannot add or remove a circle leader from the circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        if (addUser) {
+            let memberExists = circle.members.some((member) => {
+                return member.id === req.user.id;
+            });
+            if (memberExists) {
+                throw new CustomError_1.default("User is already a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+            }
         }
-    });
+        if (removeUser) {
+            let memberExists = circle.members.some((member) => {
+                return member.id === req.user.id;
+            });
+            if (!memberExists) {
+                throw new CustomError_1.default("User is not a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+            }
+        }
+    }
+    if (description && description.length <= utils_1.minimumCircleDescriptionLength)
+        throw new CustomError_1.default(`Description is too short, it must be at least ${utils_1.minimumCircleDescriptionLength} characters`, http_status_codes_1.StatusCodes.BAD_REQUEST);
+    // If a description has been given, it checks that the user trying to change the description is either the circle lead or circle co-lead, and if not it throws an error.
+    if (description &&
+        !(circle.lead.id === req.user.id ||
+            (circle.colead && circle.colead.id === req.user.id)))
+        throw new CustomError_1.default("You do not have the permission to perform this action.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     const Circle = yield db_1.default.circle.update({
         where: {
             id,
         },
         data: {
-            description,
+            description: !description ? undefined : description,
+            members: {
+                connect: addUser === "true" ? [{ id: req.user.id }] : undefined,
+                disconnect: removeUser === "true" ? [{ id: req.user.id }] : undefined,
+            },
         },
         select: {
             id: true,
             description: true,
             num: true,
-            member: {
-                select: {
-                    id: true,
-                    role: true,
-                    user: {
-                        select: utils_1.UserSelectMinimized,
-                    },
+            members: {
+                select: utils_1.UserSelectMinimized,
+                orderBy: {
+                    first_name: "desc",
                 },
             },
             projects: {
@@ -219,7 +266,8 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             createdAt: true,
         },
     });
-    res.status(http_status_codes_1.StatusCodes.OK).json({ success: true, data: Circle });
+    responseObj.data = Circle;
+    res.status(http_status_codes_1.StatusCodes.OK).json(responseObj);
 });
 exports.editCircle = editCircle;
 const deleteCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -228,30 +276,33 @@ const deleteCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const Circle = yield db_1.default.circle.findUnique({
         where: { id: circleId },
         include: {
-            member: true,
+            members: {
+                select: utils_1.UserSelectMinimized,
+                orderBy: {
+                    first_name: "desc",
+                },
+            },
         },
     });
     if (!Circle)
         throw new CustomError_1.default("Circle does not exist.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    for (const member of Circle.member) {
-        if (member.userId === userId && member.role === "LEAD") {
-            // Delete circle members first, then delete the circle because you can't delete the circle without first deleting the circle members. foreignKey...
-            yield db_1.default.member.deleteMany({
-                where: {
-                    circleId: Circle.id,
-                },
-            });
-            yield db_1.default.circle.delete({
-                where: {
-                    id: Circle.id,
-                },
-            });
-            res.status(http_status_codes_1.StatusCodes.OK).json({
-                success: true,
-                message: "Circle deleted successfully.",
-            });
-        }
-    }
+    // if (member.id === userId && member.role === "LEAD") {
+    // 	// Delete circle members first, then delete the circle because you can't delete the circle without first deleting the circle members. foreignKey...
+    // 	await prisma.members.deleteMany({
+    // 		where: {
+    // 			circleId: Circle.id,
+    // 		},
+    // 	});
+    // 	await prisma.circle.delete({
+    // 		where: {
+    // 			id: Circle.id,
+    // 		},
+    // 	});
+    // 	res.status(StatusCodes.OK).json({
+    // 		success: true,
+    // 		message: "Circle deleted successfully.",
+    // 	});
+    // }
     throw new CustomError_1.default("You are not allowed to delete this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
 });
 exports.deleteCircle = deleteCircle;

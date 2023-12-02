@@ -4,7 +4,6 @@ import { User } from "../../types";
 const passport = require("passport");
 const GithubStrategy = require("passport-github2").Strategy;
 
-
 passport.serializeUser(function (user: User, done: Function) {
 	done(null, user.id);
 });

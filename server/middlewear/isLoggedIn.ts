@@ -6,8 +6,6 @@ import { StatusCodes } from "http-status-codes/build/cjs/status-codes";
 const passport = require("passport");
 
 const isLoggedIn = (req: Req, res: Response, next: NextFunction) => {
-	console.log("isLoggedIn");
-
 	// Check if the user is already authenticated via Google or GitHub
 	if (req.user) {
 		next();
@@ -21,7 +19,6 @@ const isLoggedIn = (req: Req, res: Response, next: NextFunction) => {
 
 				if (err) {
 					// Handle errors, e.g., invalid token, expired token, etc.
-					console.error(err);
 					throw new CustomError(
 						"Authentication failed",
 						StatusCodes.UNAUTHORIZED

@@ -27,4 +27,20 @@ export const UserSelectMinimized = {
 	id: true,
 	profile_picture: true,
 	first_name: true,
+	projects: true,
+	ratings: true,
 };
+
+export const UserSelectFull = {
+	email: true,
+	id: true,
+	profile_picture: true,
+	first_name: true,
+	projects: true,
+	ratings: true,
+	leadOf: true,
+	coleadOf: true,
+	memberOf: true,
+};
+
+export const minimumCircleDescriptionLength = 80;

@@ -16,12 +16,17 @@ const wrapper_1 = __importDefault(require("../../middlewear/wrapper"));
 const isLoggedIn_1 = __importDefault(require("../../middlewear/isLoggedIn"));
 const http_status_codes_1 = require("http-status-codes");
 const logout_1 = __importDefault(require("../../controllers/Auth/logout"));
+const db_1 = __importDefault(require("../../model/db"));
+const utils_1 = require("../../utils");
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 router.get("/user", isLoggedIn_1.default, (0, wrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // TODO: This route is currently just for testing purposes.
-    let user = req.user;
+    let user = yield db_1.default.user.findUnique({
+        where: { id: req.user.id },
+        select: utils_1.UserSelectFull,
+    });
     res.status(http_status_codes_1.StatusCodes.OK).json(user);
 })));
 router.get("/logout", isLoggedIn_1.default, (0, wrapper_1.default)(logout_1.default));

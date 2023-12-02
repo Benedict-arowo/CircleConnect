@@ -1,7 +1,11 @@
 import { Response } from "express";
 import { Req } from "../types";
 import prisma from "../model/db";
-import { UserSelectMinimized } from "../utils";
+import {
+	UserSelectFull,
+	UserSelectMinimized,
+	minimumCircleDescriptionLength,
+} from "../utils";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
 
@@ -49,14 +53,17 @@ export const getCircles = async (req: Req, res: Response) => {
 			visibility: true,
 			averageUserRating: true,
 			rating: true,
-			member: {
-				select: {
-					id: true,
-					role: true,
-					user: {
-						select: UserSelectMinimized,
-					},
+			members: {
+				select: UserSelectMinimized,
+				orderBy: {
+					first_name: "desc",
 				},
+			},
+			lead: {
+				select: UserSelectMinimized,
+			},
+			colead: {
+				select: UserSelectMinimized,
 			},
 			projects: {
 				select: {
@@ -79,6 +86,7 @@ export const getCircles = async (req: Req, res: Response) => {
 
 export const getCircle = async (req: Req, res: Response) => {
 	const { id } = req.params;
+
 	if (!id)
 		throw new CustomError(
 			"An ID must be provided.",
@@ -102,14 +110,17 @@ export const getCircle = async (req: Req, res: Response) => {
 			id: true,
 			description: true,
 			num: true,
-			member: {
-				select: {
-					id: true,
-					role: true,
-					user: {
-						select: UserSelectMinimized,
-					},
+			members: {
+				select: UserSelectFull,
+				orderBy: {
+					first_name: "desc",
 				},
+			},
+			lead: {
+				select: UserSelectFull,
+			},
+			colead: {
+				select: UserSelectFull,
 			},
 			rating: true,
 			visibility: true,
@@ -138,6 +149,18 @@ export const getCircle = async (req: Req, res: Response) => {
 export const createCircle = async (req: Req, res: Response) => {
 	const { circle_num: num, description } = req.body;
 
+	if (!description)
+		throw new CustomError(
+			"Circle description must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (description.length <= minimumCircleDescriptionLength)
+		throw new CustomError(
+			`Description is too short, it must be at least ${minimumCircleDescriptionLength} characters`,
+			StatusCodes.BAD_REQUEST
+		);
+
 	if (!num)
 		throw new CustomError(
 			"Circle number must be provided.",
@@ -155,8 +178,13 @@ export const createCircle = async (req: Req, res: Response) => {
 	try {
 		const Circle = await prisma.circle.create({
 			data: {
-				description: description ? description : undefined,
+				description: description,
 				num,
+				lead: {
+					connect: {
+						id: req.user.id,
+					},
+				},
 			},
 		});
 
@@ -165,15 +193,6 @@ export const createCircle = async (req: Req, res: Response) => {
 				"Error while trying to create circle",
 				StatusCodes.INTERNAL_SERVER_ERROR
 			);
-
-		// Add the current user as the circle lead.
-		await prisma.member.create({
-			data: {
-				circleId: Circle.id,
-				userId: req.user.id,
-				role: "LEAD",
-			},
-		});
 
 		res.status(StatusCodes.CREATED).json({ success: true, data: Circle });
 	} catch (error: any) {
@@ -192,9 +211,16 @@ export const createCircle = async (req: Req, res: Response) => {
 	}
 };
 
+type responseObj = {
+	success: boolean;
+	data?: Object;
+};
+
 export const editCircle = async (req: Req, res: Response) => {
 	const { id } = req.params;
+	const { addUser, removeUser } = req.query;
 	const { description } = req.body;
+	const responseObj: responseObj = { success: true };
 
 	if (!id)
 		throw new CustomError(
@@ -205,45 +231,109 @@ export const editCircle = async (req: Req, res: Response) => {
 	const circle = await prisma.circle.findUnique({
 		where: { id },
 		select: {
-			member: true,
+			members: {
+				select: UserSelectMinimized,
+				orderBy: {
+					first_name: "desc",
+				},
+			},
+			lead: {
+				select: UserSelectMinimized,
+			},
+			colead: {
+				select: UserSelectMinimized,
+			},
 		},
 	});
 
 	if (!circle)
 		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
 
-	circle.member.map((member) => {
-		if (
-			!(
-				member.userId === req.user.id &&
-				(member.role === "LEAD" || member.role === "COLEAD")
-			)
-		) {
+	if (!circle.lead)
+		throw new CustomError(
+			ReasonPhrases.INTERNAL_SERVER_ERROR,
+			StatusCodes.INTERNAL_SERVER_ERROR
+		);
+
+	if (addUser === "true" && removeUser === "true")
+		throw new CustomError(
+			"You cannot add and remove yourself from a circle at the same time.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (addUser === "true" || removeUser === "true") {
+		//* Makes sure the user making the request is not the circle lead trying to add or remove themselves from the circle member list.
+		if (req.user.id === circle.lead.id || req.user.id === circle.lead.id)
 			throw new CustomError(
-				ReasonPhrases.UNAUTHORIZED,
-				StatusCodes.UNAUTHORIZED
+				"You cannot add or remove a circle leader from the circle.",
+				StatusCodes.BAD_REQUEST
 			);
+
+		if (addUser) {
+			let memberExists = circle.members.some((member) => {
+				return member.id === req.user.id;
+			});
+			if (memberExists) {
+				throw new CustomError(
+					"User is already a member of this circle.",
+					StatusCodes.BAD_REQUEST
+				);
+			}
 		}
-	});
+
+		if (removeUser) {
+			let memberExists = circle.members.some((member) => {
+				return member.id === req.user.id;
+			});
+
+			if (!memberExists) {
+				throw new CustomError(
+					"User is not a member of this circle.",
+					StatusCodes.BAD_REQUEST
+				);
+			}
+		}
+	}
+
+	if (description && description.length <= minimumCircleDescriptionLength)
+		throw new CustomError(
+			`Description is too short, it must be at least ${minimumCircleDescriptionLength} characters`,
+			StatusCodes.BAD_REQUEST
+		);
+
+	// If a description has been given, it checks that the user trying to change the description is either the circle lead or circle co-lead, and if not it throws an error.
+	if (
+		description &&
+		!(
+			circle.lead.id === req.user.id ||
+			(circle.colead && circle.colead.id === req.user.id)
+		)
+	)
+		throw new CustomError(
+			"You do not have the permission to perform this action.",
+			StatusCodes.BAD_REQUEST
+		);
 
 	const Circle = await prisma.circle.update({
 		where: {
 			id,
 		},
 		data: {
-			description,
+			description: !description ? undefined : description,
+			members: {
+				connect: addUser === "true" ? [{ id: req.user.id }] : undefined,
+				disconnect:
+					removeUser === "true" ? [{ id: req.user.id }] : undefined,
+			},
 		},
 		select: {
 			id: true,
 			description: true,
 			num: true,
-			member: {
-				select: {
-					id: true,
-					role: true,
-					user: {
-						select: UserSelectMinimized,
-					},
+			members: {
+				select: UserSelectMinimized,
+				orderBy: {
+					first_name: "desc",
 				},
 			},
 			projects: {
@@ -261,7 +351,9 @@ export const editCircle = async (req: Req, res: Response) => {
 		},
 	});
 
-	res.status(StatusCodes.OK).json({ success: true, data: Circle });
+	responseObj.data = Circle;
+
+	res.status(StatusCodes.OK).json(responseObj);
 };
 
 export const deleteCircle = async (req: Req, res: Response) => {
@@ -271,7 +363,12 @@ export const deleteCircle = async (req: Req, res: Response) => {
 	const Circle = await prisma.circle.findUnique({
 		where: { id: circleId },
 		include: {
-			member: true,
+			members: {
+				select: UserSelectMinimized,
+				orderBy: {
+					first_name: "desc",
+				},
+			},
 		},
 	});
 
@@ -281,27 +378,25 @@ export const deleteCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	for (const member of Circle.member) {
-		if (member.userId === userId && member.role === "LEAD") {
-			// Delete circle members first, then delete the circle because you can't delete the circle without first deleting the circle members. foreignKey...
-			await prisma.member.deleteMany({
-				where: {
-					circleId: Circle.id,
-				},
-			});
+	// if (member.id === userId && member.role === "LEAD") {
+	// 	// Delete circle members first, then delete the circle because you can't delete the circle without first deleting the circle members. foreignKey...
+	// 	await prisma.members.deleteMany({
+	// 		where: {
+	// 			circleId: Circle.id,
+	// 		},
+	// 	});
 
-			await prisma.circle.delete({
-				where: {
-					id: Circle.id,
-				},
-			});
+	// 	await prisma.circle.delete({
+	// 		where: {
+	// 			id: Circle.id,
+	// 		},
+	// 	});
 
-			res.status(StatusCodes.OK).json({
-				success: true,
-				message: "Circle deleted successfully.",
-			});
-		}
-	}
+	// 	res.status(StatusCodes.OK).json({
+	// 		success: true,
+	// 		message: "Circle deleted successfully.",
+	// 	});
+	// }
 
 	throw new CustomError(
 		"You are not allowed to delete this circle.",

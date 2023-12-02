@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserSelectMinimized = exports.hash = exports.tokenGenerator = exports.verifyHash = void 0;
+exports.minimumCircleDescriptionLength = exports.UserSelectFull = exports.UserSelectMinimized = exports.hash = exports.tokenGenerator = exports.verifyHash = void 0;
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 const verifyHash = (hashedValue, unhashedValue) => __awaiter(void 0, void 0, void 0, function* () {
@@ -30,4 +30,18 @@ exports.UserSelectMinimized = {
     id: true,
     profile_picture: true,
     first_name: true,
+    projects: true,
+    ratings: true,
 };
+exports.UserSelectFull = {
+    email: true,
+    id: true,
+    profile_picture: true,
+    first_name: true,
+    projects: true,
+    ratings: true,
+    leadOf: true,
+    coleadOf: true,
+    memberOf: true,
+};
+exports.minimumCircleDescriptionLength = 80;

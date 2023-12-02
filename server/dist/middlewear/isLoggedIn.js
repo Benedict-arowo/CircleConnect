@@ -7,7 +7,6 @@ const CustomError_1 = __importDefault(require("./CustomError"));
 const status_codes_1 = require("http-status-codes/build/cjs/status-codes");
 const passport = require("passport");
 const isLoggedIn = (req, res, next) => {
-    console.log("isLoggedIn");
     // Check if the user is already authenticated via Google or GitHub
     if (req.user) {
         next();
@@ -18,7 +17,6 @@ const isLoggedIn = (req, res, next) => {
             console.log("jwt authentication attempt");
             if (err) {
                 // Handle errors, e.g., invalid token, expired token, etc.
-                console.error(err);
                 throw new CustomError_1.default("Authentication failed", status_codes_1.StatusCodes.UNAUTHORIZED);
             }
             if (!user) {
