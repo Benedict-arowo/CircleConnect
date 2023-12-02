@@ -1,28 +1,18 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import banner from "../assets/desola-lanre-ologun-IgUR1iX0mqM-unsplash.jpg";
 import Nav from "../Components/Nav";
 import UseFetch from "../Components/Fetch";
-import Circle from "../Components/Circle";
-import Project from "../Components/Project";
-
-type User = {
-	id: string;
-	first_name: string;
-};
+import Project from "../Components/project_component";
+import CirclesComponent from "../Components/circle_component";
 
 const Index = () => {
-	const [user, setUser] = useState<null | User>(null);
 	const [featuredCircle, setFeaturedCircle] = useState([]);
-	const [circles, setCircles] = useState([]);
 	const [search, setSearch] = useState("");
-
-	const count = useSelector((state) => state.user.count);
 
 	const fetchFeaturedCircles = async () => {
 		// TODO: Sort by their rating.
 		const { data, response } = await UseFetch({
-			url: "circle?limit=10&sortedBy=rating-desc",
+			url: "circle?limit=5&sortedBy=rating-desc",
 			options: {
 				method: "GET",
 				useServerUrl: true,
@@ -39,31 +29,12 @@ const Index = () => {
 		setFeaturedCircle(() => data.data);
 	};
 
-	const fetchCircle = async () => {
-		// TODO: Pagination
-		const { data, response } = await UseFetch({
-			url: "circle?sortedBy=num-asc",
-			options: {
-				method: "GET",
-				useServerUrl: true,
-				returnResponse: true,
-			},
-		});
-
-		if (!response.ok) {
-			console.log(response);
-		}
-
-		setCircles(() => data.data);
-	};
-
 	const searchHandler = () => {
 		if (!search) return;
 	};
 
 	useEffect(() => {
 		fetchFeaturedCircles();
-		fetchCircle();
 	}, []);
 
 	return (
@@ -83,8 +54,9 @@ const Index = () => {
 				<div className="top-0 left-0 right-0 bottom-0 absolute z-10 bg-opacity-70 bg-black">
 					{" "}
 				</div>
+				{/* HERO SECTION */}
 				<section className="absolute left-8 right-8 bottom-0 mb-28 z-10 flex flex-col items-center text-white">
-					<div className="md:w-[700px] border border-white flex flex-row gap-0 items-center px-2 rounded-sm">
+					<div className="w-full md:w-[700px] border border-white flex flex-row gap-0 items-center px-2 rounded-md">
 						<input
 							type="text"
 							name="q"
@@ -109,8 +81,8 @@ const Index = () => {
 							/>
 						</svg>
 					</div>
-					<div className="md:flex flex-row gap-6 hidden">
-						<div className="font-light flex flex-row flex-wrap gap-2">
+					<div className="flex flex-row gap-6">
+						<div className="font-light flex flex-row flex-wrap justify-center gap-2">
 							<span
 								className="cursor-pointer hover:underline"
 								onClick={() => setSearch("google clone")}>
@@ -137,7 +109,71 @@ const Index = () => {
 			</div>
 
 			<section className="flex flex-col gap-20">
-				<section className="px-16">
+				<section className="px-16 hidden">
+					<a
+						className="font-light mb-2 text-3xl text-gray-800 "
+						href="#search_results"
+						id="search_results">
+						Search Results
+					</a>
+
+					<div className="px-4 flex flex-col gap-3 my-4">
+						<h3 className="font-light text-3xl text-gray-700">
+							Projects
+						</h3>
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+						</section>
+					</div>
+					<div className="px-4 flex flex-col gap-3 my-4">
+						<h3 className="font-light text-3xl text-gray-700">
+							Users
+						</h3>
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+						</section>
+					</div>
+					<div className="px-4 flex flex-col gap-3 my-4">
+						<h3 className="font-light text-3xl text-gray-700">
+							Circles
+						</h3>
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+							<Project />
+						</section>
+					</div>
+				</section>
+
+				<section className="pl-4 md:pl-16">
 					<a
 						className="font-light mb-2 text-3xl text-gray-800 "
 						href="#recent_projects"
@@ -159,7 +195,7 @@ const Index = () => {
 					</section>
 				</section>
 
-				<section className="px-16">
+				<section className="pl-4 md:pl-16">
 					<a
 						className="font-light mb-2 text-3xl text-gray-800"
 						href="#featured_projects"
@@ -176,34 +212,20 @@ const Index = () => {
 					</section>
 				</section>
 
-				<section className="px-16">
+				<section className="px-4 md:px-16">
 					<a
 						className="font-light mb-2 text-3xl text-gray-800"
-						href="#featured_circles"
-						id="featured_circles">
-						Featured Circles
+						href="#circles"
+						id="circles">
+						Top Circles
 					</a>
-					<div className="flex flex-row gap-6 overflow-x-auto snap-x snap-proximity custom-scroll pt-2 pb-7 px-8">
-						{featuredCircle.length > 0 && (
-							<Circle circles={featuredCircle} />
+					<div className="flex flex-row gap-8 flex-wrap justify-center pt-2">
+						{featuredCircle && featuredCircle.length > 0 && (
+							<CirclesComponent circles={featuredCircle} />
 						)}
 					</div>
 				</section>
-
-				<section className="px-16">
-					<a
-						href="#circles"
-						id="circles"
-						className="font-light mb-2 text-3xl text-gray-800">
-						Circles
-					</a>
-					<div className="flex flex-row gap-8 flex-wrap justify-center pt-2">
-						<Circle circles={circles} />
-					</div>
-				</section>
 			</section>
-
-			{count}
 		</main>
 	);
 };

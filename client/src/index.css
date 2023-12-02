@@ -37,3 +37,7 @@ body {
 .nav_background {
     background: linear-gradient(90deg, #FDF5EB 0.45%, #BF9592 103.57%);
 }
+
+.auth_background {
+    background: linear-gradient(180deg, #F2F2F2 0%, #FEFFE4 90%, #EAEAEA 100%), #FFF;
+}
