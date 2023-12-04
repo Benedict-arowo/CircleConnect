@@ -16,7 +16,7 @@ export const getRatings = async (req: Req, res: Response) => {
 
 	const Ratings = await prisma.circleRating.findMany({
 		where: {
-			circleId: circleId != null ? circleId : undefined,
+			circleId: isNaN(Number(circleId)) ? undefined : Number(circleId),
 			userId: userId != null ? userId : undefined,
 		},
 		include: {
@@ -44,7 +44,7 @@ export const createRating = async (req: Req, res: Response) => {
 
 	const Circle = await prisma.circle.findUnique({
 		where: {
-			id: circleId,
+			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
 		},
 	});
 
@@ -66,7 +66,10 @@ export const createRating = async (req: Req, res: Response) => {
 		const Rating = await prisma.circleRating.create({
 			data: {
 				rating,
-				circleId,
+				// circleId: 1,
+				circleId: isNaN(Number(circleId))
+					? undefined
+					: Number(circleId),
 				userId: req.user.id,
 			},
 			select: {

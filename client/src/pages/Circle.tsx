@@ -13,10 +13,9 @@ import {
 	AlertDialogHeader,
 	AlertDialogContent,
 	AlertDialogOverlay,
-	AlertDialogCloseButton,
 } from "@chakra-ui/react";
+import { Avatar, AvatarBadge, AvatarGroup } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
-import { UserType } from "../types";
 
 const Circle = () => {
 	const { id } = useParams();
@@ -27,6 +26,13 @@ const Circle = () => {
 		isOwner: false,
 		isVisitor: true,
 	});
+	const [alertState, setAlertState] = useState({
+		header: "",
+		body: "",
+		doneFunc: () => {},
+		doneText: "",
+	});
+
 	const [isLoading, setIsLoading] = useState(true);
 	const [memberContentLoading, setMemberContentLoading] = useState(false);
 	const [err, setErr] = useState(null);
@@ -34,36 +40,21 @@ const Circle = () => {
 	const cancelRef = React.useRef();
 	const User = useSelector((state) => state.user);
 
-	const displayMembers = (members: UserType[]) => {
+	const displayMembers = (members: CircleMemberType[]) => {
 		return members.map((circleMember) => {
 			if (circleMember) {
-				console.log(circleMember);
 				const { profile_picture } = circleMember;
 				return (
 					<a
 						key={circleMember.id}
+						title={circleMember.first_name}
+						className="hover:outline-red-600 outline-none rounded-full outline transition-all duration-300"
 						href={`../user/${circleMember.id}`}>
-						<img
-							src={
-								profile_picture === null
-									? default_profile_picture
-									: profile_picture
-							}
-							alt=""
-							title={`${circleMember.first_name}`}
-							className={`w-[128px] h-[128px] rounded-full cursor-pointer hover:outline-gray-300 outline-none object-cover outline transition-all duration-300 
-							`}
-							// ${
-							// 	(circleMember.role ===
-							// 		"LEAD" &&
-							// 		"outline-pink-500") ||
-							// 	(circleMember.role ===
-							// 		"MEMBER" &&
-							// 		"outline-slate-500") ||
-							// 	(circleMember.role ===
-							// 		"COLEAD" &&
-							// 		"outline-green-500")
-							// }
+						<Avatar
+							size={"2xl"}
+							name={`${circleMember.first_name}`}
+							src={profile_picture}
+							className="w-[128px] h-[128px] rounded-full cursor-pointer  object-cover"
 						/>
 					</a>
 				);
@@ -90,14 +81,22 @@ const Circle = () => {
 			setErr(() => null);
 		}
 
-		const userInfo = data.data.members.find((member) => {
+		let userInfo = data.data.members.find((member: CircleMemberType) => {
 			if (User.isLoggedIn) {
 				return member.id === User.info.id;
 			} else return null;
 		});
 
-		console.log(userInfo);
+		// If the current user is not part of the user member list, we try to check if the user is the circle lead or the co-lead using tenary.
+		if (!userInfo)
+			userInfo =
+				data.data.lead.id === User.info.id
+					? data.data.lead
+					: data.data.colead.id === User.info.id
+					? data.data.colead
+					: undefined;
 
+		// If it couldn't find the user after checking the lead, and colead then it means the user doesn't exist on the circle.
 		if (!userInfo)
 			setState(() => {
 				return {
@@ -216,14 +215,26 @@ const Circle = () => {
 						<header className="flex flex-col gap-4">
 							<section className="flex flex-row justify-between items-center">
 								<h1 className="font-semibold text-3xl text-gray-800">
-									Circle #{circle.num}
+									Circle #{circle.id}
 								</h1>
 
 								{User.isLoggedIn && (
 									<div className="flex flex-row justify-end gap-3">
 										{state.isMember && !state.isOwner && (
 											<button
-												onClick={leaveCircle}
+												onClick={() => {
+													setAlertState(() => {
+														return {
+															body: "Are you sure you want to leave this circle? You can't undo this action afterwards.",
+															doneText:
+																"Leave Circle",
+															header: "Leave Circle",
+															doneFunc:
+																leaveCircle,
+														};
+													});
+													onOpen();
+												}}
 												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1">
 												LEAVE CIRCLE
 											</button>
@@ -244,20 +255,28 @@ const Circle = () => {
 							{User.isLoggedIn && (
 								<div
 									className={`flex flex-row ${
-										state.isOwner
+										state.isOwner || state.isMember
 											? "justify-between"
 											: "justify-end"
 									}`}>
-									{state.isOwner && (
-										<div className="flex flex-row gap-3">
-											<button className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1">
-												Settings
+									<div className="flex flex-row gap-3">
+										{state.isMember && (
+											<button className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+												Add Project
 											</button>
-											<button className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1">
-												Manage Members
-											</button>
-										</div>
-									)}
+										)}
+										{state.isOwner && (
+											<div className="flex flex-row gap-3">
+												<button className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+													Settings
+												</button>
+												<button className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+													Manage Members
+												</button>
+											</div>
+										)}
+									</div>
+
 									<div className="flex flex-row gap-4">
 										{/* REPORT ICON */}
 										<svg
@@ -282,7 +301,19 @@ const Circle = () => {
 												viewBox="0 0 24 24"
 												strokeWidth={1.5}
 												stroke="currentColor"
-												onClick={onOpen}
+												onClick={() => {
+													setAlertState(() => {
+														return {
+															body: "Are you sure you want to delete this circle? You can't undo this action afterwards.",
+															doneText:
+																"Delete Circle",
+															header: "Delete Circle",
+															doneFunc:
+																deleteCircle,
+														};
+													});
+													onOpen();
+												}}
 												className="w-6 h-6 cursor-pointer text-gray-800 hover:text-red-600 transition-all duration-300">
 												<path
 													strokeLinecap="round"
@@ -303,18 +334,29 @@ const Circle = () => {
 									id="members">
 									Members
 								</a>
-								{/* TODO: Add circle lead, and colead support */}
-								<span>({`${circle.members.length}`})</span>
+
+								<span>
+									(
+									{`${
+										circle.members.length +
+										(circle.lead ? 1 : 0) +
+										(circle.colead ? 1 : 0)
+									}`}
+									)
+								</span>
 							</div>
-							<section className="flex flex-row justify-center gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-[180px] py-4 px-12 ">
-								{memberContentLoading && <Spinner />}
-								{!memberContentLoading &&
-									displayMembers([
-										...circle.members,
+							{memberContentLoading && <Spinner />}
+							{!memberContentLoading && (
+								<AvatarGroup
+									max={5}
+									className="flex flex-row justify-center gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-[180px] py-4 px-12 ">
+									{displayMembers([
 										circle.lead,
 										circle.colead,
+										...circle.members,
 									])}
-							</section>
+								</AvatarGroup>
+							)}
 						</section>
 
 						<section className="mt-16">
@@ -358,34 +400,37 @@ const Circle = () => {
 				)}
 
 			{/* Delete Circle Alert Dialog */}
-			<AlertDialog
-				isOpen={isOpen}
-				leastDestructiveRef={cancelRef}
-				onClose={onClose}>
-				<AlertDialogOverlay>
-					<AlertDialogContent>
-						<AlertDialogHeader fontSize="lg" fontWeight="bold">
-							Delete Circle
-						</AlertDialogHeader>
+			{alertState.header && (
+				<AlertDialog
+					isOpen={isOpen}
+					leastDestructiveRef={cancelRef}
+					onClose={onClose}>
+					<AlertDialogOverlay>
+						<AlertDialogContent>
+							<AlertDialogHeader fontSize="lg" fontWeight="bold">
+								{alertState.header}
+							</AlertDialogHeader>
 
-						<AlertDialogBody>
-							Are you sure? You can't undo this action afterwards.
-						</AlertDialogBody>
+							<AlertDialogBody>{alertState.body}</AlertDialogBody>
 
-						<AlertDialogFooter>
-							<Button ref={cancelRef} onClick={onClose}>
-								Cancel
-							</Button>
-							<Button
-								colorScheme="red"
-								onClick={deleteCircle}
-								ml={3}>
-								Delete
-							</Button>
-						</AlertDialogFooter>
-					</AlertDialogContent>
-				</AlertDialogOverlay>
-			</AlertDialog>
+							<AlertDialogFooter>
+								<Button ref={cancelRef} onClick={onClose}>
+									Cancel
+								</Button>
+								<Button
+									colorScheme="red"
+									onClick={() => {
+										alertState.doneFunc();
+										onClose();
+									}}
+									ml={3}>
+									{alertState.doneText}
+								</Button>
+							</AlertDialogFooter>
+						</AlertDialogContent>
+					</AlertDialogOverlay>
+				</AlertDialog>
+			)}
 		</main>
 	);
 };

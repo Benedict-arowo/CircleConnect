@@ -30,7 +30,7 @@ const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const Circles = yield db_1.default.circle.findMany({
         where: {},
         orderBy: {
-            num: (sortedBy === null || sortedBy === void 0 ? void 0 : sortedBy.startsWith("num"))
+            id: (sortedBy === null || sortedBy === void 0 ? void 0 : sortedBy.startsWith("num"))
                 ? sortedBy === "num-asc"
                     ? "asc"
                     : "desc"
@@ -44,7 +44,6 @@ const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         select: {
             id: true,
             description: true,
-            num: true,
             visibility: true,
             averageUserRating: true,
             rating: true,
@@ -83,23 +82,13 @@ const getCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     if (!id)
         throw new CustomError_1.default("An ID must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    const Circle = yield db_1.default.circle.findFirst({
+    const Circle = yield db_1.default.circle.findUnique({
         where: {
-            OR: [
-                {
-                    id: id,
-                },
-                {
-                    num: {
-                        equals: isNaN(Number(id)) ? undefined : Number(id),
-                    },
-                },
-            ],
+            id: isNaN(Number(id)) ? undefined : Number(id),
         },
         select: {
             id: true,
             description: true,
-            num: true,
             members: {
                 select: utils_1.UserSelectFull,
                 orderBy: {
@@ -150,7 +139,7 @@ const createCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const Circle = yield db_1.default.circle.create({
             data: {
                 description: description,
-                num,
+                id: num,
                 lead: {
                     connect: {
                         id: req.user.id,
@@ -181,7 +170,9 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     if (!id)
         throw new CustomError_1.default("An ID must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     const circle = yield db_1.default.circle.findUnique({
-        where: { id },
+        where: {
+            id: isNaN(Number(id)) ? undefined : Number(id),
+        },
         select: {
             members: {
                 select: utils_1.UserSelectMinimized,
@@ -233,7 +224,7 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         throw new CustomError_1.default("You do not have the permission to perform this action.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     const Circle = yield db_1.default.circle.update({
         where: {
-            id,
+            id: isNaN(Number(id)) ? undefined : Number(id),
         },
         data: {
             description: !description ? undefined : description,
@@ -245,7 +236,6 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         select: {
             id: true,
             description: true,
-            num: true,
             members: {
                 select: utils_1.UserSelectMinimized,
                 orderBy: {
@@ -274,7 +264,9 @@ const deleteCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const { id: userId } = req.user;
     const { id: circleId } = req.params;
     const Circle = yield db_1.default.circle.findUnique({
-        where: { id: circleId },
+        where: {
+            id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+        },
         include: {
             members: {
                 select: utils_1.UserSelectMinimized,

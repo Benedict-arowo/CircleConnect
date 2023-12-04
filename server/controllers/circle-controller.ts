@@ -35,7 +35,7 @@ export const getCircles = async (req: Req, res: Response) => {
 	const Circles = await prisma.circle.findMany({
 		where: {},
 		orderBy: {
-			num: sortedBy?.startsWith("num")
+			id: sortedBy?.startsWith("num")
 				? sortedBy === "num-asc"
 					? "asc"
 					: "desc"
@@ -49,7 +49,6 @@ export const getCircles = async (req: Req, res: Response) => {
 		select: {
 			id: true,
 			description: true,
-			num: true,
 			visibility: true,
 			averageUserRating: true,
 			rating: true,
@@ -81,6 +80,7 @@ export const getCircles = async (req: Req, res: Response) => {
 		},
 		take: limit ? parseInt(limit) : undefined,
 	});
+
 	res.status(StatusCodes.OK).json({ status: true, data: Circles });
 };
 
@@ -93,23 +93,13 @@ export const getCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	const Circle = await prisma.circle.findFirst({
+	const Circle = await prisma.circle.findUnique({
 		where: {
-			OR: [
-				{
-					id: id,
-				},
-				{
-					num: {
-						equals: isNaN(Number(id)) ? undefined : Number(id),
-					},
-				},
-			],
+			id: isNaN(Number(id)) ? undefined : Number(id),
 		},
 		select: {
 			id: true,
 			description: true,
-			num: true,
 			members: {
 				select: UserSelectFull,
 				orderBy: {
@@ -179,7 +169,7 @@ export const createCircle = async (req: Req, res: Response) => {
 		const Circle = await prisma.circle.create({
 			data: {
 				description: description,
-				num,
+				id: num,
 				lead: {
 					connect: {
 						id: req.user.id,
@@ -229,7 +219,9 @@ export const editCircle = async (req: Req, res: Response) => {
 		);
 
 	const circle = await prisma.circle.findUnique({
-		where: { id },
+		where: {
+			id: isNaN(Number(id)) ? undefined : Number(id),
+		},
 		select: {
 			members: {
 				select: UserSelectMinimized,
@@ -316,7 +308,7 @@ export const editCircle = async (req: Req, res: Response) => {
 
 	const Circle = await prisma.circle.update({
 		where: {
-			id,
+			id: isNaN(Number(id)) ? undefined : Number(id),
 		},
 		data: {
 			description: !description ? undefined : description,
@@ -329,7 +321,6 @@ export const editCircle = async (req: Req, res: Response) => {
 		select: {
 			id: true,
 			description: true,
-			num: true,
 			members: {
 				select: UserSelectMinimized,
 				orderBy: {
@@ -361,7 +352,9 @@ export const deleteCircle = async (req: Req, res: Response) => {
 	const { id: circleId } = req.params;
 
 	const Circle = await prisma.circle.findUnique({
-		where: { id: circleId },
+		where: {
+			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+		},
 		include: {
 			members: {
 				select: UserSelectMinimized,

@@ -14,9 +14,10 @@ export type CircleRatingType = {
 };
 
 export type CircleType = {
-	id: string;
+	id: number;
 	description: string;
-	num: number;
+	lead: CircleMemberType;
+	colead: CircleMemberType;
 	visibility: "PUBLIC" | "PRIVATE";
 	averageUserRating: number;
 	rating: CircleRatingType[];

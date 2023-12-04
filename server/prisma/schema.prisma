@@ -19,11 +19,11 @@ model User {
   joined          DateTime       @updatedAt()
   last_login      DateTime?
   leadOf          Circle?        @relation(fields: [leadOfId], references: [id], name: "leader of")
-  leadOfId        String?        @unique
+  leadOfId        Int?        @unique
   coleadOf        Circle?        @relation(fields: [coleadOfId], references: [id], name: "coleader of")
-  coleadOfId      String?        @unique
+  coleadOfId      Int?        @unique
   memberOf        Circle?        @relation(fields: [memberOfId], references: [id], name: "member of")
-  memberOfId      String?
+  memberOfId      Int?
   projects        Project[]
   ratings         CircleRating[]
   createdAt       DateTime       @default(now())
@@ -46,7 +46,7 @@ model CircleRating {
   user     User   @relation(fields: [userId], references: [id])
   userId   String
   circle   Circle @relation(fields: [circleId], references: [id])
-  circleId String
+  circleId Int
 
   @@unique([userId, circleId])
 }
@@ -69,14 +69,14 @@ model Project {
   liveLink    String?
   createdBy   User     @relation(fields: [userId], references: [id])
   userId      String
-  circleId    String
+  circleId    Int
   circle      Circle   @relation(fields: [circleId], references: [id])
   createdAt   DateTime @default(now())
 }
 
 model Circle {
-  id                String           @id @unique @default(uuid())
-  num               Int              @unique
+  // id                String           @id @unique @default(uuid())
+  id               Int              @id @unique
   members           User[]           @relation(name: "member of")
   lead              User?            @relation(name: "leader of")
   colead            User?            @relation(name: "coleader of")

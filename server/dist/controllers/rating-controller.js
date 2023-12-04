@@ -23,7 +23,7 @@ const getRatings = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         throw new CustomError_1.default("Invalid limit, must be between 1 and 25", http_status_codes_1.StatusCodes.BAD_REQUEST);
     const Ratings = yield db_1.default.circleRating.findMany({
         where: {
-            circleId: circleId != null ? circleId : undefined,
+            circleId: isNaN(Number(circleId)) ? undefined : Number(circleId),
             userId: userId != null ? userId : undefined,
         },
         include: {
@@ -45,7 +45,7 @@ const createRating = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         throw new CustomError_1.default("circleId must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     const Circle = yield db_1.default.circle.findUnique({
         where: {
-            id: circleId,
+            id: isNaN(Number(circleId)) ? undefined : Number(circleId),
         },
     });
     if (!Circle)
@@ -58,7 +58,10 @@ const createRating = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const Rating = yield db_1.default.circleRating.create({
             data: {
                 rating,
-                circleId,
+                // circleId: 1,
+                circleId: isNaN(Number(circleId))
+                    ? undefined
+                    : Number(circleId),
                 userId: req.user.id,
             },
             select: {
