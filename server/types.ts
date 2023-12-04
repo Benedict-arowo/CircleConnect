@@ -29,8 +29,8 @@ export interface Req extends Request {
 		limit?: string;
 		circleId?: string;
 		userId?: string;
-		addUser?: string;
-		removeUser?: string;
+		acceptRequest?: string;
+		declineRequest?: string;
 	};
 	body: {
 		description?: string;

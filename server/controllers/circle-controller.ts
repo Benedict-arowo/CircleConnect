@@ -112,6 +112,16 @@ export const getCircle = async (req: Req, res: Response) => {
 			colead: {
 				select: UserSelectFull,
 			},
+			requests: {
+				select: {
+					id: true,
+					first_name: true,
+					last_name: true,
+					profile_picture: true,
+					projects: true,
+					email: true,
+				},
+			},
 			rating: true,
 			visibility: true,
 			averageUserRating: true,
@@ -187,7 +197,7 @@ export const createCircle = async (req: Req, res: Response) => {
 		res.status(StatusCodes.CREATED).json({ success: true, data: Circle });
 	} catch (error: any) {
 		// Check if the error is being thrown by prisma, and it's about the num field already existing.
-		if (error.code === "P2002" && error.meta?.target?.includes("num")) {
+		if (error.code === "P2002" && error.meta?.target?.includes("id")) {
 			throw new CustomError(
 				"A circle with this number already exists, try joining it.",
 				StatusCodes.BAD_REQUEST
@@ -206,9 +216,188 @@ type responseObj = {
 	data?: Object;
 };
 
+export const requestToJoinCircle = async (req: Req, res: Response) => {
+	const {
+		params: { id: circleId },
+		user: { id: userId },
+	} = req;
+
+	if (!circleId)
+		throw new CustomError(
+			"An ID must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	const circle = await prisma.circle.findUnique({
+		where: {
+			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+		},
+		select: {
+			members: {
+				select: UserSelectMinimized,
+				orderBy: {
+					first_name: "desc",
+				},
+			},
+			lead: {
+				select: UserSelectMinimized,
+			},
+			colead: {
+				select: UserSelectMinimized,
+			},
+			requests: {
+				select: UserSelectMinimized,
+			},
+		},
+	});
+
+	if (!circle)
+		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
+
+	if (!circle.lead)
+		throw new CustomError(
+			ReasonPhrases.INTERNAL_SERVER_ERROR,
+			StatusCodes.INTERNAL_SERVER_ERROR
+		);
+
+	if (userId === circle.lead.id || userId === circle.lead.id)
+		throw new CustomError(
+			"You're already a circle leader for this circle.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	let memberExists = circle.members.some((member) => {
+		return member.id === userId;
+	});
+
+	let alreadyInRequestList = circle.requests.some((member) => {
+		return member.id === userId;
+	});
+
+	if (memberExists) {
+		throw new CustomError(
+			"You're already a member of this circle.",
+			StatusCodes.BAD_REQUEST
+		);
+	}
+
+	if (alreadyInRequestList) {
+		throw new CustomError(
+			"You're already in the request list of this circle.",
+			StatusCodes.BAD_REQUEST
+		);
+	}
+
+	const updatedCircle = await prisma.circle.update({
+		where: { id: Number(circleId) },
+		data: {
+			requests: {
+				connect: [{ id: userId }],
+			},
+		},
+		include: {
+			requests: {
+				select: UserSelectMinimized,
+			},
+		},
+	});
+
+	res.status(StatusCodes.OK).json({ success: true, data: updatedCircle });
+};
+
+export const removeCircleRequest = async (req: Req, res: Response) => {
+	const {
+		params: { id: circleId },
+		user: { id: userId },
+	} = req;
+
+	if (!circleId)
+		throw new CustomError(
+			"An ID must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	const circle = await prisma.circle.findUnique({
+		where: {
+			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+		},
+		select: {
+			members: {
+				select: UserSelectMinimized,
+				orderBy: {
+					first_name: "desc",
+				},
+			},
+			lead: {
+				select: UserSelectMinimized,
+			},
+			colead: {
+				select: UserSelectMinimized,
+			},
+			requests: {
+				select: UserSelectMinimized,
+			},
+		},
+	});
+
+	if (!circle)
+		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
+
+	if (!circle.lead)
+		throw new CustomError(
+			ReasonPhrases.INTERNAL_SERVER_ERROR,
+			StatusCodes.INTERNAL_SERVER_ERROR
+		);
+
+	// TODO: co-leader support
+	if (req.user.id === circle.lead.id || req.user.id === circle.lead.id)
+		throw new CustomError(
+			"You may not leave this circle since you're the leader. Try deleting it instead.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	let memberExists = circle.members.some((member) => {
+		return member.id === req.user.id;
+	});
+
+	let inCircleRequestList = circle.requests.some((member) => {
+		return member.id === req.user.id;
+	});
+
+	if (memberExists) {
+		throw new CustomError(
+			"You're already a member of this circle.",
+			StatusCodes.BAD_REQUEST
+		);
+	}
+
+	if (!inCircleRequestList) {
+		throw new CustomError(
+			"User is not in circle request list.",
+			StatusCodes.BAD_REQUEST
+		);
+	}
+
+	const updatedCircle = await prisma.circle.update({
+		where: { id: Number(circleId) },
+		data: {
+			requests: {
+				disconnect: [{ id: req.user.id }],
+			},
+		},
+		include: {
+			requests: {
+				select: UserSelectMinimized,
+			},
+		},
+	});
+
+	res.status(StatusCodes.OK).json({ success: true, data: updatedCircle });
+};
+
 export const editCircle = async (req: Req, res: Response) => {
 	const { id } = req.params;
-	const { addUser, removeUser } = req.query;
+	const { acceptRequest, declineRequest, leaveCircle } = req.query;
 	const { description } = req.body;
 	const responseObj: responseObj = { success: true };
 
@@ -235,6 +424,9 @@ export const editCircle = async (req: Req, res: Response) => {
 			colead: {
 				select: UserSelectMinimized,
 			},
+			requests: {
+				select: UserSelectMinimized,
+			},
 		},
 	});
 
@@ -247,44 +439,54 @@ export const editCircle = async (req: Req, res: Response) => {
 			StatusCodes.INTERNAL_SERVER_ERROR
 		);
 
-	if (addUser === "true" && removeUser === "true")
-		throw new CustomError(
-			"You cannot add and remove yourself from a circle at the same time.",
-			StatusCodes.BAD_REQUEST
-		);
-
-	if (addUser === "true" || removeUser === "true") {
-		//* Makes sure the user making the request is not the circle lead trying to add or remove themselves from the circle member list.
-		if (req.user.id === circle.lead.id || req.user.id === circle.lead.id)
+	if (acceptRequest || declineRequest) {
+		// UserID
+		// Make sure the user is authenticated, and is either the circle lead or co-lead.
+		// Check if the user exists in the circle request
+		// If exists, add them to circle member, and remove them from request list.
+		if (
+			!(
+				req.user.id === circle.lead.id ||
+				(circle.colead && req.user.id === circle.colead.id)
+			)
+		)
 			throw new CustomError(
-				"You cannot add or remove a circle leader from the circle.",
+				"You must be the circle lead or co-lead to perform this operation.",
 				StatusCodes.BAD_REQUEST
 			);
 
-		if (addUser) {
-			let memberExists = circle.members.some((member) => {
-				return member.id === req.user.id;
-			});
-			if (memberExists) {
-				throw new CustomError(
-					"User is already a member of this circle.",
-					StatusCodes.BAD_REQUEST
-				);
-			}
-		}
+		const userExistsInCircleRequest = circle.requests.some(
+			(member) =>
+				member.id === acceptRequest || member.id === declineRequest
+		);
+		if (!userExistsInCircleRequest)
+			throw new CustomError(
+				"User has not requested to join the circle.",
+				StatusCodes.BAD_REQUEST
+			);
+	}
 
-		if (removeUser) {
-			let memberExists = circle.members.some((member) => {
-				return member.id === req.user.id;
-			});
+	if (leaveCircle === "true") {
+		// Make sure it's not the circle lead or the circle co-lead.
+		// TODO: Support for circle co-lead
+		if (
+			req.user.id === circle.lead.id ||
+			(circle.colead && req.user.id === circle.colead.id)
+		)
+			throw new CustomError(
+				"You may not leave this circle.",
+				StatusCodes.BAD_REQUEST
+			);
 
-			if (!memberExists) {
-				throw new CustomError(
-					"User is not a member of this circle.",
-					StatusCodes.BAD_REQUEST
-				);
-			}
-		}
+		const memberExists = circle.members.some(
+			(member) => member.id === req.user.id
+		);
+
+		if (!memberExists)
+			throw new CustomError(
+				"You are not a member of this circle.",
+				StatusCodes.BAD_REQUEST
+			);
 	}
 
 	if (description && description.length <= minimumCircleDescriptionLength)
@@ -306,6 +508,15 @@ export const editCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
+	let disconnectClause = () => {
+		let disconnectList = [];
+		if (leaveCircle === "true") disconnectList.push({ id: req.user.id });
+		if (declineRequest) disconnectList.push({ id: declineRequest });
+
+		console.log(disconnectList);
+		return disconnectList;
+	};
+
 	const Circle = await prisma.circle.update({
 		where: {
 			id: isNaN(Number(id)) ? undefined : Number(id),
@@ -313,9 +524,17 @@ export const editCircle = async (req: Req, res: Response) => {
 		data: {
 			description: !description ? undefined : description,
 			members: {
-				connect: addUser === "true" ? [{ id: req.user.id }] : undefined,
+				connect: acceptRequest ? [{ id: acceptRequest }] : undefined,
 				disconnect:
-					removeUser === "true" ? [{ id: req.user.id }] : undefined,
+					leaveCircle || declineRequest
+						? disconnectClause()
+						: undefined,
+			},
+			requests: {
+				disconnect:
+					acceptRequest || declineRequest
+						? [{ id: acceptRequest }]
+						: undefined,
 			},
 		},
 		select: {

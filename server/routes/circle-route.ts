@@ -4,6 +4,8 @@ import {
 	editCircle,
 	getCircle,
 	getCircles,
+	removeCircleRequest,
+	requestToJoinCircle,
 } from "../controllers/circle-controller";
 import isLoggedIn from "../middlewear/isLoggedIn";
 import wrapper from "../middlewear/wrapper";
@@ -21,5 +23,12 @@ circleRouter
 	.get(wrapper(getCircle))
 	.patch(isLoggedIn, wrapper(editCircle))
 	.delete(isLoggedIn, wrapper(deleteCircle));
+
+circleRouter
+	.route("/request/join/:id")
+	.post(isLoggedIn, wrapper(requestToJoinCircle));
+circleRouter
+	.route("/request/leave/:id")
+	.post(isLoggedIn, wrapper(removeCircleRequest));
 
 export default circleRouter;

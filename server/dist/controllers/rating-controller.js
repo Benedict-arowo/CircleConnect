@@ -17,6 +17,7 @@ const http_status_codes_1 = require("http-status-codes");
 const db_1 = __importDefault(require("../model/db"));
 const CustomError_1 = __importDefault(require("../middlewear/CustomError"));
 const utils_1 = require("../utils");
+// TODO: Have rating be calculated by the amount of ratings the circle projects have.
 const getRatings = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { circleId, userId, limit = "10" } = req.query;
     if (Number(limit) > 25 || Number(limit) < 1)

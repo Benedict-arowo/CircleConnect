@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCircle = exports.editCircle = exports.createCircle = exports.getCircle = exports.getCircles = void 0;
+exports.deleteCircle = exports.editCircle = exports.removeCircleRequest = exports.requestToJoinCircle = exports.createCircle = exports.getCircle = exports.getCircles = void 0;
 const db_1 = __importDefault(require("../model/db"));
 const utils_1 = require("../utils");
 const http_status_codes_1 = require("http-status-codes");
@@ -101,6 +101,16 @@ const getCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             colead: {
                 select: utils_1.UserSelectFull,
             },
+            requests: {
+                select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                    profile_picture: true,
+                    projects: true,
+                    email: true,
+                },
+            },
             rating: true,
             visibility: true,
             averageUserRating: true,
@@ -153,7 +163,7 @@ const createCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
     catch (error) {
         // Check if the error is being thrown by prisma, and it's about the num field already existing.
-        if (error.code === "P2002" && ((_b = (_a = error.meta) === null || _a === void 0 ? void 0 : _a.target) === null || _b === void 0 ? void 0 : _b.includes("num"))) {
+        if (error.code === "P2002" && ((_b = (_a = error.meta) === null || _a === void 0 ? void 0 : _a.target) === null || _b === void 0 ? void 0 : _b.includes("id"))) {
             throw new CustomError_1.default("A circle with this number already exists, try joining it.", http_status_codes_1.StatusCodes.BAD_REQUEST);
         }
         else {
@@ -162,9 +172,130 @@ const createCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.createCircle = createCircle;
+const requestToJoinCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { params: { id: circleId }, user: { id: userId }, } = req;
+    if (!circleId)
+        throw new CustomError_1.default("An ID must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    const circle = yield db_1.default.circle.findUnique({
+        where: {
+            id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+        },
+        select: {
+            members: {
+                select: utils_1.UserSelectMinimized,
+                orderBy: {
+                    first_name: "desc",
+                },
+            },
+            lead: {
+                select: utils_1.UserSelectMinimized,
+            },
+            colead: {
+                select: utils_1.UserSelectMinimized,
+            },
+            requests: {
+                select: utils_1.UserSelectMinimized,
+            },
+        },
+    });
+    if (!circle)
+        throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (!circle.lead)
+        throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.INTERNAL_SERVER_ERROR, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
+    if (userId === circle.lead.id || userId === circle.lead.id)
+        throw new CustomError_1.default("You're already a circle leader for this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    let memberExists = circle.members.some((member) => {
+        return member.id === userId;
+    });
+    let alreadyInRequestList = circle.requests.some((member) => {
+        return member.id === userId;
+    });
+    if (memberExists) {
+        throw new CustomError_1.default("You're already a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
+    if (alreadyInRequestList) {
+        throw new CustomError_1.default("You're already in the request list of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
+    const updatedCircle = yield db_1.default.circle.update({
+        where: { id: Number(circleId) },
+        data: {
+            requests: {
+                connect: [{ id: userId }],
+            },
+        },
+        include: {
+            requests: {
+                select: utils_1.UserSelectMinimized,
+            },
+        },
+    });
+    res.status(http_status_codes_1.StatusCodes.OK).json({ success: true, data: updatedCircle });
+});
+exports.requestToJoinCircle = requestToJoinCircle;
+const removeCircleRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { params: { id: circleId }, user: { id: userId }, } = req;
+    if (!circleId)
+        throw new CustomError_1.default("An ID must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    const circle = yield db_1.default.circle.findUnique({
+        where: {
+            id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+        },
+        select: {
+            members: {
+                select: utils_1.UserSelectMinimized,
+                orderBy: {
+                    first_name: "desc",
+                },
+            },
+            lead: {
+                select: utils_1.UserSelectMinimized,
+            },
+            colead: {
+                select: utils_1.UserSelectMinimized,
+            },
+            requests: {
+                select: utils_1.UserSelectMinimized,
+            },
+        },
+    });
+    if (!circle)
+        throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (!circle.lead)
+        throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.INTERNAL_SERVER_ERROR, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
+    // TODO: co-leader support
+    if (req.user.id === circle.lead.id || req.user.id === circle.lead.id)
+        throw new CustomError_1.default("You may not leave this circle since you're the leader. Try deleting it instead.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    let memberExists = circle.members.some((member) => {
+        return member.id === req.user.id;
+    });
+    let inCircleRequestList = circle.requests.some((member) => {
+        return member.id === req.user.id;
+    });
+    if (memberExists) {
+        throw new CustomError_1.default("You're already a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
+    if (!inCircleRequestList) {
+        throw new CustomError_1.default("User is not in circle request list.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
+    const updatedCircle = yield db_1.default.circle.update({
+        where: { id: Number(circleId) },
+        data: {
+            requests: {
+                disconnect: [{ id: req.user.id }],
+            },
+        },
+        include: {
+            requests: {
+                select: utils_1.UserSelectMinimized,
+            },
+        },
+    });
+    res.status(http_status_codes_1.StatusCodes.OK).json({ success: true, data: updatedCircle });
+});
+exports.removeCircleRequest = removeCircleRequest;
 const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const { addUser, removeUser } = req.query;
+    const { acceptRequest, declineRequest, leaveCircle } = req.query;
     const { description } = req.body;
     const responseObj = { success: true };
     if (!id)
@@ -186,34 +317,36 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             colead: {
                 select: utils_1.UserSelectMinimized,
             },
+            requests: {
+                select: utils_1.UserSelectMinimized,
+            },
         },
     });
     if (!circle)
         throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     if (!circle.lead)
         throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.INTERNAL_SERVER_ERROR, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
-    if (addUser === "true" && removeUser === "true")
-        throw new CustomError_1.default("You cannot add and remove yourself from a circle at the same time.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    if (addUser === "true" || removeUser === "true") {
-        //* Makes sure the user making the request is not the circle lead trying to add or remove themselves from the circle member list.
-        if (req.user.id === circle.lead.id || req.user.id === circle.lead.id)
-            throw new CustomError_1.default("You cannot add or remove a circle leader from the circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-        if (addUser) {
-            let memberExists = circle.members.some((member) => {
-                return member.id === req.user.id;
-            });
-            if (memberExists) {
-                throw new CustomError_1.default("User is already a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-            }
-        }
-        if (removeUser) {
-            let memberExists = circle.members.some((member) => {
-                return member.id === req.user.id;
-            });
-            if (!memberExists) {
-                throw new CustomError_1.default("User is not a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-            }
-        }
+    if (acceptRequest || declineRequest) {
+        // UserID
+        // Make sure the user is authenticated, and is either the circle lead or co-lead.
+        // Check if the user exists in the circle request
+        // If exists, add them to circle member, and remove them from request list.
+        if (!(req.user.id === circle.lead.id ||
+            (circle.colead && req.user.id === circle.colead.id)))
+            throw new CustomError_1.default("You must be the circle lead or co-lead to perform this operation.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        const userExistsInCircleRequest = circle.requests.some((member) => member.id === acceptRequest || member.id === declineRequest);
+        if (!userExistsInCircleRequest)
+            throw new CustomError_1.default("User has not requested to join the circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
+    if (leaveCircle === "true") {
+        // Make sure it's not the circle lead or the circle co-lead.
+        // TODO: Support for circle co-lead
+        if (req.user.id === circle.lead.id ||
+            (circle.colead && req.user.id === circle.colead.id))
+            throw new CustomError_1.default("You may not leave this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        const memberExists = circle.members.some((member) => member.id === req.user.id);
+        if (!memberExists)
+            throw new CustomError_1.default("You are not a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     }
     if (description && description.length <= utils_1.minimumCircleDescriptionLength)
         throw new CustomError_1.default(`Description is too short, it must be at least ${utils_1.minimumCircleDescriptionLength} characters`, http_status_codes_1.StatusCodes.BAD_REQUEST);
@@ -222,6 +355,15 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         !(circle.lead.id === req.user.id ||
             (circle.colead && circle.colead.id === req.user.id)))
         throw new CustomError_1.default("You do not have the permission to perform this action.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    let disconnectClause = () => {
+        let disconnectList = [];
+        if (leaveCircle === "true")
+            disconnectList.push({ id: req.user.id });
+        if (declineRequest)
+            disconnectList.push({ id: declineRequest });
+        console.log(disconnectList);
+        return disconnectList;
+    };
     const Circle = yield db_1.default.circle.update({
         where: {
             id: isNaN(Number(id)) ? undefined : Number(id),
@@ -229,8 +371,15 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         data: {
             description: !description ? undefined : description,
             members: {
-                connect: addUser === "true" ? [{ id: req.user.id }] : undefined,
-                disconnect: removeUser === "true" ? [{ id: req.user.id }] : undefined,
+                connect: acceptRequest ? [{ id: acceptRequest }] : undefined,
+                disconnect: leaveCircle || declineRequest
+                    ? disconnectClause()
+                    : undefined,
+            },
+            requests: {
+                disconnect: acceptRequest || declineRequest
+                    ? [{ id: acceptRequest }]
+                    : undefined,
             },
         },
         select: {

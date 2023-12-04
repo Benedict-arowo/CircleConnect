@@ -5,6 +5,8 @@ import prisma from "../model/db";
 import CustomError from "../middlewear/CustomError";
 import { UserSelectMinimized } from "../utils";
 
+// TODO: Have rating be calculated by the amount of ratings the circle projects have.
+
 export const getRatings = async (req: Req, res: Response) => {
 	const { circleId, userId, limit = "10" } = req.query;
 

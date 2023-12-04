@@ -22,6 +22,8 @@ model User {
   leadOfId        Int?        @unique
   coleadOf        Circle?        @relation(fields: [coleadOfId], references: [id], name: "coleader of")
   coleadOfId      Int?        @unique
+  pendingRequest          Circle?        @relation(fields: [pendingRequestId], references: [id], name: "Pending circle requests")
+  pendingRequestId        Int?        @unique
   memberOf        Circle?        @relation(fields: [memberOfId], references: [id], name: "member of")
   memberOfId      Int?
   projects        Project[]
@@ -84,6 +86,7 @@ model Circle {
   description       String           @db.VarChar(300)
   averageUserRating Float            @default(0.0)
   rating            CircleRating[]
+  requests User[] @relation(name: "Pending circle requests")
   visibility        circleVisibility @default(PUBLIC)
 
   createdAt DateTime @default(now())

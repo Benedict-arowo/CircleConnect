@@ -17,4 +17,10 @@ circleRouter
     .get((0, wrapper_1.default)(circle_controller_1.getCircle))
     .patch(isLoggedIn_1.default, (0, wrapper_1.default)(circle_controller_1.editCircle))
     .delete(isLoggedIn_1.default, (0, wrapper_1.default)(circle_controller_1.deleteCircle));
+circleRouter
+    .route("/request/join/:id")
+    .post(isLoggedIn_1.default, (0, wrapper_1.default)(circle_controller_1.requestToJoinCircle));
+circleRouter
+    .route("/request/leave/:id")
+    .post(isLoggedIn_1.default, (0, wrapper_1.default)(circle_controller_1.removeCircleRequest));
 exports.default = circleRouter;
