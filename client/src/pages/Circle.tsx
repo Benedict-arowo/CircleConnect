@@ -13,7 +13,15 @@ import {
 	AlertDialogHeader,
 	AlertDialogContent,
 	AlertDialogOverlay,
+	Drawer,
+	DrawerBody,
+	DrawerFooter,
+	DrawerHeader,
+	DrawerOverlay,
+	DrawerContent,
+	DrawerCloseButton,
 } from "@chakra-ui/react";
+
 import { Avatar, AvatarBadge, AvatarGroup } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 
@@ -24,7 +32,9 @@ const Circle = () => {
 	const [state, setState] = useState({
 		isMember: false,
 		isOwner: false,
+		isColead: false,
 		isVisitor: true,
+		isRequesting: false,
 	});
 	const [alertState, setAlertState] = useState({
 		header: "",
@@ -37,6 +47,12 @@ const Circle = () => {
 	const [memberContentLoading, setMemberContentLoading] = useState(false);
 	const [err, setErr] = useState(null);
 	const { isOpen, onOpen, onClose } = useDisclosure();
+	const {
+		isOpen: drawerIsOpen,
+		onOpen: drawerOnOpen,
+		onClose: drawerOnClose,
+	} = useDisclosure();
+	const [placement, setPlacement] = React.useState("right");
 	const cancelRef = React.useRef();
 	const User = useSelector((state) => state.user);
 
@@ -61,6 +77,115 @@ const Circle = () => {
 			}
 		});
 	};
+
+	const ListMembers = () => {
+		if (!circle) {
+			return <></>;
+		}
+
+		return circle.members.map((member) => {
+			return (
+				<div className="flex flex-row justify-between">
+					<h6>{member.first_name}</h6>
+
+					<div>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							strokeWidth={1.5}
+							stroke="currentColor"
+							onClick={() => removeUser(circle.id, member.id)}
+							className="w-6 h-6">
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
+						</svg>
+					</div>
+				</div>
+			);
+		});
+	};
+
+	const acceptRequest = async (circleId: number, userid: string) => {
+		const response = await UseFetch({
+			url: `circle/${circleId}?acceptRequest=${userid}`,
+			options: {
+				method: "PATCH",
+				useServerUrl: true,
+			},
+		});
+		fetchCircle();
+		console.log(response);
+	};
+
+	const declineRequest = async (circleId: number, userId: string) => {
+		const response = await UseFetch({
+			url: `circle/${circleId}?declineRequest=${userId}`,
+			options: {
+				method: "PATCH",
+				useServerUrl: true,
+			},
+		});
+		fetchCircle();
+		console.log(response);
+	};
+
+	const removeUser = async (circleId: number, userId: string) => {
+		const response = await UseFetch({
+			url: `circle/${circleId}?removeUser=${userId}`,
+			options: {
+				method: "PATCH",
+				useServerUrl: true,
+			},
+		});
+		fetchCircle();
+		console.log(response);
+	};
+
+	const ListRequests = () => {
+		if (!circle) return <></>;
+		return circle.requests.map((member) => {
+			return (
+				<div className="flex justify-between gap-2">
+					<h6>{member.first_name}</h6>
+					<div className="flex flex-row gap-2">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							strokeWidth={1.5}
+							stroke="currentColor"
+							onClick={() => acceptRequest(circle.id, member.id)}
+							className="w-6 h-6 cursor-pointer">
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
+						</svg>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							strokeWidth={1.5}
+							stroke="currentColor"
+							onClick={() => declineRequest(circle.id, member.id)}
+							className="w-6 h-6 cursor-pointer">
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
+						</svg>
+					</div>
+				</div>
+			);
+		});
+	};
+
 	const fetchCircle = async () => {
 		const { data, response } = await UseFetch({
 			url: `circle/${id}`,
@@ -76,54 +201,127 @@ const Circle = () => {
 		if (!response.ok) {
 			setErr(() => data.message);
 		} else {
-			console.log(data.data);
+			// console.log(data.data);
 			setCircle(() => data.data);
 			setErr(() => null);
 		}
 
-		let userInfo = data.data.members.find((member: CircleMemberType) => {
-			if (User.isLoggedIn) {
-				return member.id === User.info.id;
-			} else return null;
-		});
-
-		// If the current user is not part of the user member list, we try to check if the user is the circle lead or the co-lead using tenary.
-		if (!userInfo)
-			userInfo =
-				data.data.lead.id === User.info.id
-					? data.data.lead
-					: data.data.colead.id === User.info.id
-					? data.data.colead
-					: undefined;
-
-		// If it couldn't find the user after checking the lead, and colead then it means the user doesn't exist on the circle.
-		if (!userInfo)
-			setState(() => {
-				return {
-					isMember: false,
-					isOwner: false,
-					isVisitor: true,
-				};
-			});
-		else if (userInfo.leadOf && userInfo.leadOf.id === data.data.id)
+		// If user is a visitor
+		// If user is lead
+		// If user is colead
+		// If user is requesting to join
+		// If user is a member
+		if (data.data.lead.id === User.info.id) {
+			console.log(5);
 			setState(() => {
 				return {
 					isMember: true,
 					isOwner: true,
+					isColead: false,
+					isRequesting: false,
 					isVisitor: false,
 				};
 			});
-		else if (
-			(userInfo.memberOf && userInfo.memberOf.id === data.data.id) ||
-			(userInfo.coleadOf && userInfo.coleadOf === data.data.id)
-		)
+		} else if (data.data.colead && data.data.colead.id === User.info.id) {
+			console.log(4);
 			setState(() => {
 				return {
 					isMember: true,
 					isOwner: false,
+					isColead: true,
+					isRequesting: false,
 					isVisitor: false,
 				};
 			});
+		} else if (
+			data.data.members.some(
+				(members: CircleMemberType) => members.id === User.info.id
+			)
+		) {
+			console.log(3);
+			setState(() => {
+				return {
+					isMember: true,
+					isOwner: false,
+					isColead: false,
+					isRequesting: false,
+					isVisitor: false,
+				};
+			});
+		} else if (
+			data.data.requests.some(
+				(members: CircleMemberType) => members.id === User.info.id
+			)
+		) {
+			console.log(2);
+			setState(() => {
+				return {
+					isMember: false,
+					isOwner: false,
+					isColead: false,
+					isRequesting: true,
+					isVisitor: false,
+				};
+			});
+		} else {
+			let s = data.data.members.some(
+				(members: CircleMemberType) => members.id === User.info.id
+			);
+			console.log(s);
+			setState(() => {
+				return {
+					isMember: false,
+					isOwner: false,
+					isColead: false,
+					isRequesting: false,
+					isVisitor: true,
+				};
+			});
+		}
+
+		// let userInfo = data.data.members.find((member: CircleMemberType) => {
+		// 	if (User.isLoggedIn) {
+		// 		return member.id === User.info.id;
+		// 	} else return null;
+		// });
+
+		// // If the current user is not part of the user member list, we try to check if the user is the circle lead or the co-lead using tenary.
+		// if (!userInfo)
+		// 	userInfo =
+		// 		data.data.lead.id === User.info.id
+		// 			? data.data.lead
+		// 			: data.data.colead.id === User.info.id
+		// 			? data.data.colead
+		// 			: undefined;
+
+		// // If it couldn't find the user after checking the lead, and colead then it means the user doesn't exist on the circle.
+		// if (!userInfo)
+		// 	setState(() => {
+		// 		return {
+		// 			isMember: false,
+		// 			isOwner: false,
+		// 			isVisitor: true,
+		// 		};
+		// 	});
+		// else if (userInfo.leadOf && userInfo.leadOf.id === data.data.id)
+		// 	setState(() => {
+		// 		return {
+		// 			isMember: true,
+		// 			isOwner: true,
+		// 			isVisitor: false,
+		// 		};
+		// 	});
+		// else if (
+		// 	(userInfo.memberOf && userInfo.memberOf.id === data.data.id) ||
+		// 	(userInfo.coleadOf && userInfo.coleadOf === data.data.id)
+		// )
+		// 	setState(() => {
+		// 		return {
+		// 			isMember: true,
+		// 			isOwner: false,
+		// 			isVisitor: false,
+		// 		};
+		// 	});
 	};
 
 	const joinCircle = async () => {
@@ -133,9 +331,9 @@ const Circle = () => {
 		if (!circle) throw new Error("Circle not found.");
 
 		const { data, response } = await UseFetch({
-			url: `circle/${circle.id}?addUser=true`,
+			url: `circle/request/join/${circle.id}`,
 			options: {
-				method: "PATCH",
+				method: "POST",
 				returnResponse: true,
 				useServerUrl: true,
 				handleError: false,
@@ -146,13 +344,39 @@ const Circle = () => {
 		if (!response.ok) {
 			setErr(() => data.message);
 		} else {
-			setCircle(() => data.data);
+			// setCircle(() => data.data);
 			setErr(() => null);
 		}
 		fetchCircle();
 		setMemberContentLoading(() => false);
 	};
 
+	const canceljoinCircle = async () => {
+		setMemberContentLoading(() => true);
+
+		// TODO: Properly handle this error.
+		if (!circle) throw new Error("Circle not found.");
+
+		const { data, response } = await UseFetch({
+			url: `circle/request/leave/${circle.id}`,
+			options: {
+				method: "POST",
+				returnResponse: true,
+				useServerUrl: true,
+				handleError: false,
+			},
+		});
+
+		// TODO: Better error handling
+		if (!response.ok) {
+			setErr(() => data.message);
+		} else {
+			// setCircle(() => data.data);
+			setErr(() => null);
+		}
+		fetchCircle();
+		setMemberContentLoading(() => false);
+	};
 	const leaveCircle = async () => {
 		setMemberContentLoading(() => true);
 
@@ -160,7 +384,7 @@ const Circle = () => {
 		if (!circle) throw new Error("Circle not found.");
 
 		const { data, response } = await UseFetch({
-			url: `circle/${circle.id}?removeUser=true`,
+			url: `circle/${circle.id}?leaveCircle=true`,
 			options: {
 				method: "PATCH",
 				returnResponse: true,
@@ -201,7 +425,7 @@ const Circle = () => {
 		setIsLoading(() => false);
 	}, [id]);
 
-	console.log(circle);
+	// console.log(circle);
 	return (
 		<main>
 			<Nav className="mb-8" useBackground={false} />
@@ -239,11 +463,19 @@ const Circle = () => {
 												LEAVE CIRCLE
 											</button>
 										)}
-										{!state.isMember && (
+										{!state.isMember &&
+											!state.isRequesting && (
+												<button
+													onClick={joinCircle}
+													className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1">
+													REQUEST TO JOIN
+												</button>
+											)}
+										{state.isRequesting && (
 											<button
-												onClick={joinCircle}
+												onClick={canceljoinCircle}
 												className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1">
-												JOIN CIRCLE
+												CANCEL JOIN REQUEST
 											</button>
 										)}
 									</div>
@@ -270,7 +502,9 @@ const Circle = () => {
 												<button className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
 													Settings
 												</button>
-												<button className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+												<button
+													onClick={drawerOnOpen}
+													className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
 													Manage Members
 												</button>
 											</div>
@@ -399,7 +633,66 @@ const Circle = () => {
 					</div>
 				)}
 
-			{/* Delete Circle Alert Dialog */}
+			<Drawer
+				placement={placement}
+				onClose={drawerOnClose}
+				size={"md"}
+				isOpen={drawerIsOpen}>
+				<DrawerOverlay />
+				<DrawerContent>
+					<DrawerHeader borderBottomWidth="1px">
+						<div className="flex flex-row gap-4 justify-between">
+							<h4>Manage Members</h4>
+							<div className="relative">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									strokeWidth={1.5}
+									stroke="currentColor"
+									className="w-8 h-8">
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+									/>
+								</svg>
+								<div className="bg-red-500 text-white rounded-full text-xs text-center absolute -bottom-1 -right-1 w-fit px-2 py-1">
+									<p>1</p>
+								</div>
+							</div>
+						</div>
+					</DrawerHeader>
+					<DrawerBody>
+						{/* Requests List */}
+						<div className="mb-3">
+							<h4 className="font-medium text-xl text-gray-700">
+								Circle Requests
+							</h4>
+							<div className="flex flex-col gap-2 mt-1">
+								<ListRequests />
+							</div>
+						</div>
+
+						{circle && circle.colead && (
+							<div>
+								<h4 className="font-medium text-xl text-gray-700">
+									Circle Colead
+								</h4>
+								<div>{circle.colead.first_name}</div>
+							</div>
+						)}
+						<h4 className="font-medium text-xl text-gray-700">
+							Circle Members
+						</h4>
+						<div className="flex flex-col gap-2 mt-2">
+							<ListMembers />
+						</div>
+					</DrawerBody>
+				</DrawerContent>
+			</Drawer>
+
+			{/* Alert Dialog */}
 			{alertState.header && (
 				<AlertDialog
 					isOpen={isOpen}

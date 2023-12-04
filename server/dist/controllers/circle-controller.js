@@ -295,7 +295,7 @@ const removeCircleRequest = (req, res) => __awaiter(void 0, void 0, void 0, func
 exports.removeCircleRequest = removeCircleRequest;
 const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const { acceptRequest, declineRequest, leaveCircle } = req.query;
+    const { acceptRequest, declineRequest, leaveCircle, removeUser } = req.query;
     const { description } = req.body;
     const responseObj = { success: true };
     if (!id)
@@ -348,6 +348,14 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!memberExists)
             throw new CustomError_1.default("You are not a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     }
+    if (removeUser) {
+        if (!(req.user.id === circle.lead.id ||
+            (circle.colead && req.user.id === circle.colead.id)))
+            throw new CustomError_1.default("You must be the circle lead or co-lead to perform this operation.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        const memberExists = circle.members.some((member) => member.id === removeUser);
+        if (!memberExists)
+            throw new CustomError_1.default("User is not a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
     if (description && description.length <= utils_1.minimumCircleDescriptionLength)
         throw new CustomError_1.default(`Description is too short, it must be at least ${utils_1.minimumCircleDescriptionLength} characters`, http_status_codes_1.StatusCodes.BAD_REQUEST);
     // If a description has been given, it checks that the user trying to change the description is either the circle lead or circle co-lead, and if not it throws an error.
@@ -355,13 +363,24 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         !(circle.lead.id === req.user.id ||
             (circle.colead && circle.colead.id === req.user.id)))
         throw new CustomError_1.default("You do not have the permission to perform this action.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    let disconnectClause = () => {
+    let membersDisconnectClause = () => {
         let disconnectList = [];
         if (leaveCircle === "true")
             disconnectList.push({ id: req.user.id });
+        console.log(declineRequest);
         if (declineRequest)
             disconnectList.push({ id: declineRequest });
+        if (removeUser)
+            disconnectList.push({ id: removeUser });
         console.log(disconnectList);
+        return disconnectList;
+    };
+    let requestDisconnectClause = () => {
+        let disconnectList = [];
+        if (acceptRequest)
+            disconnectList.push({ id: acceptRequest });
+        if (declineRequest)
+            disconnectList.push({ id: declineRequest });
         return disconnectList;
     };
     const Circle = yield db_1.default.circle.update({
@@ -372,13 +391,13 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             description: !description ? undefined : description,
             members: {
                 connect: acceptRequest ? [{ id: acceptRequest }] : undefined,
-                disconnect: leaveCircle || declineRequest
-                    ? disconnectClause()
+                disconnect: leaveCircle || declineRequest || removeUser
+                    ? membersDisconnectClause()
                     : undefined,
             },
             requests: {
                 disconnect: acceptRequest || declineRequest
-                    ? [{ id: acceptRequest }]
+                    ? requestDisconnectClause()
                     : undefined,
             },
         },

@@ -22,6 +22,7 @@ export type CircleType = {
 	averageUserRating: number;
 	rating: CircleRatingType[];
 	members: CircleMemberType[];
+	requests: CircleMemberType[];
 	projects: [];
 	createdAt: Date;
 	_count: {

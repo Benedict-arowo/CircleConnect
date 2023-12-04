@@ -397,7 +397,8 @@ export const removeCircleRequest = async (req: Req, res: Response) => {
 
 export const editCircle = async (req: Req, res: Response) => {
 	const { id } = req.params;
-	const { acceptRequest, declineRequest, leaveCircle } = req.query;
+	const { acceptRequest, declineRequest, leaveCircle, removeUser } =
+		req.query;
 	const { description } = req.body;
 	const responseObj: responseObj = { success: true };
 
@@ -489,6 +490,29 @@ export const editCircle = async (req: Req, res: Response) => {
 			);
 	}
 
+	if (removeUser) {
+		if (
+			!(
+				req.user.id === circle.lead.id ||
+				(circle.colead && req.user.id === circle.colead.id)
+			)
+		)
+			throw new CustomError(
+				"You must be the circle lead or co-lead to perform this operation.",
+				StatusCodes.BAD_REQUEST
+			);
+
+		const memberExists = circle.members.some(
+			(member) => member.id === removeUser
+		);
+
+		if (!memberExists)
+			throw new CustomError(
+				"User is not a member of this circle.",
+				StatusCodes.BAD_REQUEST
+			);
+	}
+
 	if (description && description.length <= minimumCircleDescriptionLength)
 		throw new CustomError(
 			`Description is too short, it must be at least ${minimumCircleDescriptionLength} characters`,
@@ -508,12 +532,22 @@ export const editCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	let disconnectClause = () => {
+	let membersDisconnectClause = () => {
 		let disconnectList = [];
 		if (leaveCircle === "true") disconnectList.push({ id: req.user.id });
+		console.log(declineRequest);
 		if (declineRequest) disconnectList.push({ id: declineRequest });
+		if (removeUser) disconnectList.push({ id: removeUser });
 
 		console.log(disconnectList);
+		return disconnectList;
+	};
+
+	let requestDisconnectClause = () => {
+		let disconnectList = [];
+		if (acceptRequest) disconnectList.push({ id: acceptRequest });
+		if (declineRequest) disconnectList.push({ id: declineRequest });
+
 		return disconnectList;
 	};
 
@@ -526,14 +560,14 @@ export const editCircle = async (req: Req, res: Response) => {
 			members: {
 				connect: acceptRequest ? [{ id: acceptRequest }] : undefined,
 				disconnect:
-					leaveCircle || declineRequest
-						? disconnectClause()
+					leaveCircle || declineRequest || removeUser
+						? membersDisconnectClause()
 						: undefined,
 			},
 			requests: {
 				disconnect:
 					acceptRequest || declineRequest
-						? [{ id: acceptRequest }]
+						? requestDisconnectClause()
 						: undefined,
 			},
 		},

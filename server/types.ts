@@ -31,6 +31,7 @@ export interface Req extends Request {
 		userId?: string;
 		acceptRequest?: string;
 		declineRequest?: string;
+		removeUser?: string;
 	};
 	body: {
 		description?: string;
