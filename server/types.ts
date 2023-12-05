@@ -29,9 +29,9 @@ export interface Req extends Request {
 		limit?: string;
 		circleId?: string;
 		userId?: string;
-		acceptRequest?: string;
-		declineRequest?: string;
-		removeUser?: string;
+		acceptJoinRequest?: string;
+		declineJoinRequest?: string;
+		leaveCircle?: string;
 	};
 	body: {
 		description?: string;
@@ -43,6 +43,13 @@ export interface Req extends Request {
 		rating?: number;
 		circleId?: string;
 		body?: string;
+		request?: {
+			type: "ACCEPT" | "DECLINE";
+			userId: string;
+		};
+		removeUser?: {
+			userId: string;
+		};
 	};
 	user: User;
 	logout: Function;
