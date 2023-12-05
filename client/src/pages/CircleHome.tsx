@@ -39,23 +39,55 @@ const CircleHome = () => {
 		<main>
 			<Nav />
 			{user && (
-				<div className="p-4 flex flex-row gap-2">
-					<label htmlFor="circle_num"></label>
-					<input
-						type="number"
-						min={0}
-						max={200}
-						placeholder="Circle Number"
-						name="circle_num"
-						className="border px-2 py-1 w-[250px]"
-						value={circleNum}
-						onChange={(e) => setCircleNum(() => e.target.value)}
-					/>
-					<button
-						onClick={joinCircle}
-						className="bg-red-300 text-white px-2 py-1">
-						Join
-					</button>
+				<div>
+					<div className="p-4 flex flex-row gap-2">
+						<h1>Join a circle</h1>
+						<label htmlFor="circle_num"></label>
+						<input
+							type="number"
+							min={0}
+							max={200}
+							placeholder="Circle Number"
+							name="circle_num"
+							className="border px-2 py-1 w-[250px]"
+							value={circleNum}
+							onChange={(e) => setCircleNum(() => e.target.value)}
+						/>
+						<button
+							onClick={joinCircle}
+							className="bg-red-300 text-white px-2 py-1">
+							Join
+						</button>
+					</div>
+					<div>
+						<form
+							action="http://localhost:8000/circle"
+							method="post"
+							className="flex flex-col gap-1">
+							<h1>Create a circle</h1>
+							<input
+								type="number"
+								name="circle_num"
+								id="circle_num"
+								className="border px-2 py-1 w-[250px]"
+								placeholder="Circle number"
+								minLength={0}
+								maxLength={200}
+							/>
+							<input
+								type="text"
+								name="description"
+								placeholder="circle description"
+								className="border px-2 py-1 w-[250px]"
+								id="description"
+							/>
+							<button
+								type="submit"
+								className="px-3 py-1 bg-red-500 text-white">
+								Create circle
+							</button>
+						</form>
+					</div>
 				</div>
 			)}
 		</main>

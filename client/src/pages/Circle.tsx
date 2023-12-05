@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import Nav from "../Components/Nav";
 import UseFetch from "../Components/Fetch";
 import { Button, Spinner, useDisclosure } from "@chakra-ui/react";
-import default_profile_picture from "../assets/Image-32.png";
 import ProjectsComponent from "../Components/project_component";
 import { CircleMemberType, CircleType } from "../Components/types";
 import {
@@ -15,14 +14,12 @@ import {
 	AlertDialogOverlay,
 	Drawer,
 	DrawerBody,
-	DrawerFooter,
 	DrawerHeader,
 	DrawerOverlay,
 	DrawerContent,
-	DrawerCloseButton,
 } from "@chakra-ui/react";
 
-import { Avatar, AvatarBadge, AvatarGroup } from "@chakra-ui/react";
+import { Avatar, AvatarGroup } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 
 const Circle = () => {
@@ -52,7 +49,8 @@ const Circle = () => {
 		onOpen: drawerOnOpen,
 		onClose: drawerOnClose,
 	} = useDisclosure();
-	const [placement, setPlacement] = React.useState("right");
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [placement, setPlacement] = useState("right");
 	const cancelRef = React.useRef();
 	const User = useSelector((state) => state.user);
 
@@ -85,7 +83,7 @@ const Circle = () => {
 
 		return circle.members.map((member) => {
 			return (
-				<div className="flex flex-row justify-between">
+				<div className="flex flex-row justify-between" key={member.id}>
 					<h6>{member.first_name}</h6>
 
 					<div>
@@ -109,12 +107,18 @@ const Circle = () => {
 		});
 	};
 
-	const acceptRequest = async (circleId: number, userid: string) => {
+	const acceptRequest = async (circleId: number, userId: string) => {
 		const response = await UseFetch({
-			url: `circle/${circleId}?acceptRequest=${userid}`,
+			url: `circle/${circleId}`,
 			options: {
 				method: "PATCH",
 				useServerUrl: true,
+				body: {
+					request: {
+						type: "ACCEPT",
+						userId,
+					},
+				},
 			},
 		});
 		fetchCircle();
@@ -123,10 +127,16 @@ const Circle = () => {
 
 	const declineRequest = async (circleId: number, userId: string) => {
 		const response = await UseFetch({
-			url: `circle/${circleId}?declineRequest=${userId}`,
+			url: `circle/${circleId}`,
 			options: {
 				method: "PATCH",
 				useServerUrl: true,
+				body: {
+					request: {
+						type: "DECLINE",
+						userId,
+					},
+				},
 			},
 		});
 		fetchCircle();
@@ -135,10 +145,13 @@ const Circle = () => {
 
 	const removeUser = async (circleId: number, userId: string) => {
 		const response = await UseFetch({
-			url: `circle/${circleId}?removeUser=${userId}`,
+			url: `circle/${circleId}`,
 			options: {
 				method: "PATCH",
 				useServerUrl: true,
+				body: {
+					userId,
+				},
 			},
 		});
 		fetchCircle();
@@ -149,7 +162,7 @@ const Circle = () => {
 		if (!circle) return <></>;
 		return circle.requests.map((member) => {
 			return (
-				<div className="flex justify-between gap-2">
+				<div className="flex justify-between gap-2" key={member.id}>
 					<h6>{member.first_name}</h6>
 					<div className="flex flex-row gap-2">
 						<svg
@@ -211,7 +224,7 @@ const Circle = () => {
 		// If user is colead
 		// If user is requesting to join
 		// If user is a member
-		if (data.data.lead.id === User.info.id) {
+		if (data.data.lead && data.data.lead.id === User.info.id) {
 			console.log(5);
 			setState(() => {
 				return {
@@ -264,10 +277,6 @@ const Circle = () => {
 				};
 			});
 		} else {
-			let s = data.data.members.some(
-				(members: CircleMemberType) => members.id === User.info.id
-			);
-			console.log(s);
 			setState(() => {
 				return {
 					isMember: false,
@@ -383,7 +392,8 @@ const Circle = () => {
 		// TODO: Properly handle this error.
 		if (!circle) throw new Error("Circle not found.");
 
-		const { data, response } = await UseFetch({
+		// const { data, response } =
+		await UseFetch({
 			url: `circle/${circle.id}?leaveCircle=true`,
 			options: {
 				method: "PATCH",
@@ -402,8 +412,8 @@ const Circle = () => {
 
 		// TODO: Properly handle this error.
 		if (!circle) throw new Error("Circle not found.");
-
-		const { data, response } = await UseFetch({
+		// const { data, response } =
+		await UseFetch({
 			url: `circle/${circle.id}`,
 			options: {
 				method: "DELETE",
