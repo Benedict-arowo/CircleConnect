@@ -2,14 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import Nav from "../Components/Nav";
 import UseFetch from "../Components/Fetch";
-import {
-	Alert,
-	AlertIcon,
-	Button,
-	Spinner,
-	useDisclosure,
-	useToast,
-} from "@chakra-ui/react";
+import { Button, Spinner, useDisclosure, useToast } from "@chakra-ui/react";
 import ProjectsComponent from "../Components/project_component";
 import { CircleMemberType, CircleType } from "../Components/types";
 import {
@@ -24,6 +17,7 @@ import {
 	DrawerHeader,
 	DrawerOverlay,
 	DrawerContent,
+	Textarea,
 } from "@chakra-ui/react";
 
 import { Avatar, AvatarGroup } from "@chakra-ui/react";
@@ -62,11 +56,53 @@ const Circle = () => {
 		onOpen: drawerOnOpen,
 		onClose: drawerOnClose,
 	} = useDisclosure();
+	const {
+		isOpen: settingsDrawerIsOpen,
+		onOpen: settingsDrawerOnOpen,
+		onClose: settingsDrawerOnClose,
+	} = useDisclosure();
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [placement, setPlacement] = useState("right");
 	const cancelRef = React.useRef();
 	const User = useSelector((state) => state.user);
+	const [showRequests, setShowRequests] = useState(false);
+	const [description, setDescription] = useState("");
 	const toast = useToast();
+
+	const UseToastPromise = ({
+		fetch,
+		successMsg,
+		successFunc,
+		loadingMsg,
+	}: useToastPromise) => {
+		toast.promise(fetch, {
+			success: function ({ data, response }) {
+				console.log(data, response);
+				if (!response.ok) throw new Error(data.message);
+				if (successFunc) {
+					successFunc();
+				}
+				return {
+					title: "Success.",
+					duration: 1000,
+					description: successMsg,
+				};
+			},
+			loading: {
+				title: "Loading...",
+				description: loadingMsg,
+			},
+			error: function (err) {
+				return {
+					title: "Error",
+					description:
+						err.message === "Failed to fetch"
+							? "Error trying to communicate with the server."
+							: err.message,
+				};
+			},
+		});
+	};
 
 	const displayMembers = (members: CircleMemberType[]) => {
 		return members.map((circleMember) => {
@@ -107,8 +143,19 @@ const Circle = () => {
 							viewBox="0 0 24 24"
 							strokeWidth={1.5}
 							stroke="currentColor"
-							onClick={() => removeUser(circle.id, member.id)}
-							className="w-6 h-6">
+							onClick={() => {
+								setAlertState(() => {
+									return {
+										body: "Are you sure you want to remove this user? You can't undo this action afterwards.",
+										doneText: "Remove user",
+										doneFunc: () =>
+											removeUser(circle.id, member.id),
+										header: "Remove user",
+									};
+								});
+								onOpen();
+							}}
+							className="w-6 h-6 cursor-pointer">
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -122,90 +169,67 @@ const Circle = () => {
 	};
 
 	const acceptRequest = async (circleId: number, userId: string) => {
-		const response = await UseFetch({
-			url: `circle/${circleId}`,
-			options: {
-				method: "PATCH",
-				useServerUrl: true,
-				body: {
-					request: {
-						type: "ACCEPT",
-						userId,
+		UseToastPromise({
+			fetch: UseFetch({
+				url: `circle/${circleId}`,
+				options: {
+					method: "PATCH",
+					useServerUrl: true,
+					returnResponse: true,
+					body: {
+						request: {
+							type: "ACCEPT",
+							userId,
+						},
 					},
 				},
-			},
+			}),
+			loadingMsg: "Accepting join request...",
+			successMsg: "Successfully accepted user's join request.",
+			successFunc: fetchCircle,
 		});
-		fetchCircle();
-		console.log(response);
 	};
 
 	const declineRequest = async (circleId: number, userId: string) => {
-		const response = await UseFetch({
-			url: `circle/${circleId}`,
-			options: {
-				method: "PATCH",
-				useServerUrl: true,
-				body: {
-					request: {
-						type: "DECLINE",
-						userId,
+		UseToastPromise({
+			fetch: UseFetch({
+				url: `circle/${circleId}`,
+				options: {
+					method: "PATCH",
+					useServerUrl: true,
+					returnResponse: true,
+					body: {
+						request: {
+							type: "DECLINE",
+							userId,
+						},
 					},
 				},
-			},
+			}),
+			loadingMsg: "Declining join request...",
+			successMsg: "Successfully declined user's join request.",
+			successFunc: fetchCircle,
 		});
-		fetchCircle();
-		console.log(response);
 	};
 
 	const removeUser = async (circleId: number, userId: string) => {
-		const response = await UseFetch({
-			url: `circle/${circleId}`,
-			options: {
-				method: "PATCH",
-				useServerUrl: true,
-				body: {
-					removeUser: {
-						userId,
+		UseToastPromise({
+			fetch: UseFetch({
+				url: `circle/${circleId}`,
+				options: {
+					method: "PATCH",
+					useServerUrl: true,
+					returnResponse: true,
+					body: {
+						removeUser: {
+							userId,
+						},
 					},
 				},
-			},
-		});
-		fetchCircle();
-		console.log(response);
-	};
-
-	const UseToastPromise = ({
-		fetch,
-		successMsg,
-		successFunc,
-		loadingMsg,
-	}: useToastPromise) => {
-		toast.promise(fetch, {
-			success: function ({ data, response }) {
-				console.log(data, response);
-				if (!response.ok) throw new Error(data.message);
-				if (successFunc) {
-					successFunc();
-				}
-				return {
-					title: "Success.",
-					duration: 1000,
-					description: successMsg,
-				};
-			},
-			loading: {
-				title: "Loading...",
-				description: loadingMsg,
-			},
-			error: function (err) {
-				return {
-					title: "Error",
-					description:
-						err.message === "Failed to fetch"
-							? "Error trying to communicate with the server."
-							: err.message,
-				};
-			},
+			}),
+			loadingMsg: "Removing user...",
+			successMsg: "Successfully removed user from circle.",
+			successFunc: fetchCircle,
 		});
 	};
 
@@ -403,6 +427,34 @@ const Circle = () => {
 		});
 	};
 
+	const submitDescription = () => {
+		if (!circle) return;
+
+		const submitDescriptionFetch = UseFetch({
+			url: `circle/${circle.id}`,
+			options: {
+				method: "PATCH",
+				body: {
+					description,
+				},
+				returnResponse: true,
+				useServerUrl: true,
+				handleError: false,
+			},
+		});
+
+		UseToastPromise({
+			fetch: submitDescriptionFetch,
+			loadingMsg: "Saving new circle description.",
+			successMsg: "Successfully saved new circle description.",
+			successFunc: () => {
+				settingsDrawerOnClose();
+				fetchCircle();
+				setDescription(() => "");
+			},
+		});
+	};
+
 	const deleteCircle = async () => {
 		if (!circle) return;
 
@@ -507,7 +559,11 @@ const Circle = () => {
 										)}
 										{state.isOwner && (
 											<div className="flex flex-row gap-3">
-												<button className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+												<button
+													onClick={
+														settingsDrawerOnOpen
+													}
+													className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
 													Settings
 												</button>
 												<button
@@ -638,100 +694,172 @@ const Circle = () => {
 								<ProjectsComponent />
 							</section>
 						</section>
+						{/* Members Drawer */}
+						<Drawer
+							onClose={drawerOnClose}
+							size={"md"}
+							isOpen={drawerIsOpen}>
+							<DrawerOverlay />
+							<DrawerContent>
+								<DrawerHeader borderBottomWidth="1px">
+									<div className="flex flex-row gap-4 justify-between">
+										<h4>Manage Members</h4>
+										<div
+											className="relative"
+											onClick={() =>
+												setShowRequests(
+													(prevState) => !prevState
+												)
+											}>
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												strokeWidth={1.5}
+												stroke="currentColor"
+												className="w-8 h-8 cursor-pointer">
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+												/>
+											</svg>
+											<div className="bg-red-500 text-white rounded-full text-xs text-center absolute -bottom-1 cursor-pointer -right-1 w-fit px-2 py-1">
+												<p>1</p>
+											</div>
+										</div>
+									</div>
+								</DrawerHeader>
+								<DrawerBody>
+									{/* Requests List */}
+									{showRequests && (
+										<div className="mb-3">
+											<h4 className="font-medium text-xl text-gray-700">
+												Circle Requests
+											</h4>
+											{circle.requests.length > 0 && (
+												<div className="flex flex-col gap-2 mt-1">
+													<ListRequests />
+												</div>
+											)}
+											{circle.requests.length === 0 && (
+												<div>
+													There are currently no join
+													requests.
+												</div>
+											)}
+										</div>
+									)}
+
+									{circle.colead && (
+										<div>
+											<h4 className="font-medium text-xl text-gray-700">
+												Circle Colead
+											</h4>
+											<div>
+												{circle.colead.first_name}
+											</div>
+										</div>
+									)}
+
+									{circle.members &&
+										circle.members.length > 0 && (
+											<div>
+												<h4 className="font-medium text-xl text-gray-700">
+													Circle Members
+												</h4>
+												<div className="flex flex-col gap-2 mt-2">
+													<ListMembers />
+												</div>
+											</div>
+										)}
+									{circle.members.length === 0 && (
+										<div>
+											{" "}
+											You currently have no circle
+											members.
+										</div>
+									)}
+								</DrawerBody>
+							</DrawerContent>
+						</Drawer>
+
+						<Drawer
+							onClose={settingsDrawerOnClose}
+							size={"md"}
+							isOpen={settingsDrawerIsOpen}>
+							<DrawerOverlay />
+							<DrawerContent>
+								<DrawerHeader borderBottomWidth="1px">
+									<h4>Circle Settings</h4>
+								</DrawerHeader>
+								<DrawerBody>
+									<div>
+										<h6 className="font-medium text-lg mb-2">
+											Description
+										</h6>
+										<Textarea
+											resize="vertical"
+											size="md"
+											placeholder={circle.description}
+											height={"200px"}
+											value={description}
+											onChange={(e) =>
+												setDescription(
+													() => e.target.value
+												)
+											}
+										/>
+										<button
+											onClick={submitDescription}
+											className="bg-red-500 text-white px-4 py-1 w-fit mt-2">
+											Save Description
+										</button>
+									</div>
+								</DrawerBody>
+							</DrawerContent>
+						</Drawer>
+
+						{/* Alert Dialog */}
+						{alertState.header && (
+							<AlertDialog
+								isOpen={isOpen}
+								leastDestructiveRef={cancelRef}
+								onClose={onClose}>
+								<AlertDialogOverlay>
+									<AlertDialogContent>
+										<AlertDialogHeader
+											fontSize="lg"
+											fontWeight="bold">
+											{alertState.header}
+										</AlertDialogHeader>
+
+										<AlertDialogBody>
+											{alertState.body}
+										</AlertDialogBody>
+
+										<AlertDialogFooter>
+											<Button
+												ref={cancelRef}
+												onClick={onClose}>
+												Cancel
+											</Button>
+											<Button
+												colorScheme="red"
+												onClick={() => {
+													alertState.doneFunc();
+													onClose();
+												}}
+												ml={3}>
+												{alertState.doneText}
+											</Button>
+										</AlertDialogFooter>
+									</AlertDialogContent>
+								</AlertDialogOverlay>
+							</AlertDialog>
+						)}
 					</div>
 				)}
-
-			<Drawer
-				placement={placement}
-				onClose={drawerOnClose}
-				size={"md"}
-				isOpen={drawerIsOpen}>
-				<DrawerOverlay />
-				<DrawerContent>
-					<DrawerHeader borderBottomWidth="1px">
-						<div className="flex flex-row gap-4 justify-between">
-							<h4>Manage Members</h4>
-							<div className="relative">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									strokeWidth={1.5}
-									stroke="currentColor"
-									className="w-8 h-8">
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-									/>
-								</svg>
-								<div className="bg-red-500 text-white rounded-full text-xs text-center absolute -bottom-1 -right-1 w-fit px-2 py-1">
-									<p>1</p>
-								</div>
-							</div>
-						</div>
-					</DrawerHeader>
-					<DrawerBody>
-						{/* Requests List */}
-						<div className="mb-3">
-							<h4 className="font-medium text-xl text-gray-700">
-								Circle Requests
-							</h4>
-							<div className="flex flex-col gap-2 mt-1">
-								<ListRequests />
-							</div>
-						</div>
-
-						{circle && circle.colead && (
-							<div>
-								<h4 className="font-medium text-xl text-gray-700">
-									Circle Colead
-								</h4>
-								<div>{circle.colead.first_name}</div>
-							</div>
-						)}
-						<h4 className="font-medium text-xl text-gray-700">
-							Circle Members
-						</h4>
-						<div className="flex flex-col gap-2 mt-2">
-							<ListMembers />
-						</div>
-					</DrawerBody>
-				</DrawerContent>
-			</Drawer>
-
-			{/* Alert Dialog */}
-			{alertState.header && (
-				<AlertDialog
-					isOpen={isOpen}
-					leastDestructiveRef={cancelRef}
-					onClose={onClose}>
-					<AlertDialogOverlay>
-						<AlertDialogContent>
-							<AlertDialogHeader fontSize="lg" fontWeight="bold">
-								{alertState.header}
-							</AlertDialogHeader>
-
-							<AlertDialogBody>{alertState.body}</AlertDialogBody>
-
-							<AlertDialogFooter>
-								<Button ref={cancelRef} onClick={onClose}>
-									Cancel
-								</Button>
-								<Button
-									colorScheme="red"
-									onClick={() => {
-										alertState.doneFunc();
-										onClose();
-									}}
-									ml={3}>
-									{alertState.doneText}
-								</Button>
-							</AlertDialogFooter>
-						</AlertDialogContent>
-					</AlertDialogOverlay>
-				</AlertDialog>
-			)}
 		</main>
 	);
 };
