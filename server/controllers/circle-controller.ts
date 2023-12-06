@@ -81,7 +81,7 @@ export const getCircles = async (req: Req, res: Response) => {
 		take: limit ? parseInt(limit) : undefined,
 	});
 
-	res.status(StatusCodes.OK).json({ status: true, data: Circles });
+	res.status(StatusCodes.OK).json({ success: true, data: Circles });
 };
 
 export const getCircle = async (req: Req, res: Response) => {
@@ -640,6 +640,7 @@ export const deleteCircle = async (req: Req, res: Response) => {
 				id: isNaN(Number(circleId)) ? undefined : Number(circleId),
 			},
 		});
+		res.status(StatusCodes.OK).json({ success: true });
 	} else
 		throw new CustomError(
 			"You are not allowed to delete this circle.",

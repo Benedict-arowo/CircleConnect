@@ -75,7 +75,7 @@ const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         },
         take: limit ? parseInt(limit) : undefined,
     });
-    res.status(http_status_codes_1.StatusCodes.OK).json({ status: true, data: Circles });
+    res.status(http_status_codes_1.StatusCodes.OK).json({ success: true, data: Circles });
 });
 exports.getCircles = getCircles;
 const getCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -467,6 +467,7 @@ const deleteCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 id: isNaN(Number(circleId)) ? undefined : Number(circleId),
             },
         });
+        res.status(http_status_codes_1.StatusCodes.OK).json({ success: true });
     }
     else
         throw new CustomError_1.default("You are not allowed to delete this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
