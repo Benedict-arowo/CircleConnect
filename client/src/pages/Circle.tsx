@@ -150,7 +150,9 @@ const Circle = () => {
 				method: "PATCH",
 				useServerUrl: true,
 				body: {
-					userId,
+					removeUser: {
+						userId,
+					},
 				},
 			},
 		});
@@ -350,10 +352,13 @@ const Circle = () => {
 		});
 
 		// TODO: Better error handling
+		console.log(response);
 		if (!response.ok) {
+			console.log(1);
 			setErr(() => data.message);
 		} else {
 			// setCircle(() => data.data);
+			console.log(2);
 			setErr(() => null);
 		}
 		fetchCircle();
