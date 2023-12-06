@@ -2,7 +2,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import Nav from "../Components/Nav";
 import UseFetch from "../Components/Fetch";
-import { Button, Spinner, useDisclosure } from "@chakra-ui/react";
+import {
+	Alert,
+	AlertIcon,
+	Button,
+	Spinner,
+	useDisclosure,
+	useToast,
+} from "@chakra-ui/react";
 import ProjectsComponent from "../Components/project_component";
 import { CircleMemberType, CircleType } from "../Components/types";
 import {
@@ -22,6 +29,13 @@ import {
 import { Avatar, AvatarGroup } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 
+type useToastPromise = {
+	fetch: Promise<any>;
+	successMsg: string;
+	successFunc?: () => void;
+	loadingMsg: string;
+};
+
 const Circle = () => {
 	const { id } = useParams();
 	const Navigate = useNavigate();
@@ -39,7 +53,6 @@ const Circle = () => {
 		doneFunc: () => {},
 		doneText: "",
 	});
-
 	const [isLoading, setIsLoading] = useState(true);
 	const [memberContentLoading, setMemberContentLoading] = useState(false);
 	const [err, setErr] = useState(null);
@@ -53,6 +66,7 @@ const Circle = () => {
 	const [placement, setPlacement] = useState("right");
 	const cancelRef = React.useRef();
 	const User = useSelector((state) => state.user);
+	const toast = useToast();
 
 	const displayMembers = (members: CircleMemberType[]) => {
 		return members.map((circleMember) => {
@@ -158,6 +172,41 @@ const Circle = () => {
 		});
 		fetchCircle();
 		console.log(response);
+	};
+
+	const UseToastPromise = ({
+		fetch,
+		successMsg,
+		successFunc,
+		loadingMsg,
+	}: useToastPromise) => {
+		toast.promise(fetch, {
+			success: function ({ data, response }) {
+				console.log(data, response);
+				if (!response.ok) throw new Error(data.message);
+				if (successFunc) {
+					successFunc();
+				}
+				return {
+					title: "Success.",
+					duration: 1000,
+					description: successMsg,
+				};
+			},
+			loading: {
+				title: "Loading...",
+				description: loadingMsg,
+			},
+			error: function (err) {
+				return {
+					title: "Error",
+					description:
+						err.message === "Failed to fetch"
+							? "Error trying to communicate with the server."
+							: err.message,
+				};
+			},
+		});
 	};
 
 	const ListRequests = () => {
@@ -289,59 +338,12 @@ const Circle = () => {
 				};
 			});
 		}
-
-		// let userInfo = data.data.members.find((member: CircleMemberType) => {
-		// 	if (User.isLoggedIn) {
-		// 		return member.id === User.info.id;
-		// 	} else return null;
-		// });
-
-		// // If the current user is not part of the user member list, we try to check if the user is the circle lead or the co-lead using tenary.
-		// if (!userInfo)
-		// 	userInfo =
-		// 		data.data.lead.id === User.info.id
-		// 			? data.data.lead
-		// 			: data.data.colead.id === User.info.id
-		// 			? data.data.colead
-		// 			: undefined;
-
-		// // If it couldn't find the user after checking the lead, and colead then it means the user doesn't exist on the circle.
-		// if (!userInfo)
-		// 	setState(() => {
-		// 		return {
-		// 			isMember: false,
-		// 			isOwner: false,
-		// 			isVisitor: true,
-		// 		};
-		// 	});
-		// else if (userInfo.leadOf && userInfo.leadOf.id === data.data.id)
-		// 	setState(() => {
-		// 		return {
-		// 			isMember: true,
-		// 			isOwner: true,
-		// 			isVisitor: false,
-		// 		};
-		// 	});
-		// else if (
-		// 	(userInfo.memberOf && userInfo.memberOf.id === data.data.id) ||
-		// 	(userInfo.coleadOf && userInfo.coleadOf === data.data.id)
-		// )
-		// 	setState(() => {
-		// 		return {
-		// 			isMember: true,
-		// 			isOwner: false,
-		// 			isVisitor: false,
-		// 		};
-		// 	});
 	};
 
 	const joinCircle = async () => {
-		setMemberContentLoading(() => true);
+		if (!circle) return;
 
-		// TODO: Properly handle this error.
-		if (!circle) throw new Error("Circle not found.");
-
-		const { data, response } = await UseFetch({
+		const joinCircleFetch = UseFetch({
 			url: `circle/request/join/${circle.id}`,
 			options: {
 				method: "POST",
@@ -351,27 +353,18 @@ const Circle = () => {
 			},
 		});
 
-		// TODO: Better error handling
-		console.log(response);
-		if (!response.ok) {
-			console.log(1);
-			setErr(() => data.message);
-		} else {
-			// setCircle(() => data.data);
-			console.log(2);
-			setErr(() => null);
-		}
-		fetchCircle();
-		setMemberContentLoading(() => false);
+		UseToastPromise({
+			fetch: joinCircleFetch,
+			loadingMsg: "Please wait while we try to join the circle.",
+			successMsg: "Successfully requested to join the circle.",
+			successFunc: fetchCircle,
+		});
 	};
 
 	const canceljoinCircle = async () => {
-		setMemberContentLoading(() => true);
+		if (!circle) return;
 
-		// TODO: Properly handle this error.
-		if (!circle) throw new Error("Circle not found.");
-
-		const { data, response } = await UseFetch({
+		const leaveCircleRequestFetch = UseFetch({
 			url: `circle/request/leave/${circle.id}`,
 			options: {
 				method: "POST",
@@ -381,24 +374,18 @@ const Circle = () => {
 			},
 		});
 
-		// TODO: Better error handling
-		if (!response.ok) {
-			setErr(() => data.message);
-		} else {
-			// setCircle(() => data.data);
-			setErr(() => null);
-		}
-		fetchCircle();
-		setMemberContentLoading(() => false);
+		UseToastPromise({
+			fetch: leaveCircleRequestFetch,
+			loadingMsg: "Please wait while we try to leave the circle request.",
+			successMsg: "Successfully left circle request.",
+			successFunc: fetchCircle,
+		});
 	};
+
 	const leaveCircle = async () => {
-		setMemberContentLoading(() => true);
+		if (!circle) return;
 
-		// TODO: Properly handle this error.
-		if (!circle) throw new Error("Circle not found.");
-
-		// const { data, response } =
-		await UseFetch({
+		const leaveCircleFetch = UseFetch({
 			url: `circle/${circle.id}?leaveCircle=true`,
 			options: {
 				method: "PATCH",
@@ -408,17 +395,18 @@ const Circle = () => {
 			},
 		});
 
-		fetchCircle();
-		setMemberContentLoading(() => false);
+		UseToastPromise({
+			fetch: leaveCircleFetch,
+			loadingMsg: "Please wait while we try to leave the circle.",
+			successMsg: "Successfully left circle.",
+			successFunc: fetchCircle,
+		});
 	};
 
 	const deleteCircle = async () => {
-		setIsLoading(() => true);
+		if (!circle) return;
 
-		// TODO: Properly handle this error.
-		if (!circle) throw new Error("Circle not found.");
-		// const { data, response } =
-		await UseFetch({
+		const deleteCircleFetch = UseFetch({
 			url: `circle/${circle.id}`,
 			options: {
 				method: "DELETE",
@@ -428,10 +416,15 @@ const Circle = () => {
 			},
 		});
 
-		fetchCircle();
-		setMemberContentLoading(() => false);
-		onClose();
-		Navigate("/");
+		UseToastPromise({
+			fetch: deleteCircleFetch,
+			loadingMsg: "Please wait while we try to delete the circle.",
+			successMsg: "Successfully deleted the circle.",
+			successFunc: () => {
+				onClose();
+				Navigate("/");
+			},
+		});
 	};
 
 	useEffect(() => {
@@ -489,7 +482,7 @@ const Circle = () => {
 										{state.isRequesting && (
 											<button
 												onClick={canceljoinCircle}
-												className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1">
+												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1">
 												CANCEL JOIN REQUEST
 											</button>
 										)}

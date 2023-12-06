@@ -12,6 +12,7 @@ dotenv_1.default.config();
 const ErrorHandler = (err, req, res, next) => {
     let { code, message } = err;
     // If the error is not an instance of the CustomError class meaning it won't have a code property.
+    console.log(err);
     if (!(err instanceof CustomError_1.default)) {
         return res.status(404).json({
             success: false,
