@@ -23,7 +23,7 @@ model User {
   coleadOf        Circle?        @relation(fields: [coleadOfId], references: [id], name: "coleader of")
   coleadOfId      Int?        @unique
   pendingRequest          Circle?        @relation(fields: [pendingRequestId], references: [id], name: "Pending circle requests")
-  pendingRequestId        Int?        @unique
+  pendingRequestId        Int?       
   memberOf        Circle?        @relation(fields: [memberOfId], references: [id], name: "member of")
   memberOfId      Int?
   projects        Project[]
