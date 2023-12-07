@@ -1,6 +1,6 @@
-import userImage from "../assets/Image-32.png";
 import StarRatings from "react-star-ratings";
 import { CircleType } from "./types";
+import { Avatar, AvatarGroup } from "@chakra-ui/react";
 
 type Props = {
 	circles: CircleType[];
@@ -27,18 +27,11 @@ const CirclesComponent = (props: Props) => {
 						const first_name = member.first_name;
 
 						return (
-							<div key={member.id} className="cursor-pointer">
-								<img
-									title={`${first_name}`}
-									src={
-										profile_picture
-											? profile_picture
-											: userImage
-									}
-									alt={`${first_name}'s profile picture`}
-									className="w-[32px] h-[32px] object-cover rounded-full"
-								/>
-							</div>
+							<Avatar
+								key={member.id}
+								name={`${first_name}`}
+								src={profile_picture}
+							/>
 						);
 					}
 				});
@@ -65,7 +58,9 @@ const CirclesComponent = (props: Props) => {
 						</div>
 
 						<section className="flex flex-row gap-2 justify-center w-full mt-4">
-							<Members />
+							<AvatarGroup className="flex flex-row gap-2 justify-center">
+								<Members />
+							</AvatarGroup>
 						</section>
 					</div>
 				</a>

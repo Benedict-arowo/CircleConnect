@@ -15,11 +15,14 @@ type Props = {
 };
 const ListMembers = ({ circle, removeUser, onOpen, setAlertState }: Props) => {
 	return circle.members.map((member) => {
+		console.log(member);
 		return (
-			<div className="flex flex-row justify-between" key={member.id}>
-				<h6>{member.first_name}</h6>
+			<div
+				className="flex flex-row justify-between border px-2 py-1 cursor-pointer"
+				key={member.id}>
+				<h6 className="font-light text-xl">{member.first_name}</h6>
 
-				<div>
+				<div className="flex flex-row items-center">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
@@ -38,11 +41,11 @@ const ListMembers = ({ circle, removeUser, onOpen, setAlertState }: Props) => {
 							});
 							onOpen();
 						}}
-						className="w-6 h-6 cursor-pointer">
+						className="w-4 h-4 hover:text-red-500 duration-300 transition-all">
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"
-							d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+							d="M6 18L18 6M6 6l12 12"
 						/>
 					</svg>
 				</div>

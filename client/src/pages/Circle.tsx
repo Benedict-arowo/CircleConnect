@@ -192,7 +192,7 @@ const Circle = () => {
 	};
 
 	const fetchCircle = async () => {
-		const { data, response } = await UseFetch({
+		await UseFetch({
 			url: `circle/${id}`,
 			options: {
 				method: "GET",
@@ -200,85 +200,89 @@ const Circle = () => {
 				useServerUrl: true,
 				handleError: false,
 			},
-		});
+		})
+			.then(({ data, response }) => {
+				if (!response.ok) throw new Error(data.message);
+				data = data.data;
+				setCircle(() => data);
+				setErr(() => null);
 
-		// TODO: Better error handling
-		if (!response.ok) {
-			setErr(() => data.message);
-		} else {
-			// console.log(data.data);
-			setCircle(() => data.data);
-			setErr(() => null);
-		}
+				// Conditions covered
+				// If user is a visitor
+				// If user is lead
+				// If user is colead
+				// If user is requesting to join
+				// If user is a member
 
-		// If user is a visitor
-		// If user is lead
-		// If user is colead
-		// If user is requesting to join
-		// If user is a member
-		if (data.data.lead && data.data.lead.id === User.info.id) {
-			console.log(5);
-			setState(() => {
-				return {
-					isMember: true,
-					isOwner: true,
-					isColead: false,
-					isRequesting: false,
-					isVisitor: false,
-				};
+				if (data.lead && data.lead.id === User.info.id) {
+					setState(() => {
+						return {
+							isMember: true,
+							isOwner: true,
+							isColead: false,
+							isRequesting: false,
+							isVisitor: false,
+						};
+					});
+				} else if (data.colead && data.colead.id === User.info.id) {
+					setState(() => {
+						return {
+							isMember: true,
+							isOwner: false,
+							isColead: true,
+							isRequesting: false,
+							isVisitor: false,
+						};
+					});
+				} else if (
+					data.members.some(
+						(members: CircleMemberType) =>
+							members.id === User.info.id
+					)
+				) {
+					setState(() => {
+						return {
+							isMember: true,
+							isOwner: false,
+							isColead: false,
+							isRequesting: false,
+							isVisitor: false,
+						};
+					});
+				} else if (
+					data.requests.some(
+						(members: CircleMemberType) =>
+							members.id === User.info.id
+					)
+				) {
+					setState(() => {
+						return {
+							isMember: false,
+							isOwner: false,
+							isColead: false,
+							isRequesting: true,
+							isVisitor: false,
+						};
+					});
+				} else {
+					setState(() => {
+						return {
+							isMember: false,
+							isOwner: false,
+							isColead: false,
+							isRequesting: false,
+							isVisitor: true,
+						};
+					});
+				}
+			})
+			.catch((err) => {
+				setErr(() =>
+					err.message === "Failed to fetch"
+						? "Error trying to communicate with the server."
+						: err.message
+				);
 			});
-		} else if (data.data.colead && data.data.colead.id === User.info.id) {
-			console.log(4);
-			setState(() => {
-				return {
-					isMember: true,
-					isOwner: false,
-					isColead: true,
-					isRequesting: false,
-					isVisitor: false,
-				};
-			});
-		} else if (
-			data.data.members.some(
-				(members: CircleMemberType) => members.id === User.info.id
-			)
-		) {
-			console.log(3);
-			setState(() => {
-				return {
-					isMember: true,
-					isOwner: false,
-					isColead: false,
-					isRequesting: false,
-					isVisitor: false,
-				};
-			});
-		} else if (
-			data.data.requests.some(
-				(members: CircleMemberType) => members.id === User.info.id
-			)
-		) {
-			console.log(2);
-			setState(() => {
-				return {
-					isMember: false,
-					isOwner: false,
-					isColead: false,
-					isRequesting: true,
-					isVisitor: false,
-				};
-			});
-		} else {
-			setState(() => {
-				return {
-					isMember: false,
-					isOwner: false,
-					isColead: false,
-					isRequesting: false,
-					isVisitor: true,
-				};
-			});
-		}
 	};
 
 	const joinCircle = async () => {
@@ -458,9 +462,7 @@ const Circle = () => {
 									</div>
 								)}
 							</section>
-							<p className="min-h-[100px]">
-								{circle.description}
-							</p>
+							<p className="h-[100px]">{circle.description}</p>
 							{User.isLoggedIn && (
 								<div
 									className={`flex flex-row ${
@@ -469,11 +471,6 @@ const Circle = () => {
 											: "justify-end"
 									}`}>
 									<div className="flex flex-row gap-3">
-										{state.isMember && (
-											<button className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
-												Add Project
-											</button>
-										)}
 										{state.isOwner && (
 											<div className="flex flex-row gap-3">
 												<button
@@ -490,24 +487,30 @@ const Circle = () => {
 												</button>
 											</div>
 										)}
+										{state.isMember && (
+											<button className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+												Add Project
+											</button>
+										)}
 									</div>
 
 									<div className="flex flex-row gap-4">
 										{/* REPORT ICON */}
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
-											strokeWidth={1.5}
-											stroke="currentColor"
-											className="w-6 h-6 cursor-pointer text-gray-800 hover:text-gray-950 transition-all duration-300">
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5"
-											/>
-										</svg>
-
+										{!state.isOwner && (
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="none"
+												viewBox="0 0 24 24"
+												strokeWidth={1.5}
+												stroke="currentColor"
+												className="w-6 h-6 cursor-pointer text-gray-800 hover:text-gray-950 transition-all duration-300">
+												<path
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5"
+												/>
+											</svg>
+										)}
 										{/* DELETE ICON */}
 										{state.isOwner && (
 											<svg
