@@ -12,11 +12,6 @@ type Props = {
 	useBackground?: boolean;
 };
 
-type User = {
-	id: string;
-	first_name: string;
-};
-
 const activeStyles = {
 	color: "#E53E3E",
 	fontWeight: "normal",
@@ -29,39 +24,21 @@ const Nav = (props: Props) => {
 
 	const logoutHandler = async () => {
 		dispatch(logoutUser());
-		const { data, response } = await UseFetch({
+		await UseFetch({
 			url: "logout",
 			options: {
 				method: "GET",
 				useServerUrl: true,
 				returnResponse: true,
 			},
-		});
+		})
+			.then(({ response }) => {
+				if (!response.ok) throw new Error();
+			})
+			.catch((error) => {
+				console.log(error);
+			});
 	};
-
-	// useEffect(() => {
-	// 	const fetchUser = () => {
-	// 		fetch("http://localhost:8000/user", {
-	// 			credentials: "include",
-	// 			headers: {
-	// 				Accept: "application/json",
-	// 			},
-	// 		})
-	// 			.then((response) => {
-	// 				console.log(response);
-	// 				if (!response.ok) throw new Error(response.statusText);
-	// 				return response.json();
-	// 			})
-	// 			.then((data) => {
-	// 				setUser(data);
-	// 			})
-	// 			.catch((error) => {
-	// 				setUser(null);
-	// 				console.log(error);
-	// 			});
-	// 	};
-	// 	fetchUser();
-	// }, []);
 
 	return (
 		<>
@@ -91,15 +68,6 @@ const Nav = (props: Props) => {
 									return isActive ? activeStyles : {};
 								}}>
 								Discover
-							</NavLink>
-						</li>
-						<li className="cursor-pointer text-lg">
-							<NavLink
-								to="/circle"
-								style={({ isActive }) => {
-									return isActive ? activeStyles : {};
-								}}>
-								Circle
 							</NavLink>
 						</li>
 					</ul>
