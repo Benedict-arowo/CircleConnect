@@ -86,3 +86,36 @@ export const getProjects = async (req: Req, res: Response) => {
 
 	res.status(StatusCodes.OK).json({ success: true, data: Projects });
 };
+export const getProject = async (req: Req, res: Response) => {
+	const { id } = req.params;
+
+	if (!id)
+		throw new CustomError(
+			"An ID must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	const Project = await prisma.project.findUnique({
+		where: {
+			id: id,
+		},
+		select: {
+			name: true,
+			description: true,
+			circle: true,
+			createdAt: true,
+			createdBy: {
+				select: UserSelectMinimized,
+			},
+			liveLink: true,
+			github: true,
+			id: true,
+		},
+	});
+
+	if (!Project)
+		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
+
+	return res.status(StatusCodes.OK).json({ success: true, data: Project });
+};
+
