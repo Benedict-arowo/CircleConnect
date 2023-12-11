@@ -174,3 +174,21 @@ export const createProject = async (req: Req, res: Response) => {
 	return res.status(StatusCodes.OK).json({ success: true, data: Project });
 };
 
+export const deleteProject = async (req: Req, res: Response) => {
+	const { id } = req.params;
+	const Project = await prisma.project.findUnique({
+		where: { id },
+	});
+
+	if (!Project)
+		throw new CustomError("Project not found.", StatusCodes.BAD_REQUEST);
+
+	if (Project.createdById !== req.user.id)
+		throw new CustomError(
+			"You do not have permission to delete this project.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	await prisma.project.delete({ where: { id } });
+	return res.status(StatusCodes.OK).json({ success: true });
+};
