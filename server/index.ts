@@ -10,6 +10,7 @@ import { DefaultArgs } from "@prisma/client/runtime/library";
 import dotenv from "dotenv";
 import circleRouter from "./routes/circle-route";
 import ratingRouter from "./routes/rarting-route";
+import projectRouter from "./routes/project-route";
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -59,6 +60,7 @@ const makeApp = (
 
 	app.use("/", authRouter);
 	app.use("/circle", circleRouter);
+	app.use("/project", projectRouter);
 	app.use("/rating", ratingRouter);
 
 	app.use(ErrorHandler);

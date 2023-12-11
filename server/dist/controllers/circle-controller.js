@@ -44,7 +44,6 @@ const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         select: {
             id: true,
             description: true,
-            visibility: true,
             averageUserRating: true,
             rating: true,
             members: {
@@ -112,7 +111,6 @@ const getCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             },
             rating: true,
-            visibility: true,
             averageUserRating: true,
             projects: {
                 select: {

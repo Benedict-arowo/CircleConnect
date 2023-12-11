@@ -86,6 +86,7 @@ export const getProjects = async (req: Req, res: Response) => {
 
 	res.status(StatusCodes.OK).json({ success: true, data: Projects });
 };
+
 export const getProject = async (req: Req, res: Response) => {
 	const { id } = req.params;
 
@@ -172,6 +173,10 @@ export const createProject = async (req: Req, res: Response) => {
 	});
 
 	return res.status(StatusCodes.OK).json({ success: true, data: Project });
+};
+
+export const editProject = async (req: Req, res: Response) => {
+	return res.status(StatusCodes.OK).json({ success: true, data: "" });
 };
 
 export const deleteProject = async (req: Req, res: Response) => {
