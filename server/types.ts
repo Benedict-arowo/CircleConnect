@@ -29,9 +29,6 @@ export interface Req extends Request {
 		limit?: string;
 		circleId?: string;
 		userId?: string;
-		acceptJoinRequest?: string;
-		declineJoinRequest?: string;
-		leaveCircle?: string;
 	};
 	body: {
 		description?: string;
@@ -48,6 +45,10 @@ export interface Req extends Request {
 			userId: string;
 		};
 		removeUser?: {
+			userId: string;
+		};
+		manageUser?: {
+			action: "PROMOTE" | "DEMOTE";
 			userId: string;
 		};
 	};

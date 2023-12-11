@@ -8,6 +8,7 @@ import {
 } from "../utils";
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
+import { Prisma } from "@prisma/client";
 
 export const getCircles = async (req: Req, res: Response) => {
 	const { limit = "10", sortedBy } = req.query;
@@ -393,10 +394,118 @@ export const removeCircleRequest = async (req: Req, res: Response) => {
 	res.status(StatusCodes.OK).json({ success: true, data: updatedCircle });
 };
 
+export const leaveCircle = async (req: Req, res: Response) => {
+	const { id } = req.params;
+	const circle = await prisma.circle.findUnique({
+		where: {
+			id: isNaN(Number(id)) ? undefined : Number(id),
+		},
+		select: {
+			members: {
+				select: UserSelectMinimized,
+				orderBy: {
+					first_name: "desc",
+				},
+			},
+			lead: {
+				select: UserSelectMinimized,
+			},
+			colead: {
+				select: UserSelectMinimized,
+			},
+			requests: {
+				select: UserSelectMinimized,
+			},
+		},
+	});
+	const disconnectList:
+		| Prisma.UserWhereUniqueInput
+		| Prisma.UserWhereUniqueInput[] = [];
+	const coleadDisconnect: Prisma.UserWhereUniqueInput = { id: undefined };
+
+	if (!circle)
+		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
+
+	if (!circle.lead)
+		throw new CustomError(
+			ReasonPhrases.INTERNAL_SERVER_ERROR,
+			StatusCodes.INTERNAL_SERVER_ERROR
+		);
+
+	// Make sure it's not the circle lead.
+	if (req.user.id === circle.lead.id)
+		throw new CustomError(
+			"You may not leave this circle.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (circle.colead && circle.colead.id === req.user.id) {
+		// Remove the user from co-lead
+		coleadDisconnect.id = req.user.id;
+	} else if (circle.members.find((member) => member.id === req.user.id)) {
+		// Remove the user from member list
+		disconnectList.push({ id: req.user.id });
+	} else
+		throw new CustomError(
+			"You are not a member of this circle.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	const Circle = await prisma.circle.update({
+		where: {
+			id: isNaN(Number(id)) ? undefined : Number(id),
+		},
+		data: {
+			members: {
+				disconnect:
+					disconnectList.length > 0 ? disconnectList : undefined,
+			},
+			colead: {
+				disconnect: coleadDisconnect.id ? coleadDisconnect : undefined,
+			},
+		},
+		select: {
+			id: true,
+			description: true,
+			members: {
+				select: UserSelectMinimized,
+				orderBy: {
+					first_name: "desc",
+				},
+			},
+			projects: {
+				select: {
+					description: true,
+					createdBy: true,
+					createdAt: true,
+					github: true,
+					id: true,
+					liveLink: true,
+					name: true,
+				},
+			},
+			createdAt: true,
+		},
+	});
+
+	res.status(StatusCodes.OK).json({ success: true, data: Circle });
+};
+
 export const editCircle = async (req: Req, res: Response) => {
 	const { id } = req.params;
-	const { leaveCircle } = req.query;
-	const { description, request, removeUser } = req.body;
+	const { description, request, removeUser, manageUser } = req.body;
+	const disconnectList:
+		| Prisma.UserWhereUniqueInput
+		| Prisma.UserWhereUniqueInput[] = [];
+	const connectList:
+		| Prisma.UserWhereUniqueInput
+		| Prisma.UserWhereUniqueInput[] = [];
+	const requestDisconnectList:
+		| Prisma.UserWhereUniqueInput
+		| Prisma.UserWhereUniqueInput[] = [];
+	const leadConnect: Prisma.UserWhereUniqueInput = { id: undefined };
+	const coleadConnect: Prisma.UserWhereUniqueInput = { id: undefined };
+	const coleadDisconnect: Prisma.UserWhereUniqueInput = { id: undefined };
 
 	if (!id)
 		throw new CustomError(
@@ -436,151 +545,136 @@ export const editCircle = async (req: Req, res: Response) => {
 			StatusCodes.INTERNAL_SERVER_ERROR
 		);
 
-	if (request) {
-		// Make sure the user is either the circle lead or co-lead.
-		if (
-			!(
-				req.user.id === circle.lead.id ||
-				(circle.colead && req.user.id === circle.colead.id)
-			)
+	if (
+		!(
+			req.user.id === circle.lead.id ||
+			(circle.colead && req.user.id === circle.colead.id)
 		)
-			throw new CustomError(
-				"You must be the circle lead or co-lead to perform this operation.",
-				StatusCodes.BAD_REQUEST
-			);
+	)
+		throw new CustomError(
+			"You must be the circle lead or co-lead to manage this operation.",
+			StatusCodes.BAD_REQUEST
+		);
 
+	if (request) {
 		// Checks if the user exists in the circle request
 		// If exists, add them to circle member, and remove them from request list.
-		const userExistsInCircleRequest = circle.requests.some(
+		const userExistsInCircleRequest = circle.requests.find(
 			(member) => member.id === request.userId
 		);
+
 		if (!userExistsInCircleRequest)
 			throw new CustomError(
 				"User has not requested to join the circle.",
 				StatusCodes.BAD_REQUEST
 			);
-	}
-
-	if (leaveCircle === "true") {
-		// Make sure it's not the circle lead.
-		if (
-			req.user.id === circle.lead.id ||
-			(circle.colead && req.user.id === circle.colead.id)
-		)
-			throw new CustomError(
-				"You may not leave this circle.",
-				StatusCodes.BAD_REQUEST
-			);
-
-		const memberExists = circle.members.some(
-			(member) => member.id === req.user.id
-		);
-
-		if (!memberExists) {
-			const isColead = circle.colead && circle.colead.id === req.user.id;
-			// Checks if the user is colead, and if so, it gets handled later in the memberDisconnectClause function. And if the user is not the colead, an error gets thrown.
-			if (isColead) {
-				return;
-			} else
-				throw new CustomError(
-					"You are not a member of this circle.",
-					StatusCodes.BAD_REQUEST
-				);
+		if (request.type === "ACCEPT") {
+			requestDisconnectList.push({ id: request.userId });
+			connectList.push({ id: request.userId });
+		} else if (request.type === "DECLINE") {
+			requestDisconnectList.push({ id: request.userId });
 		}
 	}
 
-	// Removing a user from the circle. (Circle lead, or colead only)
+	// Removing a user from the circle.
 	if (removeUser) {
-		// Checks if the user trying to perfrom the action has permission (lead or colead)
-		if (
-			!(
-				req.user.id === circle.lead.id ||
-				(circle.colead && req.user.id === circle.colead.id)
-			)
-		)
-			throw new CustomError(
-				"You must be the circle lead or co-lead to perform this operation.",
-				StatusCodes.BAD_REQUEST
-			);
-
-		const memberExists = circle.members.some(
-			(member) => member.id === removeUser.userId
-		);
-
 		// Checks if the user they are trying to remove exists as a member in their circle.
-		// Removing the member is handled in the memberDisconnectClause function below.
-		if (!memberExists)
+		// If exists, remove them from the circle member.
+
+		if (circle.colead && circle.colead.id === removeUser.userId)
+			coleadDisconnect.id = removeUser.userId;
+		else if (
+			circle.members.find((member) => member.id === removeUser.userId)
+		)
+			disconnectList.push({ id: removeUser.userId });
+		else
 			throw new CustomError(
 				"User is not a member of this circle.",
 				StatusCodes.BAD_REQUEST
 			);
 	}
 
-	if (description && description.length <= minimumCircleDescriptionLength)
+	if (description && !(description.length > minimumCircleDescriptionLength))
 		throw new CustomError(
 			`Description is too short, it must be at least ${minimumCircleDescriptionLength} characters`,
 			StatusCodes.BAD_REQUEST
 		);
 
-	// If a description has been given, it checks that the user trying to change the description is either the circle lead or circle co-lead, and if not it throws an error.
-	if (
-		description &&
-		!(
-			circle.lead.id === req.user.id ||
-			(circle.colead && circle.colead.id === req.user.id)
-		)
-	)
-		throw new CustomError(
-			"You do not have the permission to perform this action.",
-			StatusCodes.BAD_REQUEST
-		);
+	if (manageUser) {
+		if (circle.lead.id === manageUser.userId)
+			throw new CustomError(
+				"You cannot perform this action on yourself.",
+				StatusCodes.BAD_REQUEST
+			);
 
-	let membersDisconnectClause = () => {
-		let disconnectList = [];
-		if (leaveCircle === "true") disconnectList.push({ id: req.user.id });
-		if (request && request.type === "DECLINE")
-			disconnectList.push({ id: request.userId });
-		if (removeUser) disconnectList.push({ id: removeUser.userId });
+		if (circle.colead && circle.colead.id === req.user.id)
+			throw new CustomError(
+				"You do not have the permission to perform this operation.",
+				StatusCodes.BAD_REQUEST
+			);
 
-		return disconnectList;
-	};
-
-	let requestDisconnectClause = () => {
-		let disconnectList = [];
-		if (request && request.type === "ACCEPT")
-			disconnectList.push({ id: request.userId });
-		if (request && request.type === "DECLINE")
-			disconnectList.push({ id: request.userId });
-
-		return disconnectList;
-	};
+		// Checks if the user being managed is a colead, and if not, checks if the user is a member, and if not, an error gets thrown.
+		if (circle.colead && circle.colead.id === manageUser.userId) {
+			if (manageUser.action === "PROMOTE") {
+				// Promotting a circle co-lead to lead.
+				// 1. Makes the current circle lead a member
+				// 2. Remove the circle co-lead, and make the current circle co-lead the circle lead.
+				connectList.push({ id: circle.lead.id });
+				coleadDisconnect.id = circle.colead.id;
+				leadConnect.id = circle.colead.id;
+			} else if (manageUser.action === "DEMOTE") {
+				// Demotting a circle co-lead back to a member.
+				coleadDisconnect.id = circle.colead.id;
+				connectList.push({ id: circle.colead.id });
+			}
+		} else if (
+			circle.members.find((member) => member.id === manageUser.userId)
+		) {
+			// Does nothing when you try to demote a member.
+			if (manageUser.action === "PROMOTE") {
+				// 1. Remove the user from the member list
+				// 2. Makes the member a circle co-lead
+				coleadConnect.id = manageUser.userId;
+				disconnectList.push({ id: manageUser.userId });
+			} else if (manageUser.action === "DEMOTE")
+				throw new CustomError(
+					"Circle member cannot be demoted further!",
+					StatusCodes.BAD_REQUEST
+				);
+		} else
+			throw new CustomError(
+				"User does not exist as a circle member.",
+				StatusCodes.BAD_REQUEST
+			);
+	}
 
 	const Circle = await prisma.circle.update({
 		where: {
 			id: isNaN(Number(id)) ? undefined : Number(id),
 		},
 		data: {
-			description: !description ? undefined : description,
+			description:
+				description &&
+				description.length > minimumCircleDescriptionLength
+					? description
+					: undefined,
 			members: {
-				connect:
-					request && request.type === "ACCEPT"
-						? [{ id: request.userId }]
-						: undefined,
+				connect: connectList.length > 0 ? connectList : undefined,
 				disconnect:
-					leaveCircle ||
-					(request && request.type === "DECLINE") ||
-					removeUser
-						? membersDisconnectClause()
-						: undefined,
+					disconnectList.length > 0 ? disconnectList : undefined,
 			},
 			requests: {
-				disconnect: request ? requestDisconnectClause() : undefined,
+				disconnect:
+					requestDisconnectList.length > 0
+						? requestDisconnectList
+						: undefined,
 			},
 			colead: {
-				disconnect:
-					leaveCircle === "leaveCircleColead" && circle.colead
-						? { id: circle.colead.id }
-						: undefined,
+				disconnect: coleadDisconnect.id ? coleadDisconnect : undefined,
+				connect: coleadConnect.id ? coleadConnect : undefined,
+			},
+			lead: {
+				connect: leadConnect.id ? leadConnect : undefined,
 			},
 		},
 		select: {

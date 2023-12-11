@@ -4,6 +4,7 @@ import {
 	editCircle,
 	getCircle,
 	getCircles,
+	leaveCircle,
 	removeCircleRequest,
 	requestToJoinCircle,
 } from "../controllers/circle-controller";
@@ -23,6 +24,8 @@ circleRouter
 	.get(wrapper(getCircle))
 	.patch(isLoggedIn, wrapper(editCircle))
 	.delete(isLoggedIn, wrapper(deleteCircle));
+
+circleRouter.route("/:id/leave").patch(isLoggedIn, wrapper(leaveCircle));
 
 circleRouter
 	.route("/request/join/:id")
