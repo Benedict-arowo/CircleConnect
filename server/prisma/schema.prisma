@@ -8,27 +8,28 @@ datasource db {
 }
 
 model User {
-  id              String         @id @default(uuid())
-  google_id       String?        @unique
-  github_id       String?        @unique
-  password        String?
-  first_name      String
-  last_name       String?
-  email           String         @unique
-  profile_picture String?
-  joined          DateTime       @updatedAt()
-  last_login      DateTime?
-  leadOf          Circle?        @relation(fields: [leadOfId], references: [id], name: "leader of")
-  leadOfId        Int?        @unique
-  coleadOf        Circle?        @relation(fields: [coleadOfId], references: [id], name: "coleader of")
-  coleadOfId      Int?        @unique
-  pendingRequest          Circle?        @relation(fields: [pendingRequestId], references: [id], name: "Pending circle requests")
-  pendingRequestId        Int?       
-  memberOf        Circle?        @relation(fields: [memberOfId], references: [id], name: "member of")
-  memberOfId      Int?
-  projects        Project[]
-  ratings         CircleRating[]
-  createdAt       DateTime       @default(now())
+  id               String          @id @default(uuid())
+  google_id        String?         @unique
+  github_id        String?         @unique
+  password         String?
+  first_name       String
+  last_name        String?
+  email            String          @unique
+  profile_picture  String?
+  joined           DateTime        @updatedAt()
+  last_login       DateTime?
+  leadOf           Circle?         @relation(fields: [leadOfId], references: [id], name: "leader of")
+  leadOfId         Int?            @unique
+  coleadOf         Circle?         @relation(fields: [coleadOfId], references: [id], name: "coleader of")
+  coleadOfId       Int?            @unique
+  pendingRequest   Circle?         @relation(fields: [pendingRequestId], references: [id], name: "Pending circle requests")
+  pendingRequestId Int?
+  memberOf         Circle?         @relation(fields: [memberOfId], references: [id], name: "member of")
+  memberOfId       Int?
+  projects         Project[]
+  ratings          CircleRating[]
+  projectRatings   ProjectRating[]
+  createdAt        DateTime        @default(now())
 }
 
 model Session {
@@ -53,6 +54,17 @@ model CircleRating {
   @@unique([userId, circleId])
 }
 
+model ProjectRating {
+  id        String  @id @default(uuid())
+  rating    Int     @default(0)
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+
+  @@unique([userId, projectId])
+}
+
 // model Member {
 //   id        String   @id @unique @default(uuid())
 //   role      Role     @default(MEMBER)
@@ -64,32 +76,32 @@ model CircleRating {
 // }
 
 model Project {
-  id          String   @id @unique @default(uuid())
-  name        String
-  description String
-  github      String
-  liveLink    String?
-  createdBy   User     @relation(fields: [userId], references: [id])
-  userId      String
-  circleId    Int
-  circle      Circle   @relation(fields: [circleId], references: [id])
-  createdAt   DateTime @default(now())
+  id               String           @id @unique @default(uuid())
+  name             String
+  description      String
+  github           String?
+  liveLink         String?
+  createdBy        User             @relation(fields: [createdById], references: [id])
+  createdById      String
+  circleVisibility circleVisibility @default(PUBLIC)
+  rating           ProjectRating[]
+  circleId         Int?
+  circle           Circle?           @relation(fields: [circleId], references: [id])
+  createdAt        DateTime         @default(now())
 }
 
 model Circle {
   // id                String           @id @unique @default(uuid())
-  id               Int              @id @unique
-  members           User[]           @relation(name: "member of")
-  lead              User?            @relation(name: "leader of")
-  colead            User?            @relation(name: "coleader of")
+  id                Int            @id @unique
+  members           User[]         @relation(name: "member of")
+  lead              User?          @relation(name: "leader of")
+  colead            User?          @relation(name: "coleader of")
   projects          Project[]
-  description       String           @db.VarChar(300)
-  averageUserRating Float            @default(0.0)
+  description       String         @db.VarChar(300)
+  averageUserRating Float          @default(0.0)
   rating            CircleRating[]
-  requests User[] @relation(name: "Pending circle requests")
-  visibility        circleVisibility @default(PUBLIC)
-
-  createdAt DateTime @default(now())
+  requests          User[]         @relation(name: "Pending circle requests")
+  createdAt         DateTime       @default(now())
 }
 
 model Search {
