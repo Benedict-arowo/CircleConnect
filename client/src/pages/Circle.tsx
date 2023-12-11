@@ -24,6 +24,7 @@ import { Avatar, AvatarGroup } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 import ListMembers from "../Components/Circle Page/ListMembers";
 import ListRequests from "../Components/Circle Page/ListRequests";
+import ListProjects from "../Components/Circle Page/ListProjects";
 
 type useToastPromise = {
 	fetch: Promise<any>;
@@ -629,11 +630,7 @@ const Circle = () => {
 								Pinned Projects
 							</a>
 							<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 pr-8">
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
+								<ListProjects projects={circle.projects} />
 							</section>
 						</section>
 
@@ -645,17 +642,7 @@ const Circle = () => {
 								Projects
 							</a>
 							<section className="flex flex-row gap-8 flex-wrap justify-center pt-2">
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
-								<ProjectsComponent />
+								<ListProjects projects={circle.projects} />
 							</section>
 						</section>
 						{/* Members Drawer */}

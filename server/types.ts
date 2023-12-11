@@ -40,6 +40,9 @@ export interface Req extends Request {
 		rating?: number;
 		circleId?: string;
 		body?: string;
+		name?: string;
+		github?: string;
+		liveLink?: string;
 		request?: {
 			type: "ACCEPT" | "DECLINE";
 			userId: string;
