@@ -50,7 +50,6 @@ export const getCircles = async (req: Req, res: Response) => {
 		select: {
 			id: true,
 			description: true,
-			visibility: true,
 			averageUserRating: true,
 			rating: true,
 			members: {
@@ -124,7 +123,6 @@ export const getCircle = async (req: Req, res: Response) => {
 				},
 			},
 			rating: true,
-			visibility: true,
 			averageUserRating: true,
 			projects: {
 				select: {
