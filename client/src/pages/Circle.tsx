@@ -191,6 +191,50 @@ const Circle = () => {
 		});
 	};
 
+	const promoteUser = async (circleId: number, userId: string) => {
+		UseToastPromise({
+			fetch: UseFetch({
+				url: `circle/${circleId}`,
+				options: {
+					method: "PATCH",
+					useServerUrl: true,
+					returnResponse: true,
+					body: {
+						manageUser: {
+							action: "PROMOTE",
+							userId,
+						},
+					},
+				},
+			}),
+			loadingMsg: "Promoting user...",
+			successMsg: "Successfully promoted user.",
+			successFunc: fetchCircle,
+		});
+	};
+
+	const demoteUser = async (circleId: number, userId: string) => {
+		UseToastPromise({
+			fetch: UseFetch({
+				url: `circle/${circleId}`,
+				options: {
+					method: "PATCH",
+					useServerUrl: true,
+					returnResponse: true,
+					body: {
+						manageUser: {
+							action: "DEMOTE",
+							userId,
+						},
+					},
+				},
+			}),
+			loadingMsg: "Demoting user...",
+			successMsg: "Successfully demoted user.",
+			successFunc: fetchCircle,
+		});
+	};
+
 	const fetchCircle = async () => {
 		await UseFetch({
 			url: `circle/${id}`,
@@ -331,7 +375,7 @@ const Circle = () => {
 		if (!circle) return;
 
 		const leaveCircleFetch = UseFetch({
-			url: `circle/${circle.id}?leaveCircle=true`,
+			url: `circle/${circle.id}/leave`,
 			options: {
 				method: "PATCH",
 				returnResponse: true,
@@ -644,9 +688,13 @@ const Circle = () => {
 													d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
 												/>
 											</svg>
-											<div className="bg-red-500 text-white rounded-full text-xs text-center absolute -bottom-1 cursor-pointer -right-1 w-fit px-2 py-1">
-												<p>1</p>
-											</div>
+											{circle.requests.length > 0 && (
+												<div className="bg-red-500 text-white rounded-full text-xs text-center absolute -bottom-1 cursor-pointer -right-1 w-fit px-2 py-1">
+													<p>
+														{circle.requests.length}
+													</p>
+												</div>
+											)}
 										</div>
 									</div>
 								</DrawerHeader>
@@ -684,8 +732,94 @@ const Circle = () => {
 											<h4 className="font-medium text-xl text-gray-700">
 												Circle Colead
 											</h4>
-											<div>
+											<div className="flex flex-row justify-between">
 												{circle.colead.first_name}
+												<div className="flex flex-row items-center gap-2">
+													<p
+														className="bg-red-500 text-white px-2 py-1"
+														onClick={() => {
+															setAlertState(
+																() => {
+																	return {
+																		body: "Are you sure you want to promote this user? You may not be able to undo this action afterwards.",
+																		doneText:
+																			"Promote user",
+																		doneFunc:
+																			() =>
+																				promoteUser(
+																					circle.id,
+																					circle
+																						.colead
+																						.id
+																				),
+																		header: "Promote user",
+																	};
+																}
+															);
+															onOpen();
+														}}>
+														Promote
+													</p>
+													<p
+														className="bg-red-500 text-white px-2 py-1"
+														onClick={() => {
+															setAlertState(
+																() => {
+																	return {
+																		body: "Are you sure you want to demote this user?",
+																		doneText:
+																			"Demote user",
+																		doneFunc:
+																			() =>
+																				demoteUser(
+																					circle.id,
+																					circle
+																						.colead
+																						.id
+																				),
+																		header: "Demote user",
+																	};
+																}
+															);
+															onOpen();
+														}}>
+														Demote
+													</p>
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														fill="none"
+														viewBox="0 0 24 24"
+														strokeWidth={1.5}
+														stroke="currentColor"
+														onClick={() => {
+															setAlertState(
+																() => {
+																	return {
+																		body: "Are you sure you want to remove this user? You can't undo this action afterwards.",
+																		doneText:
+																			"Remove user",
+																		doneFunc:
+																			() =>
+																				removeUser(
+																					circle.id,
+																					circle
+																						.colead
+																						.id
+																				),
+																		header: "Remove user",
+																	};
+																}
+															);
+															onOpen();
+														}}
+														className="w-4 h-4 hover:text-red-500 duration-300 transition-all">
+														<path
+															strokeLinecap="round"
+															strokeLinejoin="round"
+															d="M6 18L18 6M6 6l12 12"
+														/>
+													</svg>
+												</div>
 											</div>
 										</div>
 									)}
@@ -701,6 +835,10 @@ const Circle = () => {
 														circle={circle}
 														onOpen={onOpen}
 														removeUser={removeUser}
+														promoteUser={
+															promoteUser
+														}
+														demoteUser={demoteUser}
 														setAlertState={
 															setAlertState
 														}

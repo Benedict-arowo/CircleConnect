@@ -13,7 +13,15 @@ type Props = {
 	>;
 	onOpen: () => void;
 };
-const ListMembers = ({ circle, removeUser, onOpen, setAlertState }: Props) => {
+
+const ListMembers = ({
+	circle,
+	removeUser,
+	promoteUser,
+	demoteUser,
+	onOpen,
+	setAlertState,
+}: Props) => {
 	return circle.members.map((member) => {
 		console.log(member);
 		return (
@@ -22,7 +30,39 @@ const ListMembers = ({ circle, removeUser, onOpen, setAlertState }: Props) => {
 				key={member.id}>
 				<h6 className="font-light text-xl">{member.first_name}</h6>
 
-				<div className="flex flex-row items-center">
+				<div className="flex flex-row items-center gap-2">
+					<p
+						className="bg-red-500 text-white px-2 py-1"
+						onClick={() => {
+							setAlertState(() => {
+								return {
+									body: "Are you sure you want to promote this user? You may not be able to undo this action afterwards.",
+									doneText: "Promote user",
+									doneFunc: () =>
+										promoteUser(circle.id, member.id),
+									header: "Promote user",
+								};
+							});
+							onOpen();
+						}}>
+						Promote
+					</p>
+					<p
+						className="bg-red-500 text-white px-2 py-1"
+						onClick={() => {
+							setAlertState(() => {
+								return {
+									body: "Are you sure you want to demote this user?",
+									doneText: "Demote user",
+									doneFunc: () =>
+										demoteUser(circle.id, member.id),
+									header: "Demote user",
+								};
+							});
+							onOpen();
+						}}>
+						Demote
+					</p>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						fill="none"
