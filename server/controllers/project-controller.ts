@@ -119,3 +119,58 @@ export const getProject = async (req: Req, res: Response) => {
 	return res.status(StatusCodes.OK).json({ success: true, data: Project });
 };
 
+export const createProject = async (req: Req, res: Response) => {
+	const { name, description, circleId, github, liveLink } = req.body;
+
+	if (!name || !description)
+		throw new CustomError(
+			"Name, and Description must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	// Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
+	if (circleId) {
+		const circle = await prisma.circle.findUnique({
+			where: {
+				id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+			},
+			select: {
+				members: true,
+				colead: true,
+				lead: true,
+			},
+		});
+
+		if (!circle)
+			throw new CustomError(
+				"Invalid circle provided.",
+				StatusCodes.BAD_REQUEST
+			);
+
+		if (
+			!(
+				(circle.colead && circle.colead.id === req.user.id) ||
+				(circle.lead && circle.lead.id === req.user.id) ||
+				circle.members.find((member) => member.id === req.user.id)
+			)
+		)
+			throw new CustomError(
+				"You're not a member of the circle provided.",
+				StatusCodes.BAD_REQUEST
+			);
+	}
+
+	const Project = await prisma.project.create({
+		data: {
+			name,
+			description,
+			circleId: circleId ? Number(circleId) : undefined,
+			createdById: req.user.id,
+			github: github ? github : undefined,
+			liveLink: liveLink ? liveLink : undefined,
+		},
+	});
+
+	return res.status(StatusCodes.OK).json({ success: true, data: Project });
+};
+
