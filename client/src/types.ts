@@ -16,3 +16,8 @@ export type UserType = {
 	projects: string;
 	ratings: string;
 };
+
+export type pinProject = {
+	id: string;
+	status: boolean;
+};

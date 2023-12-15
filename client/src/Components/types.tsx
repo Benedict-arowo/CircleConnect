@@ -13,6 +13,18 @@ export type CircleRatingType = {
 	circleId: string;
 };
 
+export type ProjectsType = {
+	name: string;
+	description: string;
+	circle: CircleType;
+	createdAt: Date;
+	createdBy: CircleMemberType;
+	liveLink: string;
+	github: string;
+	pinned: boolean;
+	id: string;
+};
+
 export type CircleType = {
 	id: number;
 	description: string;
@@ -23,7 +35,7 @@ export type CircleType = {
 	rating: CircleRatingType[];
 	members: CircleMemberType[];
 	requests: CircleMemberType[];
-	projects: [];
+	projects: ProjectsType[];
 	createdAt: Date;
 	_count: {
 		member: number;

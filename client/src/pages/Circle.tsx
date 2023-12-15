@@ -25,6 +25,7 @@ import { useSelector } from "react-redux";
 import ListMembers from "../Components/Circle Page/ListMembers";
 import ListRequests from "../Components/Circle Page/ListRequests";
 import ListProjects from "../Components/Circle Page/ListProjects";
+import { pinProject } from "../types";
 
 type useToastPromise = {
 	fetch: Promise<any>;
@@ -64,9 +65,16 @@ const Circle = () => {
 		onOpen: settingsDrawerOnOpen,
 		onClose: settingsDrawerOnClose,
 	} = useDisclosure();
+
+	const {
+		isOpen: projectDrawerIsOpen,
+		onOpen: projectDrawerOnOpen,
+		onClose: projectDrawerOnClose,
+	} = useDisclosure();
 	const cancelRef = React.useRef();
 	const User = useSelector((state) => state.user);
 	const [showRequests, setShowRequests] = useState(false);
+	const [userProjects, setUserProjects] = useState([]);
 	const [description, setDescription] = useState("");
 	const toast = useToast();
 
@@ -102,6 +110,27 @@ const Circle = () => {
 							: err.message,
 				};
 			},
+		});
+	};
+
+	const pinProject = async ({ id, status }: pinProject) => {
+		UseToastPromise({
+			fetch: UseFetch({
+				url: `project/${id}`,
+				options: {
+					method: "PATCH",
+					useServerUrl: true,
+					returnResponse: true,
+					body: {
+						pinned: status,
+					},
+				},
+			}),
+			loadingMsg: "Loading...",
+			successMsg: `Successfully ${
+				status ? "pinned" : "unpinned"
+			} project.`,
+			successFunc: fetchCircle,
 		});
 	};
 
@@ -445,9 +474,80 @@ const Circle = () => {
 		});
 	};
 
+	const addToCircle = async (projectId: string) => {
+		const data = await UseFetch({
+			url: `project/${projectId}/addToCircle`,
+			options: {
+				body: {
+					circleId: id,
+				},
+				method: "PATCH",
+				returnResponse: true,
+				useServerUrl: true,
+				handleError: false,
+			},
+		});
+
+		fetchCircle();
+	};
+
+	const removeFromCircle = async (projectId: string) => {
+		UseToastPromise({
+			fetch: UseFetch({
+				url: `project/${projectId}/removeFromCircle`,
+				options: {
+					body: {
+						circleId: id,
+					},
+					method: "DELETE",
+					returnResponse: true,
+					useServerUrl: true,
+					handleError: false,
+				},
+			}),
+			loadingMsg: "Please wait while we try to remove this project.",
+			successMsg: "Successfully removed the project.",
+			successFunc: fetchCircle,
+		});
+	};
+
+	const deleteProject = async (projectId: string) => {
+		UseToastPromise({
+			fetch: UseFetch({
+				url: `project/${projectId}`,
+				options: {
+					method: "DELETE",
+					returnResponse: true,
+					useServerUrl: true,
+					handleError: false,
+				},
+			}),
+			loadingMsg: "Deleting project...",
+			successMsg: "Successfully deleted the project.",
+			successFunc: fetchCircle,
+		});
+	};
+
+	const UserProjects = async () => {
+		const {
+			data: { data: projects },
+		} = await UseFetch({
+			url: `project/?userId=${User.info.id}`,
+			options: {
+				method: "GET",
+				returnResponse: true,
+				useServerUrl: true,
+				handleError: false,
+			},
+		});
+
+		setUserProjects(() => projects);
+	};
+
 	useEffect(() => {
 		setIsLoading(() => true);
 		fetchCircle();
+		UserProjects();
 		setIsLoading(() => false);
 	}, [id]);
 
@@ -533,7 +633,9 @@ const Circle = () => {
 											</div>
 										)}
 										{state.isMember && (
-											<button className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+											<button
+												onClick={projectDrawerOnOpen}
+												className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
 												Add Project
 											</button>
 										)}
@@ -630,7 +732,19 @@ const Circle = () => {
 								Pinned Projects
 							</a>
 							<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 pr-8">
-								<ListProjects projects={circle.projects} />
+								<ListProjects
+									showManageMenu={true}
+									projects={circle.projects.filter(
+										(project) =>
+											project.pinned ? true : false
+									)}
+									circle={circle}
+									pinProject={pinProject}
+									setAlertState={setAlertState}
+									onOpen={onOpen}
+									deleteProject={deleteProject}
+									removeFromCircle={removeFromCircle}
+								/>
 							</section>
 						</section>
 
@@ -642,7 +756,16 @@ const Circle = () => {
 								Projects
 							</a>
 							<section className="flex flex-row gap-8 flex-wrap justify-center pt-2">
-								<ListProjects projects={circle.projects} />
+								<ListProjects
+									showManageMenu={true}
+									projects={circle.projects}
+									setAlertState={setAlertState}
+									circle={circle}
+									onOpen={onOpen}
+									pinProject={pinProject}
+									deleteProject={deleteProject}
+									removeFromCircle={removeFromCircle}
+								/>
 							</section>
 						</section>
 						{/* Members Drawer */}
@@ -875,6 +998,66 @@ const Circle = () => {
 											className="bg-red-500 text-white px-4 py-1 w-fit mt-2">
 											Save Description
 										</button>
+									</div>
+								</DrawerBody>
+							</DrawerContent>
+						</Drawer>
+
+						<Drawer
+							onClose={projectDrawerOnClose}
+							size={"md"}
+							isOpen={projectDrawerIsOpen}>
+							<DrawerOverlay />
+							<DrawerContent>
+								<DrawerHeader borderBottomWidth="1px">
+									<h4>Add Project</h4>
+								</DrawerHeader>
+								<DrawerBody>
+									<div>
+										{userProjects.length === 0 && (
+											<div>
+												<p>
+													You currently do not have
+													any project you can add to
+													this circle.
+												</p>
+											</div>
+										)}
+										{userProjects.length > 1 &&
+											userProjects.map(({ name, id }) => {
+												const inCircle =
+													circle.projects.find(
+														(project) =>
+															project.id === id
+													);
+												return (
+													<div
+														className="flex flex-row justify-between gap-4"
+														key={id}>
+														<p>{name}</p>
+														{!inCircle && (
+															<button
+																onClick={() =>
+																	addToCircle(
+																		id
+																	)
+																}>
+																Add
+															</button>
+														)}
+														{inCircle && (
+															<button
+																onClick={() =>
+																	removeFromCircle(
+																		id
+																	)
+																}>
+																Remove
+															</button>
+														)}
+													</div>
+												);
+											})}
 									</div>
 								</DrawerBody>
 							</DrawerContent>

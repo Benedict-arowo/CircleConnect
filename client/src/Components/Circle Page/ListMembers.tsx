@@ -12,6 +12,8 @@ type Props = {
 		}>
 	>;
 	onOpen: () => void;
+	promoteUser: (circleId: number, memberId: string) => Promise<void>;
+	demoteUser: (circleId: number, memberId: string) => Promise<void>;
 };
 
 const ListMembers = ({
