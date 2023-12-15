@@ -1,9 +1,11 @@
 import {
+	addProjectToCircle,
 	createProject,
 	deleteProject,
 	editProject,
 	getProject,
 	getProjects,
+	removeProjectFromCircle,
 } from "../controllers/project-controller";
 import isLoggedIn from "../middlewear/isLoggedIn";
 import wrapper from "../middlewear/wrapper";
@@ -21,5 +23,12 @@ projectRouter
 	.get(wrapper(getProject))
 	.patch(isLoggedIn, wrapper(editProject))
 	.delete(isLoggedIn, wrapper(deleteProject));
+
+projectRouter
+	.route("/:id/addToCircle")
+	.patch(isLoggedIn, wrapper(addProjectToCircle));
+projectRouter
+	.route("/:id/removeFromCircle")
+	.delete(isLoggedIn, wrapper(removeProjectFromCircle));
 
 export default projectRouter;

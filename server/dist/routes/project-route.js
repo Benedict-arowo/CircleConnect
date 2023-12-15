@@ -17,4 +17,10 @@ projectRouter
     .get((0, wrapper_1.default)(project_controller_1.getProject))
     .patch(isLoggedIn_1.default, (0, wrapper_1.default)(project_controller_1.editProject))
     .delete(isLoggedIn_1.default, (0, wrapper_1.default)(project_controller_1.deleteProject));
+projectRouter
+    .route("/:id/addToCircle")
+    .patch(isLoggedIn_1.default, (0, wrapper_1.default)(project_controller_1.addProjectToCircle));
+projectRouter
+    .route("/:id/removeFromCircle")
+    .delete(isLoggedIn_1.default, (0, wrapper_1.default)(project_controller_1.removeProjectFromCircle));
 exports.default = projectRouter;

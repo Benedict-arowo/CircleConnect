@@ -28,12 +28,14 @@ export interface Req extends Request {
 		sortedBy?: string;
 		limit?: string;
 		circleId?: string;
+		pinned?: string;
 		userId?: string;
 	};
 	body: {
 		description?: string;
 		circle_num?: number;
 		email?: string;
+		pictures?: string[];
 		password?: string;
 		first_name?: string;
 		last_name?: string;
@@ -41,8 +43,11 @@ export interface Req extends Request {
 		circleId?: string;
 		body?: string;
 		name?: string;
+		pinned?: boolean;
 		github?: string;
 		liveLink?: string;
+		techUsed?: string;
+		visibility?: "PUBLIC" | "PRIVATE";
 		request?: {
 			type: "ACCEPT" | "DECLINE";
 			userId: string;

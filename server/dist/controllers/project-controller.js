@@ -219,3 +219,83 @@ const deleteProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     return res.status(http_status_codes_1.StatusCodes.OK).json({ success: true });
 });
 exports.deleteProject = deleteProject;
+const addProjectToCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { params: { id: projectId }, body: { circleId }, } = req;
+    const Project = yield db_1.default.project.findUnique({
+        where: { id: projectId },
+    });
+    if (!Project)
+        throw new CustomError_1.default("Project with a matching ID not found", http_status_codes_1.StatusCodes.NOT_FOUND);
+    if (Number(circleId) !== 0) {
+        const Circle = yield db_1.default.circle.findUnique({
+            where: { id: Number(circleId) },
+            select: {
+                lead: true,
+                colead: true,
+                members: true,
+            },
+        });
+        if (!Circle)
+            throw new CustomError_1.default("Circle with a matching ID not found", http_status_codes_1.StatusCodes.NOT_FOUND);
+        if (!((Circle.lead && Circle.lead.id === req.user.id) ||
+            (Circle.colead && Circle.colead.id === req.user.id) ||
+            Circle.members.find((member) => member.id === req.user.id)))
+            throw new CustomError_1.default("You do not have permission to add this project to this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
+    if (!(req.user.id === Project.createdById))
+        throw new CustomError_1.default("You do not have permission to modify this project", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (Project.circleId === Number(circleId))
+        throw new CustomError_1.default("The project is already in the circle provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    const updatedProject = yield db_1.default.project.update({
+        where: { id: projectId },
+        data: {
+            circleId: circleId ? Number(circleId) : null,
+        },
+    });
+    return res
+        .status(http_status_codes_1.StatusCodes.OK)
+        .json({ success: true, data: updatedProject });
+});
+exports.addProjectToCircle = addProjectToCircle;
+const removeProjectFromCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { params: { id: projectId }, body: { circleId }, } = req;
+    if (!circleId)
+        throw new CustomError_1.default("Circle ID must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    const Project = yield db_1.default.project.findUnique({
+        where: { id: projectId },
+    });
+    if (!Project)
+        throw new CustomError_1.default("Project with a matching ID not found", http_status_codes_1.StatusCodes.NOT_FOUND);
+    const Circle = yield db_1.default.circle.findUnique({
+        where: { id: Number(circleId) },
+        select: {
+            lead: true,
+            colead: true,
+            members: true,
+        },
+    });
+    if (!Circle)
+        throw new CustomError_1.default("Circle with a matching ID not found", http_status_codes_1.StatusCodes.NOT_FOUND);
+    // if (!(req.user.id === Project.createdById))
+    // 	throw new CustomError(
+    // 		"You do not have permission to modify this project",
+    // 		StatusCodes.BAD_REQUEST
+    // 	);
+    if (!((Circle.lead && Circle.lead.id === req.user.id) ||
+        (Circle.colead && Circle.colead.id === req.user.id) ||
+        req.user.id === Project.createdById))
+        throw new CustomError_1.default("You do not have permission to remove this project to from this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (Project.circleId !== Number(circleId))
+        throw new CustomError_1.default("The project is not in the circle provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    const updatedProject = yield db_1.default.project.update({
+        where: { id: projectId },
+        data: {
+            circleId: null,
+            pinned: false,
+        },
+    });
+    return res
+        .status(http_status_codes_1.StatusCodes.OK)
+        .json({ success: true, data: updatedProject });
+});
+exports.removeProjectFromCircle = removeProjectFromCircle;
