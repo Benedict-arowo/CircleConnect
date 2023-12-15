@@ -6,7 +6,7 @@ import { UserSelectMinimized } from "../utils";
 import prisma from "../model/db";
 
 export const getProjects = async (req: Req, res: Response) => {
-	const { limit = "10", sortedBy, userId, circleId } = req.query;
+	const { limit = "10", sortedBy, userId, circleId, pinned } = req.query;
 	const sortedByValues = [
 		"circle_id-asc",
 		"circle_id-desc",
@@ -33,29 +33,26 @@ export const getProjects = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	console.log(
-		circleId
-			? !isNaN(Number(circleId))
-				? Number(circleId)
-				: undefined
-			: undefined
-	);
 	const Projects = await prisma.project.findMany({
 		where: {
-			OR: circleId
-				? [
-						{
-							circleId: circleId
-								? !isNaN(Number(circleId))
-									? Number(circleId)
-									: undefined
-								: undefined,
-						},
-						// {
-						// 	createdById: userId ? userId : undefined,
-						// },
-				  ]
-				: undefined,
+			OR:
+				circleId || userId || pinned
+					? [
+							{
+								circleId: circleId
+									? !isNaN(Number(circleId))
+										? Number(circleId)
+										: undefined
+									: undefined,
+							},
+							{
+								createdById: userId ? userId : undefined,
+							},
+							{
+								pinned: pinned ? true : undefined,
+							},
+					  ]
+					: undefined,
 		},
 		orderBy: {
 			circleId: sortedBy?.startsWith("circle_id")
@@ -70,6 +67,7 @@ export const getProjects = async (req: Req, res: Response) => {
 				: undefined,
 		},
 		select: {
+			id: true,
 			name: true,
 			description: true,
 			circle: true,
@@ -79,7 +77,6 @@ export const getProjects = async (req: Req, res: Response) => {
 			},
 			liveLink: true,
 			github: true,
-			id: true,
 		},
 		take: limit ? parseInt(limit) : undefined,
 	});
@@ -121,7 +118,15 @@ export const getProject = async (req: Req, res: Response) => {
 };
 
 export const createProject = async (req: Req, res: Response) => {
-	const { name, description, circleId, github, liveLink } = req.body;
+	const {
+		name,
+		description,
+		circleId,
+		techUsed,
+		github,
+		liveLink,
+		pictures,
+	} = req.body;
 
 	if (!name || !description)
 		throw new CustomError(
@@ -129,46 +134,48 @@ export const createProject = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	// Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
-	if (circleId) {
-		const circle = await prisma.circle.findUnique({
-			where: {
-				id: isNaN(Number(circleId)) ? undefined : Number(circleId),
-			},
-			select: {
-				members: true,
-				colead: true,
-				lead: true,
-			},
-		});
+	// // Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
+	// if (circleId) {
+	// 	const circle = await prisma.circle.findUnique({
+	// 		where: {
+	// 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+	// 		},
+	// 		select: {
+	// 			members: true,
+	// 			colead: true,
+	// 			lead: true,
+	// 		},
+	// 	});
 
-		if (!circle)
-			throw new CustomError(
-				"Invalid circle provided.",
-				StatusCodes.BAD_REQUEST
-			);
+	// 	if (!circle)
+	// 		throw new CustomError(
+	// 			"Invalid circle provided.",
+	// 			StatusCodes.BAD_REQUEST
+	// 		);
 
-		if (
-			!(
-				(circle.colead && circle.colead.id === req.user.id) ||
-				(circle.lead && circle.lead.id === req.user.id) ||
-				circle.members.find((member) => member.id === req.user.id)
-			)
-		)
-			throw new CustomError(
-				"You're not a member of the circle provided.",
-				StatusCodes.BAD_REQUEST
-			);
-	}
+	// 	if (
+	// 		!(
+	// 			(circle.colead && circle.colead.id === req.user.id) ||
+	// 			(circle.lead && circle.lead.id === req.user.id) ||
+	// 			circle.members.find((member) => member.id === req.user.id)
+	// 		)
+	// 	)
+	// 		throw new CustomError(
+	// 			"You're not a member of the circle provided.",
+	// 			StatusCodes.BAD_REQUEST
+	// 		);
+	// }
 
 	const Project = await prisma.project.create({
 		data: {
 			name,
 			description,
-			circleId: circleId ? Number(circleId) : undefined,
+			techUsed: techUsed ? techUsed.split(",") : undefined,
+			// circleId: circleId ? Number(circleId) : undefined,
 			createdById: req.user.id,
 			github: github ? github : undefined,
 			liveLink: liveLink ? liveLink : undefined,
+			pictures: pictures ? pictures : undefined,
 		},
 	});
 
@@ -176,7 +183,96 @@ export const createProject = async (req: Req, res: Response) => {
 };
 
 export const editProject = async (req: Req, res: Response) => {
-	return res.status(StatusCodes.OK).json({ success: true, data: "" });
+	const {
+		params: { id },
+		body: {
+			name,
+			description,
+			github,
+			techUsed,
+			liveLink,
+			visibility,
+			pictures,
+			pinned,
+		},
+	} = req;
+
+	const project = await prisma.project.findUnique({
+		where: { id },
+		select: {
+			circleId: true,
+			circle: {
+				select: {
+					lead: true,
+					colead: true,
+				},
+			},
+			pinned: true,
+		},
+	});
+
+	if (visibility && !(visibility === "PUBLIC" || visibility === "PRIVATE"))
+		throw new CustomError(
+			"Invalid visibility value provided.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (!project)
+		throw new CustomError("Project not found.", StatusCodes.BAD_REQUEST);
+
+	if (pinned !== undefined && pinned !== false && pinned !== true)
+		throw new CustomError(
+			"Invalid pinned value provided.",
+			StatusCodes.BAD_REQUEST
+		);
+	if (pinned !== undefined && project.circleId !== null) {
+		if (!project.circle)
+			throw new CustomError(
+				"Circle not found.",
+				StatusCodes.INTERNAL_SERVER_ERROR
+			);
+
+		if (pinned && project.pinned === true)
+			throw new CustomError(
+				"Project is already pinned.",
+				StatusCodes.BAD_REQUEST
+			);
+		if (!pinned && project.pinned === false)
+			throw new CustomError(
+				"Project is not currently pinned.",
+				StatusCodes.BAD_REQUEST
+			);
+
+		if (
+			!(
+				(project.circle.lead &&
+					project.circle.lead.id === req.user.id) ||
+				(project.circle.colead &&
+					project.circle.colead.id === req.user.id)
+			)
+		)
+			throw new CustomError(
+				"You do not have permission to pin/unpin this project.",
+				StatusCodes.BAD_REQUEST
+			);
+	}
+
+	const Project = await prisma.project.update({
+		where: { id },
+		data: {
+			name: name ? name : undefined,
+			description: description ? description : undefined,
+			github: github !== undefined ? github : undefined,
+			techUsed: techUsed ? techUsed.split(",") : undefined,
+			liveLink: liveLink !== undefined ? liveLink : undefined,
+			circleVisibility: visibility ? visibility : undefined,
+			pictures: pictures ? pictures : undefined,
+			pinned: pinned !== undefined ? pinned : undefined,
+			// circleId: circleId ? Number(circleId) : undefined,
+		},
+	});
+
+	return res.status(StatusCodes.OK).json({ success: true, data: Project });
 };
 
 export const deleteProject = async (req: Req, res: Response) => {

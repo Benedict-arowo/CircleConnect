@@ -81,12 +81,15 @@ model Project {
   description      String
   github           String?
   liveLink         String?
+  techUsed         String[]
+  pictures         String[]
   createdBy        User             @relation(fields: [createdById], references: [id])
   createdById      String
   circleVisibility circleVisibility @default(PUBLIC)
+  pinned           Boolean          @default(false)
   rating           ProjectRating[]
   circleId         Int?
-  circle           Circle?           @relation(fields: [circleId], references: [id])
+  circle           Circle?          @relation(fields: [circleId], references: [id])
   createdAt        DateTime         @default(now())
 }
 

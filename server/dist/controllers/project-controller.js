@@ -12,13 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProject = exports.editProject = exports.createProject = exports.getProject = exports.getProjects = void 0;
+exports.removeProjectFromCircle = exports.addProjectToCircle = exports.deleteProject = exports.editProject = exports.createProject = exports.getProject = exports.getProjects = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const CustomError_1 = __importDefault(require("../middlewear/CustomError"));
 const utils_1 = require("../utils");
 const db_1 = __importDefault(require("../model/db"));
 const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { limit = "10", sortedBy, userId, circleId } = req.query;
+    const { limit = "10", sortedBy, userId, circleId, pinned } = req.query;
     const sortedByValues = [
         "circle_id-asc",
         "circle_id-desc",
@@ -32,14 +32,9 @@ const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
     if (Number(limit) > 25 || Number(limit) < 1)
         throw new CustomError_1.default("Invalid limit, must be between 1 and 25", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    console.log(circleId
-        ? !isNaN(Number(circleId))
-            ? Number(circleId)
-            : undefined
-        : undefined);
     const Projects = yield db_1.default.project.findMany({
         where: {
-            OR: circleId
+            OR: circleId || userId || pinned
                 ? [
                     {
                         circleId: circleId
@@ -48,9 +43,12 @@ const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                                 : undefined
                             : undefined,
                     },
-                    // {
-                    // 	createdById: userId ? userId : undefined,
-                    // },
+                    {
+                        createdById: userId ? userId : undefined,
+                    },
+                    {
+                        pinned: pinned ? true : undefined,
+                    },
                 ]
                 : undefined,
         },
@@ -67,6 +65,7 @@ const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 : undefined,
         },
         select: {
+            id: true,
             name: true,
             description: true,
             circle: true,
@@ -76,7 +75,6 @@ const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             },
             liveLink: true,
             github: true,
-            id: true,
         },
         take: limit ? parseInt(limit) : undefined,
     });
@@ -110,43 +108,102 @@ const getProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.getProject = getProject;
 const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, description, circleId, github, liveLink } = req.body;
+    const { name, description, circleId, techUsed, github, liveLink, pictures, } = req.body;
     if (!name || !description)
         throw new CustomError_1.default("Name, and Description must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    // Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
-    if (circleId) {
-        const circle = yield db_1.default.circle.findUnique({
-            where: {
-                id: isNaN(Number(circleId)) ? undefined : Number(circleId),
-            },
-            select: {
-                members: true,
-                colead: true,
-                lead: true,
-            },
-        });
-        if (!circle)
-            throw new CustomError_1.default("Invalid circle provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-        if (!((circle.colead && circle.colead.id === req.user.id) ||
-            (circle.lead && circle.lead.id === req.user.id) ||
-            circle.members.find((member) => member.id === req.user.id)))
-            throw new CustomError_1.default("You're not a member of the circle provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    }
+    // // Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
+    // if (circleId) {
+    // 	const circle = await prisma.circle.findUnique({
+    // 		where: {
+    // 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+    // 		},
+    // 		select: {
+    // 			members: true,
+    // 			colead: true,
+    // 			lead: true,
+    // 		},
+    // 	});
+    // 	if (!circle)
+    // 		throw new CustomError(
+    // 			"Invalid circle provided.",
+    // 			StatusCodes.BAD_REQUEST
+    // 		);
+    // 	if (
+    // 		!(
+    // 			(circle.colead && circle.colead.id === req.user.id) ||
+    // 			(circle.lead && circle.lead.id === req.user.id) ||
+    // 			circle.members.find((member) => member.id === req.user.id)
+    // 		)
+    // 	)
+    // 		throw new CustomError(
+    // 			"You're not a member of the circle provided.",
+    // 			StatusCodes.BAD_REQUEST
+    // 		);
+    // }
     const Project = yield db_1.default.project.create({
         data: {
             name,
             description,
-            circleId: circleId ? Number(circleId) : undefined,
+            techUsed: techUsed ? techUsed.split(",") : undefined,
+            // circleId: circleId ? Number(circleId) : undefined,
             createdById: req.user.id,
             github: github ? github : undefined,
             liveLink: liveLink ? liveLink : undefined,
+            pictures: pictures ? pictures : undefined,
         },
     });
     return res.status(http_status_codes_1.StatusCodes.OK).json({ success: true, data: Project });
 });
 exports.createProject = createProject;
 const editProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    return res.status(http_status_codes_1.StatusCodes.OK).json({ success: true, data: "" });
+    const { params: { id }, body: { name, description, github, techUsed, liveLink, visibility, pictures, pinned, }, } = req;
+    const project = yield db_1.default.project.findUnique({
+        where: { id },
+        select: {
+            circleId: true,
+            circle: {
+                select: {
+                    lead: true,
+                    colead: true,
+                },
+            },
+            pinned: true,
+        },
+    });
+    if (visibility && !(visibility === "PUBLIC" || visibility === "PRIVATE"))
+        throw new CustomError_1.default("Invalid visibility value provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (!project)
+        throw new CustomError_1.default("Project not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (pinned !== undefined && pinned !== false && pinned !== true)
+        throw new CustomError_1.default("Invalid pinned value provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (pinned !== undefined && project.circleId !== null) {
+        if (!project.circle)
+            throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
+        if (pinned && project.pinned === true)
+            throw new CustomError_1.default("Project is already pinned.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        if (!pinned && project.pinned === false)
+            throw new CustomError_1.default("Project is not currently pinned.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        if (!((project.circle.lead &&
+            project.circle.lead.id === req.user.id) ||
+            (project.circle.colead &&
+                project.circle.colead.id === req.user.id)))
+            throw new CustomError_1.default("You do not have permission to pin/unpin this project.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
+    const Project = yield db_1.default.project.update({
+        where: { id },
+        data: {
+            name: name ? name : undefined,
+            description: description ? description : undefined,
+            github: github !== undefined ? github : undefined,
+            techUsed: techUsed ? techUsed.split(",") : undefined,
+            liveLink: liveLink !== undefined ? liveLink : undefined,
+            circleVisibility: visibility ? visibility : undefined,
+            pictures: pictures ? pictures : undefined,
+            pinned: pinned !== undefined ? pinned : undefined,
+            // circleId: circleId ? Number(circleId) : undefined,
+        },
+    });
+    return res.status(http_status_codes_1.StatusCodes.OK).json({ success: true, data: Project });
 });
 exports.editProject = editProject;
 const deleteProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
