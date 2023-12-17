@@ -33,6 +33,13 @@ type useToastPromise = {
 	loadingMsg: string;
 };
 
+type alertType = {
+	doneFunc: () => void;
+	header: string;
+	body: string;
+	doneText: string;
+};
+
 export type makeReq = {
 	url: string;
 	method: "GET" | "POST" | "PATCH" | "DELETE";
@@ -53,14 +60,13 @@ const Circle = () => {
 		isVisitor: true,
 		isRequesting: false,
 	});
-	const [alertState, setAlertState] = useState({
+	const [alertState, setAlertState] = useState<alertType>({
 		header: "",
 		body: "",
 		doneFunc: function () {},
 		doneText: "",
 	});
 	const [isLoading, setIsLoading] = useState(true);
-	const [memberContentLoading, setMemberContentLoading] = useState(false);
 	const [err, setErr] = useState(null);
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const {
@@ -324,33 +330,33 @@ const Circle = () => {
 	// 	});
 	// };
 
-	const submitDescription = () => {
-		if (!circle) return;
+	// const submitDescription = () => {
+	// 	if (!circle) return;
 
-		const submitDescriptionFetch = UseFetch({
-			url: `circle/${circle.id}`,
-			options: {
-				method: "PATCH",
-				body: {
-					description,
-				},
-				returnResponse: true,
-				useServerUrl: true,
-				handleError: false,
-			},
-		});
+	// 	const submitDescriptionFetch = UseFetch({
+	// 		url: `circle/${circle.id}`,
+	// 		options: {
+	// 			method: "PATCH",
+	// 			body: {
+	// 				description,
+	// 			},
+	// 			returnResponse: true,
+	// 			useServerUrl: true,
+	// 			handleError: false,
+	// 		},
+	// 	});
 
-		UseToastPromise({
-			fetch: submitDescriptionFetch,
-			loadingMsg: "Saving new circle description.",
-			successMsg: "Successfully saved new circle description.",
-			successFunc: () => {
-				settingsDrawerOnClose();
-				fetchCircle();
-				setDescription(() => "");
-			},
-		});
-	};
+	// 	UseToastPromise({
+	// 		fetch: submitDescriptionFetch,
+	// 		loadingMsg: "Saving new circle description.",
+	// 		successMsg: "Successfully saved new circle description.",
+	// 		successFunc: () => {
+	// 			settingsDrawerOnClose();
+	// 			fetchCircle();
+	// 			setDescription(() => "");
+	// 		},
+	// 	});
+	// };
 
 	// const deleteCircle = async () => {
 	// 	if (!circle) return;
@@ -376,42 +382,42 @@ const Circle = () => {
 	// 	});
 	// };
 
-	const addToCircle = async (projectId: string) => {
-		const data = await UseFetch({
-			url: `project/${projectId}/addToCircle`,
-			options: {
-				body: {
-					circleId: id,
-				},
-				method: "PATCH",
-				returnResponse: true,
-				useServerUrl: true,
-				handleError: false,
-			},
-		});
+	// const addToCircle = async (projectId: string) => {
+	// 	const data = await UseFetch({
+	// 		url: `project/${projectId}/addToCircle`,
+	// 		options: {
+	// 			body: {
+	// 				circleId: id,
+	// 			},
+	// 			method: "PATCH",
+	// 			returnResponse: true,
+	// 			useServerUrl: true,
+	// 			handleError: false,
+	// 		},
+	// 	});
 
-		fetchCircle();
-	};
+	// 	fetchCircle();
+	// };
 
-	const removeFromCircle = async (projectId: string) => {
-		UseToastPromise({
-			fetch: UseFetch({
-				url: `project/${projectId}/removeFromCircle`,
-				options: {
-					body: {
-						circleId: id,
-					},
-					method: "DELETE",
-					returnResponse: true,
-					useServerUrl: true,
-					handleError: false,
-				},
-			}),
-			loadingMsg: "Please wait while we try to remove this project.",
-			successMsg: "Successfully removed the project.",
-			successFunc: fetchCircle,
-		});
-	};
+	// const removeFromCircle = async (projectId: string) => {
+	// 	UseToastPromise({
+	// 		fetch: UseFetch({
+	// 			url: `project/${projectId}/removeFromCircle`,
+	// 			options: {
+	// 				body: {
+	// 					circleId: id,
+	// 				},
+	// 				method: "DELETE",
+	// 				returnResponse: true,
+	// 				useServerUrl: true,
+	// 				handleError: false,
+	// 			},
+	// 		}),
+	// 		loadingMsg: "Please wait while we try to remove this project.",
+	// 		successMsg: "Successfully removed the project.",
+	// 		successFunc: fetchCircle,
+	// 	});
+	// };
 
 	const UserProjects = async () => {
 		const {
@@ -464,16 +470,17 @@ const Circle = () => {
 															doneText:
 																"Leave Circle",
 															header: "Leave Circle",
-															doneFunc: makeReq({
-																url: `circle/${circle.id}/leave`,
-																method: "PATCH",
-																loadingMsg:
-																	"Please wait while we try to leave the circle.",
-																successMsg:
-																	"Successfully left circle.",
-																successFunc:
-																	fetchCircle,
-															}),
+															doneFunc: () =>
+																makeReq({
+																	url: `circle/${circle.id}/leave`,
+																	method: "PATCH",
+																	loadingMsg:
+																		"Please wait while we try to leave the circle.",
+																	successMsg:
+																		"Successfully left circle.",
+																	successFunc:
+																		fetchCircle,
+																}),
 														};
 													});
 													onOpen();
@@ -588,21 +595,22 @@ const Circle = () => {
 															doneText:
 																"Delete Circle",
 															header: "Delete Circle",
-															doneFunc: makeReq({
-																url: `circle/${circle.id}`,
-																method: "DELETE",
-																loadingMsg:
-																	"Please wait while we try to delete the circle.",
-																successMsg:
-																	"Successfully deleted the circle.",
-																successFunc:
-																	() => {
-																		onClose();
-																		Navigate(
-																			"/"
-																		);
-																	},
-															}),
+															doneFunc: () =>
+																makeReq({
+																	url: `circle/${circle.id}`,
+																	method: "DELETE",
+																	loadingMsg:
+																		"Please wait while we try to delete the circle.",
+																	successMsg:
+																		"Successfully deleted the circle.",
+																	successFunc:
+																		() => {
+																			onClose();
+																			Navigate(
+																				"/"
+																			);
+																		},
+																}),
 														};
 													});
 													onOpen();
@@ -638,18 +646,15 @@ const Circle = () => {
 									)
 								</span>
 							</div>
-							{memberContentLoading && <Spinner />}
-							{!memberContentLoading && (
-								<AvatarGroup
-									max={5}
-									className="flex flex-row justify-center gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-[180px] py-4 px-12 ">
-									{displayMembers([
-										circle.lead,
-										circle.colead,
-										...circle.members,
-									])}
-								</AvatarGroup>
-							)}
+							<AvatarGroup
+								max={5}
+								className="flex flex-row justify-center gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-[180px] py-4 px-12 ">
+								{displayMembers([
+									circle.lead,
+									circle.colead,
+									...circle.members,
+								])}
+							</AvatarGroup>
 						</section>
 
 						<section className="mt-16">
@@ -994,7 +999,26 @@ const Circle = () => {
 											}
 										/>
 										<button
-											onClick={submitDescription}
+											onClick={() => {
+												makeReq({
+													url: `circle/${circle.id}`,
+													method: "PATCH",
+													body: {
+														description,
+													},
+													loadingMsg:
+														"Saving new circle description.",
+													successMsg:
+														"Successfully saved new circle description.",
+													successFunc: () => {
+														settingsDrawerOnClose();
+														fetchCircle();
+														setDescription(
+															() => ""
+														);
+													},
+												});
+											}}
 											className="bg-red-500 text-white px-4 py-1 w-fit mt-2">
 											Save Description
 										</button>
@@ -1024,40 +1048,76 @@ const Circle = () => {
 											</div>
 										)}
 										{userProjects.length > 0 &&
-											userProjects.map(({ name, id }) => {
-												const inCircle =
-													circle.projects.find(
-														(project) =>
-															project.id === id
+											userProjects.map(
+												({ name, id: projectId }) => {
+													const inCircle =
+														circle.projects.find(
+															(project) =>
+																project.id ===
+																projectId
+														);
+													return (
+														<div
+															className="flex flex-row justify-between gap-4"
+															key={id}>
+															<p>{name}</p>
+															{!inCircle && (
+																<button
+																	onClick={() =>
+																		// addToCircle(
+																		// 	projectId
+																		// )
+																		makeReq(
+																			{
+																				url: `project/${projectId}/addToCircle`,
+
+																				body: {
+																					circleId:
+																						id,
+																				},
+																				method: "PATCH",
+																				loadingMsg:
+																					"Adding project to circle projects.",
+																				successMsg:
+																					"Successfully added the project.",
+																				successFunc:
+																					fetchCircle,
+																			}
+																		)
+																	}>
+																	Add
+																</button>
+															)}
+															{inCircle && (
+																<button
+																	onClick={() =>
+																		// removeFromCircle(
+																		// 	id
+																		// )
+																		makeReq(
+																			{
+																				url: `project/${projectId}/removeFromCircle`,
+																				body: {
+																					circleId:
+																						id,
+																				},
+																				method: "DELETE",
+																				loadingMsg:
+																					"Please wait while we try to remove this project.",
+																				successMsg:
+																					"Successfully removed the project.",
+																				successFunc:
+																					fetchCircle,
+																			}
+																		)
+																	}>
+																	Remove
+																</button>
+															)}
+														</div>
 													);
-												return (
-													<div
-														className="flex flex-row justify-between gap-4"
-														key={id}>
-														<p>{name}</p>
-														{!inCircle && (
-															<button
-																onClick={() =>
-																	addToCircle(
-																		id
-																	)
-																}>
-																Add
-															</button>
-														)}
-														{inCircle && (
-															<button
-																onClick={() =>
-																	removeFromCircle(
-																		id
-																	)
-																}>
-																Remove
-															</button>
-														)}
-													</div>
-												);
-											})}
+												}
+											)}
 									</div>
 								</DrawerBody>
 							</DrawerContent>
