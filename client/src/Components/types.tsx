@@ -21,6 +21,7 @@ export type ProjectsType = {
 	createdBy: CircleMemberType;
 	liveLink: string;
 	github: string;
+	techUsed: string[];
 	pinned: boolean;
 	id: string;
 };

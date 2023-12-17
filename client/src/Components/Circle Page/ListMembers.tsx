@@ -1,8 +1,9 @@
+import { makeReq } from "../../pages/Circle";
 import { CircleType } from "../types";
 
 type Props = {
 	circle: CircleType;
-	removeUser: (circleId: number, userId: string) => Promise<void>;
+	// removeUser: (circleId: number, userId: string) => Promise<void>;
 	setAlertState: React.Dispatch<
 		React.SetStateAction<{
 			header: string;
@@ -12,17 +13,28 @@ type Props = {
 		}>
 	>;
 	onOpen: () => void;
-	promoteUser: (circleId: number, memberId: string) => Promise<void>;
-	demoteUser: (circleId: number, memberId: string) => Promise<void>;
+	// promoteUser: (circleId: number, memberId: string) => Promise<void>;
+	// demoteUser: (circleId: number, memberId: string) => Promise<void>;
+	makeReq: ({
+		url,
+		method,
+		body,
+		loadingMsg,
+		successMsg,
+		successFunc,
+	}: makeReq) => Promise<void>;
+	fetchCircle: () => void;
 };
 
 const ListMembers = ({
 	circle,
-	removeUser,
-	promoteUser,
-	demoteUser,
+	// removeUser,
+	// promoteUser,
+	// demoteUser,
 	onOpen,
 	setAlertState,
+	fetchCircle,
+	makeReq,
 }: Props) => {
 	return circle.members.map((member) => {
 		console.log(member);
@@ -40,8 +52,20 @@ const ListMembers = ({
 								return {
 									body: "Are you sure you want to promote this user? You may not be able to undo this action afterwards.",
 									doneText: "Promote user",
-									doneFunc: () =>
-										promoteUser(circle.id, member.id),
+									doneFunc: makeReq({
+										url: `circle/${circle.id}`,
+										method: "PATCH",
+										body: {
+											manageUser: {
+												action: "PROMOTE",
+												userId: member.id,
+											},
+										},
+										loadingMsg: "Promoting user...",
+										successMsg:
+											"Successfully promoted user.",
+										successFunc: fetchCircle,
+									}),
 									header: "Promote user",
 								};
 							});
@@ -56,8 +80,23 @@ const ListMembers = ({
 								return {
 									body: "Are you sure you want to demote this user?",
 									doneText: "Demote user",
-									doneFunc: () =>
-										demoteUser(circle.id, member.id),
+									doneFunc:
+										// () =>
+										// 	demoteUser(circle.id, member.id),
+										makeReq({
+											url: `circle/${circle.id}`,
+											method: "PATCH",
+											body: {
+												manageUser: {
+													action: "DEMOTE",
+													userId: member.id,
+												},
+											},
+											loadingMsg: "Demoting user...",
+											successMsg:
+												"Successfully demoted user.",
+											successFunc: fetchCircle,
+										}),
 									header: "Demote user",
 								};
 							});
@@ -76,8 +115,19 @@ const ListMembers = ({
 								return {
 									body: "Are you sure you want to remove this user? You can't undo this action afterwards.",
 									doneText: "Remove user",
-									doneFunc: () =>
-										removeUser(circle.id, member.id),
+									doneFunc: makeReq({
+										url: `circle/${circle.id}`,
+										method: "PATCH",
+										body: {
+											removeUser: {
+												userId: member.id,
+											},
+										},
+										loadingMsg: "Removing user...",
+										successMsg:
+											"Successfully removed user from circle.",
+										successFunc: fetchCircle,
+									}),
 									header: "Remove user",
 								};
 							});

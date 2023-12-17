@@ -144,7 +144,7 @@ const createProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         data: {
             name,
             description,
-            techUsed: techUsed ? techUsed.split(",") : undefined,
+            techUsed: techUsed ? techUsed : undefined,
             // circleId: circleId ? Number(circleId) : undefined,
             createdById: req.user.id,
             github: github ? github : undefined,
@@ -189,13 +189,21 @@ const editProject = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 project.circle.colead.id === req.user.id)))
             throw new CustomError_1.default("You do not have permission to pin/unpin this project.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     }
+    if (techUsed) {
+        if (!Array.isArray(techUsed))
+            throw new CustomError_1.default("techUsed must be an array.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        techUsed.forEach((tech) => {
+            if (typeof tech !== "string")
+                throw new CustomError_1.default("Tech used must be an array of strings.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        });
+    }
     const Project = yield db_1.default.project.update({
         where: { id },
         data: {
             name: name ? name : undefined,
             description: description ? description : undefined,
             github: github !== undefined ? github : undefined,
-            techUsed: techUsed ? techUsed.split(",") : undefined,
+            techUsed: techUsed ? techUsed : undefined,
             liveLink: liveLink !== undefined ? liveLink : undefined,
             circleVisibility: visibility ? visibility : undefined,
             pictures: pictures ? pictures : undefined,

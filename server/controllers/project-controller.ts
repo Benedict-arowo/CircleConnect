@@ -170,7 +170,7 @@ export const createProject = async (req: Req, res: Response) => {
 		data: {
 			name,
 			description,
-			techUsed: techUsed ? techUsed.split(",") : undefined,
+			techUsed: techUsed ? techUsed : undefined,
 			// circleId: circleId ? Number(circleId) : undefined,
 			createdById: req.user.id,
 			github: github ? github : undefined,
@@ -225,6 +225,7 @@ export const editProject = async (req: Req, res: Response) => {
 			"Invalid pinned value provided.",
 			StatusCodes.BAD_REQUEST
 		);
+
 	if (pinned !== undefined && project.circleId !== null) {
 		if (!project.circle)
 			throw new CustomError(
@@ -257,13 +258,28 @@ export const editProject = async (req: Req, res: Response) => {
 			);
 	}
 
+	if (techUsed) {
+		if (!Array.isArray(techUsed))
+			throw new CustomError(
+				"techUsed must be an array.",
+				StatusCodes.BAD_REQUEST
+			);
+		techUsed.forEach((tech) => {
+			if (typeof tech !== "string")
+				throw new CustomError(
+					"Tech used must be an array of strings.",
+					StatusCodes.BAD_REQUEST
+				);
+		});
+	}
+
 	const Project = await prisma.project.update({
 		where: { id },
 		data: {
 			name: name ? name : undefined,
 			description: description ? description : undefined,
 			github: github !== undefined ? github : undefined,
-			techUsed: techUsed ? techUsed.split(",") : undefined,
+			techUsed: techUsed ? techUsed : undefined,
 			liveLink: liveLink !== undefined ? liveLink : undefined,
 			circleVisibility: visibility ? visibility : undefined,
 			pictures: pictures ? pictures : undefined,

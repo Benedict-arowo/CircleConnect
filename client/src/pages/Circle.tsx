@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Nav from "../Components/Nav";
 import UseFetch from "../Components/Fetch";
 import { Button, Spinner, useDisclosure, useToast } from "@chakra-ui/react";
-import ProjectsComponent from "../Components/project_component";
+// import ProjectsComponent from "../Components/project_component";
 import { CircleMemberType, CircleType } from "../Components/types";
 import {
 	AlertDialog,
@@ -25,13 +25,21 @@ import { useSelector } from "react-redux";
 import ListMembers from "../Components/Circle Page/ListMembers";
 import ListRequests from "../Components/Circle Page/ListRequests";
 import ListProjects from "../Components/Circle Page/ListProjects";
-import { pinProject } from "../types";
 
 type useToastPromise = {
 	fetch: Promise<any>;
 	successMsg: string;
 	successFunc?: () => void;
 	loadingMsg: string;
+};
+
+export type makeReq = {
+	url: string;
+	method: "GET" | "POST" | "PATCH" | "DELETE";
+	body?: object;
+	loadingMsg?: string;
+	successMsg: string;
+	successFunc?: () => void;
 };
 
 const Circle = () => {
@@ -48,7 +56,7 @@ const Circle = () => {
 	const [alertState, setAlertState] = useState({
 		header: "",
 		body: "",
-		doneFunc: () => {},
+		doneFunc: function () {},
 		doneText: "",
 	});
 	const [isLoading, setIsLoading] = useState(true);
@@ -113,24 +121,27 @@ const Circle = () => {
 		});
 	};
 
-	const pinProject = async ({ id, status }: pinProject) => {
+	const makeReq = async ({
+		url,
+		method,
+		body,
+		loadingMsg,
+		successMsg,
+		successFunc,
+	}: makeReq) => {
 		UseToastPromise({
 			fetch: UseFetch({
-				url: `project/${id}`,
+				url,
 				options: {
-					method: "PATCH",
+					method,
 					useServerUrl: true,
 					returnResponse: true,
-					body: {
-						pinned: status,
-					},
+					body,
 				},
 			}),
-			loadingMsg: "Loading...",
-			successMsg: `Successfully ${
-				status ? "pinned" : "unpinned"
-			} project.`,
-			successFunc: fetchCircle,
+			loadingMsg: loadingMsg ? loadingMsg : "Loading...",
+			successMsg,
+			successFunc,
 		});
 	};
 
@@ -153,115 +164,6 @@ const Circle = () => {
 					</a>
 				);
 			}
-		});
-	};
-
-	const acceptRequest = async (circleId: number, userId: string) => {
-		UseToastPromise({
-			fetch: UseFetch({
-				url: `circle/${circleId}`,
-				options: {
-					method: "PATCH",
-					useServerUrl: true,
-					returnResponse: true,
-					body: {
-						request: {
-							type: "ACCEPT",
-							userId,
-						},
-					},
-				},
-			}),
-			loadingMsg: "Accepting join request...",
-			successMsg: "Successfully accepted user's join request.",
-			successFunc: fetchCircle,
-		});
-	};
-
-	const declineRequest = async (circleId: number, userId: string) => {
-		UseToastPromise({
-			fetch: UseFetch({
-				url: `circle/${circleId}`,
-				options: {
-					method: "PATCH",
-					useServerUrl: true,
-					returnResponse: true,
-					body: {
-						request: {
-							type: "DECLINE",
-							userId,
-						},
-					},
-				},
-			}),
-			loadingMsg: "Declining join request...",
-			successMsg: "Successfully declined user's join request.",
-			successFunc: fetchCircle,
-		});
-	};
-
-	const removeUser = async (circleId: number, userId: string) => {
-		UseToastPromise({
-			fetch: UseFetch({
-				url: `circle/${circleId}`,
-				options: {
-					method: "PATCH",
-					useServerUrl: true,
-					returnResponse: true,
-					body: {
-						removeUser: {
-							userId,
-						},
-					},
-				},
-			}),
-			loadingMsg: "Removing user...",
-			successMsg: "Successfully removed user from circle.",
-			successFunc: fetchCircle,
-		});
-	};
-
-	const promoteUser = async (circleId: number, userId: string) => {
-		UseToastPromise({
-			fetch: UseFetch({
-				url: `circle/${circleId}`,
-				options: {
-					method: "PATCH",
-					useServerUrl: true,
-					returnResponse: true,
-					body: {
-						manageUser: {
-							action: "PROMOTE",
-							userId,
-						},
-					},
-				},
-			}),
-			loadingMsg: "Promoting user...",
-			successMsg: "Successfully promoted user.",
-			successFunc: fetchCircle,
-		});
-	};
-
-	const demoteUser = async (circleId: number, userId: string) => {
-		UseToastPromise({
-			fetch: UseFetch({
-				url: `circle/${circleId}`,
-				options: {
-					method: "PATCH",
-					useServerUrl: true,
-					returnResponse: true,
-					body: {
-						manageUser: {
-							action: "DEMOTE",
-							userId,
-						},
-					},
-				},
-			}),
-			loadingMsg: "Demoting user...",
-			successMsg: "Successfully demoted user.",
-			successFunc: fetchCircle,
 		});
 	};
 
@@ -359,68 +261,68 @@ const Circle = () => {
 			});
 	};
 
-	const joinCircle = async () => {
-		if (!circle) return;
+	// const joinCircle = async () => {
+	// 	if (!circle) return;
 
-		const joinCircleFetch = UseFetch({
-			url: `circle/request/join/${circle.id}`,
-			options: {
-				method: "POST",
-				returnResponse: true,
-				useServerUrl: true,
-				handleError: false,
-			},
-		});
+	// 	const joinCircleFetch = UseFetch({
+	// 		url: `circle/request/join/${circle.id}`,
+	// 		options: {
+	// 			method: "POST",
+	// 			returnResponse: true,
+	// 			useServerUrl: true,
+	// 			handleError: false,
+	// 		},
+	// 	});
 
-		UseToastPromise({
-			fetch: joinCircleFetch,
-			loadingMsg: "Please wait while we try to join the circle.",
-			successMsg: "Successfully requested to join the circle.",
-			successFunc: fetchCircle,
-		});
-	};
+	// 	UseToastPromise({
+	// 		fetch: joinCircleFetch,
+	// 		loadingMsg: "Please wait while we try to join the circle.",
+	// 		successMsg: "Successfully requested to join the circle.",
+	// 		successFunc: fetchCircle,
+	// 	});
+	// };
 
-	const canceljoinCircle = async () => {
-		if (!circle) return;
+	// const canceljoinCircle = async () => {
+	// 	if (!circle) return;
 
-		const leaveCircleRequestFetch = UseFetch({
-			url: `circle/request/leave/${circle.id}`,
-			options: {
-				method: "POST",
-				returnResponse: true,
-				useServerUrl: true,
-				handleError: false,
-			},
-		});
+	// 	const leaveCircleRequestFetch = UseFetch({
+	// 		url: `circle/request/leave/${circle.id}`,
+	// 		options: {
+	// 			method: "POST",
+	// 			returnResponse: true,
+	// 			useServerUrl: true,
+	// 			handleError: false,
+	// 		},
+	// 	});
 
-		UseToastPromise({
-			fetch: leaveCircleRequestFetch,
-			loadingMsg: "Please wait while we try to leave the circle request.",
-			successMsg: "Successfully left circle request.",
-			successFunc: fetchCircle,
-		});
-	};
+	// 	UseToastPromise({
+	// 		fetch: leaveCircleRequestFetch,
+	// 		loadingMsg: "Please wait while we try to leave the circle request.",
+	// 		successMsg: "Successfully left circle request.",
+	// 		successFunc: fetchCircle,
+	// 	});
+	// };
 
-	const leaveCircle = async () => {
-		if (!circle) return;
+	// const leaveCircle = async () => {
+	// 	if (!circle) return;
 
-		const leaveCircleFetch = UseFetch({
-			url: `circle/${circle.id}/leave`,
-			options: {
-				method: "PATCH",
-				returnResponse: true,
-				useServerUrl: true,
-				handleError: false,
-			},
-		});
+	// 	const leaveCircleFetch = UseFetch({
+	// 		url: `circle/${circle.id}/leave`,
+	// 		options: {
+	// 			method: "PATCH",
+	// 			returnResponse: true,
+	// 			useServerUrl: true,
+	// 			handleError: false,
+	// 		},
+	// 	});
 
-		UseToastPromise({
-			fetch: leaveCircleFetch,
-			loadingMsg: "Please wait while we try to leave the circle.",
-			successMsg: "Successfully left circle.",
-			successFunc: fetchCircle,
-		});
-	};
+	// 	UseToastPromise({
+	// 		fetch: leaveCircleFetch,
+	// 		loadingMsg: "Please wait while we try to leave the circle.",
+	// 		successMsg: "Successfully left circle.",
+	// 		successFunc: fetchCircle,
+	// 	});
+	// };
 
 	const submitDescription = () => {
 		if (!circle) return;
@@ -450,29 +352,29 @@ const Circle = () => {
 		});
 	};
 
-	const deleteCircle = async () => {
-		if (!circle) return;
+	// const deleteCircle = async () => {
+	// 	if (!circle) return;
 
-		const deleteCircleFetch = UseFetch({
-			url: `circle/${circle.id}`,
-			options: {
-				method: "DELETE",
-				returnResponse: true,
-				useServerUrl: true,
-				handleError: false,
-			},
-		});
+	// 	const deleteCircleFetch = UseFetch({
+	// 		url: `circle/${circle.id}`,
+	// 		options: {
+	// 			method: "DELETE",
+	// 			returnResponse: true,
+	// 			useServerUrl: true,
+	// 			handleError: false,
+	// 		},
+	// 	});
 
-		UseToastPromise({
-			fetch: deleteCircleFetch,
-			loadingMsg: "Please wait while we try to delete the circle.",
-			successMsg: "Successfully deleted the circle.",
-			successFunc: () => {
-				onClose();
-				Navigate("/");
-			},
-		});
-	};
+	// 	UseToastPromise({
+	// 		fetch: deleteCircleFetch,
+	// 		loadingMsg: "Please wait while we try to delete the circle.",
+	// 		successMsg: "Successfully deleted the circle.",
+	// 		successFunc: () => {
+	// 			onClose();
+	// 			Navigate("/");
+	// 		},
+	// 	});
+	// };
 
 	const addToCircle = async (projectId: string) => {
 		const data = await UseFetch({
@@ -507,23 +409,6 @@ const Circle = () => {
 			}),
 			loadingMsg: "Please wait while we try to remove this project.",
 			successMsg: "Successfully removed the project.",
-			successFunc: fetchCircle,
-		});
-	};
-
-	const deleteProject = async (projectId: string) => {
-		UseToastPromise({
-			fetch: UseFetch({
-				url: `project/${projectId}`,
-				options: {
-					method: "DELETE",
-					returnResponse: true,
-					useServerUrl: true,
-					handleError: false,
-				},
-			}),
-			loadingMsg: "Deleting project...",
-			successMsg: "Successfully deleted the project.",
 			successFunc: fetchCircle,
 		});
 	};
@@ -579,8 +464,16 @@ const Circle = () => {
 															doneText:
 																"Leave Circle",
 															header: "Leave Circle",
-															doneFunc:
-																leaveCircle,
+															doneFunc: makeReq({
+																url: `circle/${circle.id}/leave`,
+																method: "PATCH",
+																loadingMsg:
+																	"Please wait while we try to leave the circle.",
+																successMsg:
+																	"Successfully left circle.",
+																successFunc:
+																	fetchCircle,
+															}),
 														};
 													});
 													onOpen();
@@ -592,14 +485,36 @@ const Circle = () => {
 										{!state.isMember &&
 											!state.isRequesting && (
 												<button
-													onClick={joinCircle}
+													onClick={() =>
+														makeReq({
+															url: `circle/request/join/${circle.id}`,
+															method: "POST",
+															loadingMsg:
+																"Please wait while we try to join the circle.",
+															successMsg:
+																"Successfully requested to join the circle.",
+															successFunc:
+																fetchCircle,
+														})
+													}
 													className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1">
 													REQUEST TO JOIN
 												</button>
 											)}
 										{state.isRequesting && (
 											<button
-												onClick={canceljoinCircle}
+												onClick={() =>
+													makeReq({
+														url: `circle/request/leave/${circle.id}`,
+														method: "POST",
+														loadingMsg:
+															"Please wait while we try to leave the circle request.",
+														successMsg:
+															"Successfully left circle request.",
+														successFunc:
+															fetchCircle,
+													})
+												}
 												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1">
 												CANCEL JOIN REQUEST
 											</button>
@@ -673,8 +588,21 @@ const Circle = () => {
 															doneText:
 																"Delete Circle",
 															header: "Delete Circle",
-															doneFunc:
-																deleteCircle,
+															doneFunc: makeReq({
+																url: `circle/${circle.id}`,
+																method: "DELETE",
+																loadingMsg:
+																	"Please wait while we try to delete the circle.",
+																successMsg:
+																	"Successfully deleted the circle.",
+																successFunc:
+																	() => {
+																		onClose();
+																		Navigate(
+																			"/"
+																		);
+																	},
+															}),
 														};
 													});
 													onOpen();
@@ -739,11 +667,10 @@ const Circle = () => {
 											project.pinned ? true : false
 									)}
 									circle={circle}
-									pinProject={pinProject}
+									makeReq={makeReq}
+									fetchCircle={fetchCircle}
 									setAlertState={setAlertState}
 									onOpen={onOpen}
-									deleteProject={deleteProject}
-									removeFromCircle={removeFromCircle}
 								/>
 							</section>
 						</section>
@@ -758,13 +685,15 @@ const Circle = () => {
 							<section className="flex flex-row gap-8 flex-wrap justify-center pt-2">
 								<ListProjects
 									showManageMenu={true}
-									projects={circle.projects}
+									projects={circle.projects.filter(
+										(project) =>
+											!project.pinned ? true : false
+									)}
 									setAlertState={setAlertState}
+									makeReq={makeReq}
+									fetchCircle={fetchCircle}
 									circle={circle}
 									onOpen={onOpen}
-									pinProject={pinProject}
-									deleteProject={deleteProject}
-									removeFromCircle={removeFromCircle}
 								/>
 							</section>
 						</section>
@@ -818,11 +747,15 @@ const Circle = () => {
 											{circle.requests.length > 0 && (
 												<div className="flex flex-col gap-2 mt-1">
 													<ListRequests
-														acceptRequest={
-															acceptRequest
-														}
-														declineRequest={
-															declineRequest
+														// acceptRequest={
+														// 	acceptRequest
+														// }
+														// declineRequest={
+														// 	declineRequest
+														// }
+														makeReq={makeReq}
+														fetchCircle={
+															fetchCircle
 														}
 														circle={circle}
 													/>
@@ -856,11 +789,32 @@ const Circle = () => {
 																			"Promote user",
 																		doneFunc:
 																			() =>
-																				promoteUser(
-																					circle.id,
-																					circle
-																						.colead
-																						.id
+																				// promoteUser(
+																				// 	circle.id,
+																				// 	circle
+																				// 		.colead
+																				// 		.id
+																				// ),
+																				makeReq(
+																					{
+																						url: `circle/${circle.id}`,
+																						method: "PATCH",
+																						body: {
+																							manageUser:
+																								{
+																									action: "PROMOTE",
+																									userId: circle
+																										.colead
+																										.id,
+																								},
+																						},
+																						loadingMsg:
+																							"Promoting user...",
+																						successMsg:
+																							"Successfully promoted user.",
+																						successFunc:
+																							fetchCircle,
+																					}
 																				),
 																		header: "Promote user",
 																	};
@@ -881,11 +835,32 @@ const Circle = () => {
 																			"Demote user",
 																		doneFunc:
 																			() =>
-																				demoteUser(
-																					circle.id,
-																					circle
-																						.colead
-																						.id
+																				// demoteUser(
+																				// 	circle.id,
+																				// 	circle
+																				// 		.colead
+																				// 		.id
+																				// ),
+																				makeReq(
+																					{
+																						url: `circle/${circle.id}`,
+																						method: "PATCH",
+																						body: {
+																							manageUser:
+																								{
+																									action: "DEMOTE",
+																									userId: circle
+																										.colead
+																										.id,
+																								},
+																						},
+																						loadingMsg:
+																							"Demoting user...",
+																						successMsg:
+																							"Successfully demoted user.",
+																						successFunc:
+																							fetchCircle,
+																					}
 																				),
 																		header: "Demote user",
 																	};
@@ -910,11 +885,32 @@ const Circle = () => {
 																			"Remove user",
 																		doneFunc:
 																			() =>
-																				removeUser(
-																					circle.id,
-																					circle
-																						.colead
-																						.id
+																				// removeUser(
+																				// 	circle.id,
+																				// 	circle
+																				// 		.colead
+																				// 		.id
+																				// ),
+
+																				makeReq(
+																					{
+																						url: `circle/${id}`,
+																						method: "PATCH",
+																						body: {
+																							removeUser:
+																								{
+																									userId: circle
+																										.colead
+																										.id,
+																								},
+																						},
+																						loadingMsg:
+																							"Removing user...",
+																						successMsg:
+																							"Successfully removed user from circle.",
+																						successFunc:
+																							fetchCircle,
+																					}
 																				),
 																		header: "Remove user",
 																	};
@@ -944,13 +940,17 @@ const Circle = () => {
 													<ListMembers
 														circle={circle}
 														onOpen={onOpen}
-														removeUser={removeUser}
-														promoteUser={
-															promoteUser
-														}
-														demoteUser={demoteUser}
+														// removeUser={removeUser}
+														// promoteUser={
+														// 	promoteUser
+														// }
+														// demoteUser={demoteUser}
 														setAlertState={
 															setAlertState
+														}
+														makeReq={makeReq}
+														fetchCircle={
+															fetchCircle
 														}
 													/>
 												</div>
@@ -1023,7 +1023,7 @@ const Circle = () => {
 												</p>
 											</div>
 										)}
-										{userProjects.length > 1 &&
+										{userProjects.length > 0 &&
 											userProjects.map(({ name, id }) => {
 												const inCircle =
 													circle.projects.find(

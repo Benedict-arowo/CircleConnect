@@ -46,7 +46,7 @@ export interface Req extends Request {
 		pinned?: boolean;
 		github?: string;
 		liveLink?: string;
-		techUsed?: string;
+		techUsed?: string[];
 		visibility?: "PUBLIC" | "PRIVATE";
 		request?: {
 			type: "ACCEPT" | "DECLINE";
