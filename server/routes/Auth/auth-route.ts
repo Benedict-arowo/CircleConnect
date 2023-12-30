@@ -1,3 +1,10 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: The authentication API route
+ */
+
 import { NextFunction, Request, Response } from "express";
 import wrapper from "../../middlewear/wrapper";
 import { Req } from "../../types";
@@ -25,6 +32,28 @@ router.get(
 		res.status(StatusCodes.OK).json(user);
 	})
 );
+
+/**
+ * @swagger
+ * /logout:
+ *   post:
+ *     summary: Log out user and clear session
+ *     tags:
+ *       - Authentication
+ *     description: Logs out the user, clears the JWT token cookie, and redirects to the configured logout redirect route.
+ *     responses:
+ *       302:
+ *         description: Redirects to the configured logout redirect route after successful logout.
+ *       500:
+ *         description: Internal Server Error. Indicates an unexpected error during the logout process.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/definitions/Error"
+ *             example:
+ *               status: error
+ *               message: Internal Server Error
+ */
 
 router.get("/logout", isLoggedIn, wrapper(logout));
 

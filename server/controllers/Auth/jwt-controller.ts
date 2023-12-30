@@ -20,12 +20,11 @@ export const loginJWT = async (req: Req, res: Response) => {
 		);
 	}
 	const User = await prisma.user.findUnique({
-		where: { email }
+		where: { email },
 	});
 
-	
 	if (!User) {
-		throw new CustomError("User not found.", StatusCodes.BAD_REQUEST);
+		throw new CustomError("User not found.", StatusCodes.NOT_FOUND);
 	}
 
 	if (!User.password)

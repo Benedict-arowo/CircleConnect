@@ -79,7 +79,7 @@ const makeApp = (
 				},
 			],
 		},
-		apis: ["./routes/*.ts"],
+		apis: ["./routes/*.ts", , "./routes/Auth/*.ts"],
 	};
 
 	const specs = swaggerJsdoc(options);
@@ -90,6 +90,7 @@ const makeApp = (
 	);
 	app.use("/auth/google", googleRouter);
 	app.use("/auth/github", githubRouter);
+
 	app.use("/auth/jwt", jwtRouter);
 
 	app.use("/", authRouter);

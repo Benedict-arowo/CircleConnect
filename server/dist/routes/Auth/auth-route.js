@@ -1,4 +1,10 @@
 "use strict";
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: The authentication API route
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -29,5 +35,26 @@ router.get("/user", isLoggedIn_1.default, (0, wrapper_1.default)((req, res) => _
     });
     res.status(http_status_codes_1.StatusCodes.OK).json(user);
 })));
+/**
+ * @swagger
+ * /logout:
+ *   post:
+ *     summary: Log out user and clear session
+ *     tags:
+ *       - Authentication
+ *     description: Logs out the user, clears the JWT token cookie, and redirects to the configured logout redirect route.
+ *     responses:
+ *       302:
+ *         description: Redirects to the configured logout redirect route after successful logout.
+ *       500:
+ *         description: Internal Server Error. Indicates an unexpected error during the logout process.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/definitions/Error"
+ *             example:
+ *               status: error
+ *               message: Internal Server Error
+ */
 router.get("/logout", isLoggedIn_1.default, (0, wrapper_1.default)(logout_1.default));
 exports.default = router;

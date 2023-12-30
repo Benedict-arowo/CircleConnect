@@ -1,3 +1,10 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Circle
+ *   description: The circle API route
+ */
+
 import {
 	createCircle,
 	deleteCircle,
@@ -113,9 +120,6 @@ const circleRouter = express.Router();
 
 /**
  * @swagger
- * tags:
- *   name: Circle
- *   description: The circle API route
  * /circle:
  *   post:
  *     summary: Create a new circle
@@ -194,7 +198,7 @@ const circleRouter = express.Router();
  *         name: sortedBy
  *         schema:
  *           type: string
- *           enum: [num-asc, num-desc, rating-asc, rating-desc]
+ *           enum: ["num-asc", "num-desc", "rating-asc", "rating-desc"]
  *           description: The sorting order for circles based on circle number or average user rating.
  *         example: num-asc
  *     responses:
@@ -240,9 +244,6 @@ circleRouter
 
 /**
  * @swagger
- * tags:
- *   name: Circle
- *   description: The circle API route
  * /circle/{id}:
  *   get:
  *     summary: Get details of a specific circle
@@ -492,9 +493,6 @@ circleRouter
 
 /**
  * @swagger
- * tags:
- *   name: Circle
- *   description: The circle API route
  * /circle/{id}/leave:
  *   patch:
  *     summary: Leave a circle
@@ -570,9 +568,6 @@ circleRouter.route("/:id/leave").patch(isLoggedIn, wrapper(leaveCircle));
 
 /**
  * @swagger
- * tags:
- *   name: Circle
- *   description: The circle API route
  * /circle/request/join/{id}:
  *   post:
  *     summary: Request to join a circle

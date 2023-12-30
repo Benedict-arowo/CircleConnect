@@ -173,7 +173,7 @@ const editProject = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     if (visibility && !(visibility === "PUBLIC" || visibility === "PRIVATE"))
         throw new CustomError_1.default("Invalid visibility value provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     if (!project)
-        throw new CustomError_1.default("Project not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        throw new CustomError_1.default("Project not found.", http_status_codes_1.StatusCodes.NOT_FOUND);
     if (pinned !== undefined && pinned !== false && pinned !== true)
         throw new CustomError_1.default("Invalid pinned value provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     if (pinned !== undefined && project.circleId !== null) {
@@ -220,7 +220,7 @@ const deleteProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         where: { id },
     });
     if (!Project)
-        throw new CustomError_1.default("Project not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        throw new CustomError_1.default("Project not found.", http_status_codes_1.StatusCodes.NOT_FOUND);
     if (Project.createdById !== req.user.id)
         throw new CustomError_1.default("You do not have permission to delete this project.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     yield db_1.default.project.delete({ where: { id } });
@@ -268,7 +268,7 @@ exports.addProjectToCircle = addProjectToCircle;
 const removeProjectFromCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { params: { id: projectId }, body: { circleId }, } = req;
     if (!circleId)
-        throw new CustomError_1.default("Circle ID must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        throw new CustomError_1.default("Circle ID must be provided.", http_status_codes_1.StatusCodes.NOT_FOUND);
     const Project = yield db_1.default.project.findUnique({
         where: { id: projectId },
     });

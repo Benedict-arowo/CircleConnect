@@ -1,4 +1,10 @@
 "use strict";
+/**
+ * @swagger
+ * tags:
+ *   name: Circle
+ *   description: The circle API route
+ */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -105,9 +111,6 @@ const circleRouter = express.Router();
  */
 /**
  * @swagger
- * tags:
- *   name: Circle
- *   description: The circle API route
  * /circle:
  *   post:
  *     summary: Create a new circle
@@ -186,7 +189,7 @@ const circleRouter = express.Router();
  *         name: sortedBy
  *         schema:
  *           type: string
- *           enum: [num-asc, num-desc, rating-asc, rating-desc]
+ *           enum: ["num-asc", "num-desc", "rating-asc", "rating-desc"]
  *           description: The sorting order for circles based on circle number or average user rating.
  *         example: num-asc
  *     responses:
@@ -230,9 +233,6 @@ circleRouter
     .post(isLoggedIn_1.default, (0, wrapper_1.default)(circle_controller_1.createCircle));
 /**
  * @swagger
- * tags:
- *   name: Circle
- *   description: The circle API route
  * /circle/{id}:
  *   get:
  *     summary: Get details of a specific circle
@@ -480,9 +480,6 @@ circleRouter
     .delete(isLoggedIn_1.default, (0, wrapper_1.default)(circle_controller_1.deleteCircle));
 /**
  * @swagger
- * tags:
- *   name: Circle
- *   description: The circle API route
  * /circle/{id}/leave:
  *   patch:
  *     summary: Leave a circle
@@ -557,9 +554,6 @@ circleRouter
 circleRouter.route("/:id/leave").patch(isLoggedIn_1.default, (0, wrapper_1.default)(circle_controller_1.leaveCircle));
 /**
  * @swagger
- * tags:
- *   name: Circle
- *   description: The circle API route
  * /circle/request/join/{id}:
  *   post:
  *     summary: Request to join a circle

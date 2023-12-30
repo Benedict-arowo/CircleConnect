@@ -70,7 +70,7 @@ const makeApp = (database) => {
                 },
             ],
         },
-        apis: ["./routes/*.ts"],
+        apis: ["./routes/*.ts", , "./routes/Auth/*.ts"],
     };
     const specs = swaggerJsdoc(options);
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));

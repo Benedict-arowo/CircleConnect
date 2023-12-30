@@ -218,7 +218,7 @@ export const editProject = async (req: Req, res: Response) => {
 		);
 
 	if (!project)
-		throw new CustomError("Project not found.", StatusCodes.BAD_REQUEST);
+		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
 
 	if (pinned !== undefined && pinned !== false && pinned !== true)
 		throw new CustomError(
@@ -298,7 +298,7 @@ export const deleteProject = async (req: Req, res: Response) => {
 	});
 
 	if (!Project)
-		throw new CustomError("Project not found.", StatusCodes.BAD_REQUEST);
+		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
 
 	if (Project.createdById !== req.user.id)
 		throw new CustomError(
@@ -388,7 +388,7 @@ export const removeProjectFromCircle = async (req: Req, res: Response) => {
 	if (!circleId)
 		throw new CustomError(
 			"Circle ID must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.NOT_FOUND
 		);
 
 	const Project = await prisma.project.findUnique({
