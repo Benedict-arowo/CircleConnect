@@ -50,23 +50,18 @@ const ListMembers = ({
 						onClick={() => {
 							setAlertState(() => {
 								return {
-									body: "Are you sure you want to promote this user? You may not be able to undo this action afterwards.",
-									doneText: "Promote user",
-									doneFunc: makeReq({
-										url: `circle/${circle.id}`,
-										method: "PATCH",
-										body: {
-											manageUser: {
-												action: "PROMOTE",
-												userId: member.id,
-											},
-										},
-										loadingMsg: "Promoting user...",
-										successMsg:
-											"Successfully promoted user.",
-										successFunc: fetchCircle,
-									}),
-									header: "Promote user",
+									body: "Are you sure you want to promote this user? You can't undo this action afterwards.",
+									doneText: "Promote User",
+									header: "Promote User",
+									doneFunc: () =>
+										makeReq({
+											url: `circle/${circle.id}`,
+											method: "PATCH",
+											loadingMsg: "Promoting user.",
+											successMsg:
+												"Successfully promoted user.",
+											successFunc: fetchCircle,
+										}),
 								};
 							});
 							onOpen();
@@ -80,7 +75,7 @@ const ListMembers = ({
 								return {
 									body: "Are you sure you want to demote this user?",
 									doneText: "Demote user",
-									doneFunc:
+									doneFunc: () =>
 										// () =>
 										// 	demoteUser(circle.id, member.id),
 										makeReq({
@@ -115,19 +110,20 @@ const ListMembers = ({
 								return {
 									body: "Are you sure you want to remove this user? You can't undo this action afterwards.",
 									doneText: "Remove user",
-									doneFunc: makeReq({
-										url: `circle/${circle.id}`,
-										method: "PATCH",
-										body: {
-											removeUser: {
-												userId: member.id,
+									doneFunc: () =>
+										makeReq({
+											url: `circle/${circle.id}`,
+											method: "PATCH",
+											body: {
+												removeUser: {
+													userId: member.id,
+												},
 											},
-										},
-										loadingMsg: "Removing user...",
-										successMsg:
-											"Successfully removed user from circle.",
-										successFunc: fetchCircle,
-									}),
+											loadingMsg: "Removing user...",
+											successMsg:
+												"Successfully removed user from circle.",
+											successFunc: () => fetchCircle(),
+										}),
 									header: "Remove user",
 								};
 							});

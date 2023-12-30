@@ -794,12 +794,6 @@ const Circle = () => {
 																			"Promote user",
 																		doneFunc:
 																			() =>
-																				// promoteUser(
-																				// 	circle.id,
-																				// 	circle
-																				// 		.colead
-																				// 		.id
-																				// ),
 																				makeReq(
 																					{
 																						url: `circle/${circle.id}`,
