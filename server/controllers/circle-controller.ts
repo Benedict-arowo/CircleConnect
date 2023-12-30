@@ -349,7 +349,7 @@ export const removeCircleRequest = async (req: Req, res: Response) => {
 	});
 
 	if (!circle)
-		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
+		throw new CustomError("Circle not found.", StatusCodes.NOT_FOUND);
 
 	if (!circle.lead)
 		throw new CustomError(
@@ -498,7 +498,7 @@ export const leaveCircle = async (req: Req, res: Response) => {
 		},
 	});
 
-	res.status(StatusCodes.OK).json({ success: true, data: Circle });
+	res.status(StatusCodes.OK).json({ success: true });
 };
 
 export const editCircle = async (req: Req, res: Response) => {
@@ -547,7 +547,7 @@ export const editCircle = async (req: Req, res: Response) => {
 	});
 
 	if (!circle)
-		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
+		throw new CustomError("Circle not found.", StatusCodes.NOT_FOUND);
 
 	if (!circle.lead)
 		throw new CustomError(
@@ -733,10 +733,7 @@ export const deleteCircle = async (req: Req, res: Response) => {
 	});
 
 	if (!Circle)
-		throw new CustomError(
-			"Circle does not exist.",
-			StatusCodes.BAD_REQUEST
-		);
+		throw new CustomError("Circle does not exist.", StatusCodes.NOT_FOUND);
 
 	if (Circle.lead && Circle.lead.id === userId) {
 		await prisma.circle.delete({

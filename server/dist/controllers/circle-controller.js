@@ -271,7 +271,7 @@ const removeCircleRequest = (req, res) => __awaiter(void 0, void 0, void 0, func
         },
     });
     if (!circle)
-        throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.NOT_FOUND);
     if (!circle.lead)
         throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.INTERNAL_SERVER_ERROR, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
     if (userId === circle.lead.id || userId === circle.lead.id)
@@ -384,7 +384,7 @@ const leaveCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             createdAt: true,
         },
     });
-    res.status(http_status_codes_1.StatusCodes.OK).json({ success: true, data: Circle });
+    res.status(http_status_codes_1.StatusCodes.OK).json({ success: true });
 });
 exports.leaveCircle = leaveCircle;
 const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -421,7 +421,7 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         },
     });
     if (!circle)
-        throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.NOT_FOUND);
     if (!circle.lead)
         throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.INTERNAL_SERVER_ERROR, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
     if (!(req.user.id === circle.lead.id ||
@@ -558,7 +558,7 @@ const deleteCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         },
     });
     if (!Circle)
-        throw new CustomError_1.default("Circle does not exist.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        throw new CustomError_1.default("Circle does not exist.", http_status_codes_1.StatusCodes.NOT_FOUND);
     if (Circle.lead && Circle.lead.id === userId) {
         yield db_1.default.circle.delete({
             where: {

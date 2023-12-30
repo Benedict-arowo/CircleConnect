@@ -19,6 +19,9 @@ const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
+const bodyParser = require("body-parser");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 dotenv_1.default.config();
 const makeApp = (database) => {
     const app = (0, express_1.default)();
@@ -45,6 +48,32 @@ const makeApp = (database) => {
     // Initialize Passport
     app.use(passport.initialize());
     app.use(passport.session());
+    const options = {
+        definition: {
+            openapi: "3.1.0",
+            info: {
+                title: "CircleConnect API",
+                version: "1.0.0",
+                description: "API for an app, CircleConnect which is a versatile web application designed to empower users to effortlessly create and manage circles or groups, facilitating project sharing, collaboration, and transparency.",
+                license: {
+                    name: "MIT",
+                    url: "https://spdx.org/licenses/MIT.html",
+                },
+                contact: {
+                    name: "Benedict",
+                    email: "benedict.arowo@gmail.com",
+                },
+            },
+            servers: [
+                {
+                    url: "http://localhost:3000",
+                },
+            ],
+        },
+        apis: ["./routes/*.ts"],
+    };
+    const specs = swaggerJsdoc(options);
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));
     app.use("/auth/google", google_route_1.default);
     app.use("/auth/github", github_route_1.default);
     app.use("/auth/jwt", jwt_route_1.default);
