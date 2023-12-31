@@ -184,7 +184,29 @@ export const createCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	// TODO: Check if the user is already a member of another circle, and if so return an error otherwise continue.
+	const userInfo = await prisma.user.findUnique({
+		where: { id: req.user.id },
+		select: { leadOfId: true, coleadOfId: true, memberOfId: true },
+	});
+
+	if (!userInfo)
+		throw new CustomError(
+			"User not found",
+			StatusCodes.INTERNAL_SERVER_ERROR
+		);
+
+	// Checks if the user is already a member of another circle, and if so return an error otherwise continue.
+	if (
+		!(
+			userInfo.leadOfId === null &&
+			userInfo.coleadOfId === null &&
+			userInfo.memberOfId === null
+		)
+	)
+		throw new CustomError(
+			"You must leave the circle you are currently in to create a new one.",
+			StatusCodes.BAD_REQUEST
+		);
 
 	try {
 		const Circle = await prisma.circle.create({

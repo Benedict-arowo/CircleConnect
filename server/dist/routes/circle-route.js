@@ -150,22 +150,26 @@ const circleRouter = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             examples:
- *               example1:
+ *               descriptionNotProvided:
  *                 value:
  *                   success: false
  *                   message: "Circle description must be provided."
- *               example2:
+ *               descriptionTooShort:
  *                 value:
  *                   success: false
  *                   message: "Description is too short, it must be at least 5 characters"
- *               example3:
+ *               invalidCircleNumber:
  *                 value:
  *                   success: false
  *                   message: "Circle number must be provided and must be a valid number."
- *               example4:
+ *               circleNumberLessThanZero:
  *                 value:
  *                   success: false
  *                   message: "Circle number must be greater than or equal to zero."
+ *               alreadyInACircle:
+ *                 value:
+ *                   success: false
+ *                   message: "You must leave the circle you are currently in to create a new one."
  *       500:
  *         description: Some server error
  *         content:

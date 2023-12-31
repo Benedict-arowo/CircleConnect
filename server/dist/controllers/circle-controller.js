@@ -154,7 +154,17 @@ const createCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         throw new CustomError_1.default("Circle number must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     if (Number(num) < 0)
         throw new CustomError_1.default("Circle number must be greater than zero.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    // TODO: Check if the user is already a member of another circle, and if so return an error otherwise continue.
+    const userInfo = yield db_1.default.user.findUnique({
+        where: { id: req.user.id },
+        select: { leadOfId: true, coleadOfId: true, memberOfId: true },
+    });
+    if (!userInfo)
+        throw new CustomError_1.default("User not found", http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
+    // Checks if the user is already a member of another circle, and if so return an error otherwise continue.
+    if (!(userInfo.leadOfId === null &&
+        userInfo.coleadOfId === null &&
+        userInfo.memberOfId === null))
+        throw new CustomError_1.default("You must leave the circle you are currently in to create a new one.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     try {
         const Circle = yield db_1.default.circle.create({
             data: {
