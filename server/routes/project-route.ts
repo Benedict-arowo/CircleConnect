@@ -69,8 +69,6 @@ import prisma from "../model/db";
  *           description: Indicates whether the project is pinned.
  *         rating:
  *           type: array
- *           items:
- *             $ref: '#/components/schemas/ProjectRating'
  *           description: The array of ratings for the project.
  *         circleId:
  *           type: integer
