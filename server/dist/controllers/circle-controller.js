@@ -489,8 +489,11 @@ const editCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             // Does nothing when you try to demote a member.
             if (manageUser.action === "PROMOTE") {
                 // 1. Remove the user from the member list
-                // 2. Makes the member a circle co-lead
+                // 2. If there's a co-lead already, make the co-lead a member
+                // 3. Makes the member a circle co-lead
                 coleadConnect.id = manageUser.userId;
+                if (circle.colead)
+                    connectList.push({ id: circle.colead.id });
                 disconnectList.push({ id: manageUser.userId });
             }
             else if (manageUser.action === "DEMOTE")
