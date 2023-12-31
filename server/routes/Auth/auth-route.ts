@@ -42,8 +42,8 @@ router.get(
  *       - Authentication
  *     description: Logs out the user, clears the JWT token cookie, and redirects to the configured logout redirect route.
  *     responses:
- *       302:
- *         description: Redirects to the configured logout redirect route after successful logout.
+ *       200:
+ *         description: Successfully logged user out.
  *       500:
  *         description: Internal Server Error. Indicates an unexpected error during the logout process.
  *         content:

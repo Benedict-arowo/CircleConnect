@@ -9,6 +9,8 @@ export default (req: Req, res: Response, next: NextFunction) => {
 
 		res.clearCookie("jwtToken");
 
-		res.redirect(process.env.LOGOUT_REDIRECT_ROUTE as string);
+		// Sends an http response instead of redirecting
+		// res.redirect(process.env.LOGOUT_REDIRECT_ROUTE as string);
+		res.status(StatusCodes.OK).json({ success: true });
 	});
 };
