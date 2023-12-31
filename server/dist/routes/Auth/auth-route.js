@@ -38,7 +38,7 @@ router.get("/user", isLoggedIn_1.default, (0, wrapper_1.default)((req, res) => _
 /**
  * @swagger
  * /logout:
- *   post:
+ *   get:
  *     summary: Log out user and clear session
  *     tags:
  *       - Authentication

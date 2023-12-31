@@ -36,7 +36,7 @@ router.get(
 /**
  * @swagger
  * /logout:
- *   post:
+ *   get:
  *     summary: Log out user and clear session
  *     tags:
  *       - Authentication
