@@ -56,6 +56,12 @@ const ListMembers = ({
 									doneFunc: () =>
 										makeReq({
 											url: `circle/${circle.id}`,
+											body: {
+												manageUser: {
+													action: "PROMOTE",
+													userId: member.id,
+												},
+											},
 											method: "PATCH",
 											loadingMsg: "Promoting user.",
 											successMsg:
