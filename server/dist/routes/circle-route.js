@@ -92,6 +92,22 @@ const circleRouter = express.Router();
  *       example:
  *         circle_num: 22
  *         description: "Sample Circle Description"
+ *
+ *     Error:
+ *       type: object
+ *       required:
+ *         - success
+ *         - message
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           description: Whether the request was successful or not.
+ *         message:
+ *           type: string
+ *           description: The error message
+ *       example:
+ *         success: false
+ *         description: "Error trying to create circle."
  */
 /**
  * @swagger
