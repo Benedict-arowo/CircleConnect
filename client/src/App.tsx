@@ -7,6 +7,7 @@ import Test from "./pages/Test";
 import Circle from "./pages/Circle";
 import Discover from "./pages/Discover";
 
+// TODO: Implement Lazy loading
 const App = () => {
 	return (
 		<div className="max-w-screen-2xl mx-auto">

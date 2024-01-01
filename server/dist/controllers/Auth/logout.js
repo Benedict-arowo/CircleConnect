@@ -10,7 +10,8 @@ exports.default = (req, res, next) => {
         if (err)
             throw new CustomError_1.default(err, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
         res.clearCookie("jwtToken");
-        // TODO: send an http response instead of redirecting
-        res.redirect(process.env.LOGOUT_REDIRECT_ROUTE);
+        // Sends an http response instead of redirecting
+        // res.redirect(process.env.LOGOUT_REDIRECT_ROUTE as string);
+        res.status(http_status_codes_1.StatusCodes.OK).json({ success: true });
     });
 };
