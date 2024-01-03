@@ -35,8 +35,6 @@ const Circles = () => {
 		setIsLoading(() => false);
 	};
 
-	console.log(circle);
-
 	useEffect(() => {
 		fetchCircle();
 	}, []);
