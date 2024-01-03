@@ -1,6 +1,11 @@
+import { StatusCodes } from "http-status-codes";
 import prisma from "../model/db";
+import { Req } from "../types";
+import { Response } from "express";
+import CustomError from "../middlewear/CustomError";
 
 type sendNotificationData = {
+	url?: string;
 	content: string;
 	userId: string;
 };
@@ -24,6 +29,7 @@ export const sendNotification = async (props: sendNotificationProps) => {
 			data: data.map((notificationData: sendNotificationData) => ({
 				content: notificationData.content,
 				userId: notificationData.userId,
+				url: notificationData.url,
 			})),
 		});
 
@@ -33,6 +39,7 @@ export const sendNotification = async (props: sendNotificationProps) => {
 			data: {
 				content: props.data.content,
 				userId: props.data.userId,
+				url: props.data.url,
 			},
 		});
 
@@ -54,3 +61,29 @@ export const updateNotificationStatus = async (
 
 	return notification;
 };
+
+export const getNotifications = async (req: Req, res: Response) => {
+	const {
+		user,
+		query: { status },
+	} = req;
+
+	if (status !== undefined && status !== "READ" && status !== "UNREAD") {
+		throw new CustomError(
+			"Invalid notification status",
+			StatusCodes.BAD_REQUEST
+		);
+	}
+	const userNotifications = await prisma.notification.findMany({
+		where: {
+			userId: user.id,
+			status: status ? status : undefined,
+		},
+	});
+
+	return res
+		.status(StatusCodes.OK)
+		.json({ success: true, data: userNotifications });
+};
+
+export const deleteNotification = async (req: Req, res: Response) => {};

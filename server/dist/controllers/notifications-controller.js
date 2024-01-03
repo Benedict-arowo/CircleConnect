@@ -12,8 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateNotificationStatus = exports.sendNotification = void 0;
+exports.deleteNotification = exports.getNotifications = exports.updateNotificationStatus = exports.sendNotification = void 0;
+const http_status_codes_1 = require("http-status-codes");
 const db_1 = __importDefault(require("../model/db"));
+const CustomError_1 = __importDefault(require("../middlewear/CustomError"));
 const sendNotification = (props) => __awaiter(void 0, void 0, void 0, function* () {
     if (props.many) {
         const data = Array.isArray(props.data) ? props.data : [props.data];
@@ -22,6 +24,7 @@ const sendNotification = (props) => __awaiter(void 0, void 0, void 0, function* 
             data: data.map((notificationData) => ({
                 content: notificationData.content,
                 userId: notificationData.userId,
+                url: notificationData.url,
             })),
         });
         return newNotifications;
@@ -31,6 +34,7 @@ const sendNotification = (props) => __awaiter(void 0, void 0, void 0, function* 
             data: {
                 content: props.data.content,
                 userId: props.data.userId,
+                url: props.data.url,
             },
         });
         return newNotification;
@@ -49,3 +53,21 @@ const updateNotificationStatus = (props) => __awaiter(void 0, void 0, void 0, fu
     return notification;
 });
 exports.updateNotificationStatus = updateNotificationStatus;
+const getNotifications = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { user, query: { status }, } = req;
+    if (status !== undefined && status !== "READ" && status !== "UNREAD") {
+        throw new CustomError_1.default("Invalid notification status", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    }
+    const userNotifications = yield db_1.default.notification.findMany({
+        where: {
+            userId: user.id,
+            status: status ? status : undefined,
+        },
+    });
+    return res
+        .status(http_status_codes_1.StatusCodes.OK)
+        .json({ success: true, data: userNotifications });
+});
+exports.getNotifications = getNotifications;
+const deleteNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () { });
+exports.deleteNotification = deleteNotification;

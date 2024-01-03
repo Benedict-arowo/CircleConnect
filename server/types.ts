@@ -30,6 +30,7 @@ export interface Req extends Request {
 		circleId?: string;
 		pinned?: string;
 		userId?: string;
+		status?: string;
 	};
 	body: {
 		description?: string;
