@@ -8,7 +8,7 @@ export type CircleMemberType = {
 
 export type CircleRatingType = {
 	id: string;
-	rating: number;
+	rating?: number;
 	userId: string;
 	circleId: string;
 };
@@ -33,7 +33,7 @@ export type CircleType = {
 	colead: CircleMemberType;
 	visibility: "PUBLIC" | "PRIVATE";
 	averageUserRating: number;
-	rating: CircleRatingType[];
+	rating: number;
 	members: CircleMemberType[];
 	requests: CircleMemberType[];
 	projects: ProjectsType[];

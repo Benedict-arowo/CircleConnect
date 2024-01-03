@@ -10,14 +10,7 @@ const CirclesComponent = (props: Props) => {
 	const { circles } = props;
 	const Component = () =>
 		circles.map((circle) => {
-			const {
-				id,
-				description,
-				members,
-				averageUserRating,
-				lead,
-				colead,
-			} = circle;
+			const { id, description, members, rating, lead, colead } = circle;
 			// TODO: Only show 5 members maximum
 			const MembersList = [lead, colead, ...members].slice(0, 5);
 			const Members = () =>
@@ -48,7 +41,7 @@ const CirclesComponent = (props: Props) => {
 
 						<div className="">
 							<StarRatings
-								rating={averageUserRating}
+								rating={rating}
 								starRatedColor="red"
 								numberOfStars={5}
 								name="rating"
