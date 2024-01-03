@@ -21,11 +21,6 @@ import wrapper from "../middlewear/wrapper";
 const express = require("express");
 const projectRouter = express.Router();
 
-import { Request, Response } from "express";
-import { StatusCodes } from "http-status-codes";
-import { UserSelectMinimized } from "../utils";
-import prisma from "../model/db";
-
 /**
  * @swagger
  * components:
