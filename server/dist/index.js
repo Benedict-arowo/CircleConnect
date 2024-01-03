@@ -12,8 +12,8 @@ const github_route_1 = __importDefault(require("./routes/Auth/github-route"));
 const jwt_route_1 = __importDefault(require("./routes/Auth/jwt-route"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const circle_route_1 = __importDefault(require("./routes/circle-route"));
-const rarting_route_1 = __importDefault(require("./routes/rarting-route"));
 const project_route_1 = __importDefault(require("./routes/project-route"));
+const notification_route_1 = __importDefault(require("./routes/notification-route"));
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -80,7 +80,7 @@ const makeApp = (database) => {
     app.use("/", auth_route_1.default);
     app.use("/circle", circle_route_1.default);
     app.use("/project", project_route_1.default);
-    app.use("/rating", rarting_route_1.default);
+    app.use("/notification", notification_route_1.default);
     app.use(ErrorHandler_1.default);
     return app;
 };
