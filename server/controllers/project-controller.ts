@@ -2,8 +2,9 @@ import { StatusCodes } from "http-status-codes";
 import { Req } from "../types";
 import { Response } from "express";
 import CustomError from "../middlewear/CustomError";
-import { UserSelectMinimized } from "../utils";
+import { MAX_RATING_VALUE, UserSelectMinimized } from "../utils";
 import prisma from "../model/db";
+import { calAverageRating } from "./circle-controller";
 
 export const getProjects = async (req: Req, res: Response) => {
 	const { limit = "10", sortedBy, userId, circleId, pinned } = req.query;
@@ -310,6 +311,61 @@ export const deleteProject = async (req: Req, res: Response) => {
 	return res.status(StatusCodes.OK).json({ success: true });
 };
 
+export const addRatingToProject = async (req: Req, res: Response) => {
+	const {
+		params: { id },
+		body: { rating },
+	} = req;
+
+	if (!rating)
+		throw new CustomError(
+			"Rating must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (rating > MAX_RATING_VALUE)
+		throw new CustomError("Invalid rating value.", StatusCodes.BAD_REQUEST);
+
+	const project = await prisma.project.findUnique({
+		where: {
+			id,
+		},
+	});
+
+	if (!project)
+		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
+
+	if (req.user.id === project.createdById)
+		throw new CustomError(
+			"You can't rate your own project.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	const userRating = await prisma.projectRating.upsert({
+		where: {
+			userId_projectId: {
+				projectId: id,
+				userId: req.user.id,
+			},
+		},
+		create: {
+			projectId: id,
+			userId: req.user.id,
+			rating: rating,
+		},
+		update: {
+			rating: rating,
+		},
+	});
+
+	if (project.circleId) await calAverageRating(project.circleId);
+
+	return res.status(StatusCodes.CREATED).json({
+		success: true,
+		data: userRating,
+	});
+};
+
 export const addProjectToCircle = async (req: Req, res: Response) => {
 	const {
 		params: { id: projectId },
@@ -373,6 +429,8 @@ export const addProjectToCircle = async (req: Req, res: Response) => {
 			circleId: circleId ? Number(circleId) : null,
 		},
 	});
+
+	await calAverageRating(Number(circleId));
 
 	return res
 		.status(StatusCodes.OK)
@@ -447,6 +505,8 @@ export const removeProjectFromCircle = async (req: Req, res: Response) => {
 			pinned: false,
 		},
 	});
+
+	await calAverageRating(Number(circleId));
 
 	return res
 		.status(StatusCodes.OK)

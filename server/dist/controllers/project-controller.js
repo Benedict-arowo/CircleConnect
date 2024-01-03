@@ -12,11 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeProjectFromCircle = exports.addProjectToCircle = exports.deleteProject = exports.editProject = exports.createProject = exports.getProject = exports.getProjects = void 0;
+exports.removeProjectFromCircle = exports.addProjectToCircle = exports.addRatingToProject = exports.deleteProject = exports.editProject = exports.createProject = exports.getProject = exports.getProjects = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const CustomError_1 = __importDefault(require("../middlewear/CustomError"));
 const utils_1 = require("../utils");
 const db_1 = __importDefault(require("../model/db"));
+const circle_controller_1 = require("./circle-controller");
 const getProjects = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { limit = "10", sortedBy, userId, circleId, pinned } = req.query;
     const sortedByValues = [
@@ -227,6 +228,45 @@ const deleteProject = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     return res.status(http_status_codes_1.StatusCodes.OK).json({ success: true });
 });
 exports.deleteProject = deleteProject;
+const addRatingToProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { params: { id }, body: { rating }, } = req;
+    if (!rating)
+        throw new CustomError_1.default("Rating must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    if (rating > utils_1.MAX_RATING_VALUE)
+        throw new CustomError_1.default("Invalid rating value.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    const project = yield db_1.default.project.findUnique({
+        where: {
+            id,
+        },
+    });
+    if (!project)
+        throw new CustomError_1.default("Project not found.", http_status_codes_1.StatusCodes.NOT_FOUND);
+    if (req.user.id === project.createdById)
+        throw new CustomError_1.default("You can't rate your own project.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    const userRating = yield db_1.default.projectRating.upsert({
+        where: {
+            userId_projectId: {
+                projectId: id,
+                userId: req.user.id,
+            },
+        },
+        create: {
+            projectId: id,
+            userId: req.user.id,
+            rating: rating,
+        },
+        update: {
+            rating: rating,
+        },
+    });
+    if (project.circleId)
+        yield (0, circle_controller_1.calAverageRating)(project.circleId);
+    return res.status(http_status_codes_1.StatusCodes.CREATED).json({
+        success: true,
+        data: userRating,
+    });
+});
+exports.addRatingToProject = addRatingToProject;
 const addProjectToCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { params: { id: projectId }, body: { circleId }, } = req;
     const Project = yield db_1.default.project.findUnique({
@@ -260,6 +300,7 @@ const addProjectToCircle = (req, res) => __awaiter(void 0, void 0, void 0, funct
             circleId: circleId ? Number(circleId) : null,
         },
     });
+    yield (0, circle_controller_1.calAverageRating)(Number(circleId));
     return res
         .status(http_status_codes_1.StatusCodes.OK)
         .json({ success: true, data: updatedProject });
@@ -302,6 +343,7 @@ const removeProjectFromCircle = (req, res) => __awaiter(void 0, void 0, void 0, 
             pinned: false,
         },
     });
+    yield (0, circle_controller_1.calAverageRating)(Number(circleId));
     return res
         .status(http_status_codes_1.StatusCodes.OK)
         .json({ success: true, data: updatedProject });
