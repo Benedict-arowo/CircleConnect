@@ -27,7 +27,6 @@ model User {
   memberOf         Circle?         @relation(fields: [memberOfId], references: [id], name: "member of")
   memberOfId       Int?
   projects         Project[]
-  ratings          CircleRating[]
   projectRatings   ProjectRating[]
   notifications    Notification[]
   createdAt        DateTime        @default(now())
@@ -44,37 +43,15 @@ enum circleVisibility {
   PRIVATE
 }
 
-model CircleRating {
-  id       String @id @default(uuid())
-  rating   Int    @default(0)
-  user     User   @relation(fields: [userId], references: [id])
-  userId   String
-  circle   Circle @relation(fields: [circleId], references: [id])
-  circleId Int
-
-  @@unique([userId, circleId])
-}
-
 model ProjectRating {
-  id        String  @id @default(uuid())
-  rating    Int     @default(0)
+  rating    Int     @default(0) 
   user      User    @relation(fields: [userId], references: [id])
   userId    String
   project   Project @relation(fields: [projectId], references: [id])
   projectId String
 
-  @@unique([userId, projectId])
+  @@id([userId, projectId])
 }
-
-// model Member {
-//   id        String   @id @unique @default(uuid())
-//   role      Role     @default(MEMBER)
-//   user      User     @relation(fields: [userId], references: [id])
-//   userId    String
-//   circleId  String
-//   circle    Circle   @relation(fields: [circleId], references: [id])
-//   createdAt DateTime @default(now())
-// }
 
 model Project {
   id               String           @id @unique @default(uuid())
@@ -102,8 +79,7 @@ model Circle {
   colead            User?          @relation(name: "coleader of")
   projects          Project[]
   description       String         @db.VarChar(300)
-  averageUserRating Float          @default(0.0)
-  rating            CircleRating[]
+  rating            Float          @default(0.0)
   requests          User[]         @relation(name: "Pending circle requests")
   createdAt         DateTime       @default(now())
 }

@@ -28,7 +28,6 @@ export const UserSelectMinimized = {
 	profile_picture: true,
 	first_name: true,
 	projects: true,
-	ratings: true,
 };
 
 export const UserSelectFull = {
@@ -37,10 +36,10 @@ export const UserSelectFull = {
 	profile_picture: true,
 	first_name: true,
 	projects: true,
-	ratings: true,
 	leadOf: true,
 	coleadOf: true,
 	memberOf: true,
 };
 
 export const minimumCircleDescriptionLength = 80;
+export const MAX_RATING_VALUE = 5;
