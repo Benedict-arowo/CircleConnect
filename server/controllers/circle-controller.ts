@@ -10,6 +10,31 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
 import { Prisma } from "@prisma/client";
 
+export const calAverageRating = async (id: number) => {
+	const ratings = await prisma.projectRating.findMany({
+		where: {
+			project: {
+				circleId: id,
+			},
+		},
+		select: {
+			rating: true,
+		},
+	});
+
+	const totalRating = ratings.reduce((sum, rating) => sum + rating.rating, 0);
+	const averageRating = totalRating / ratings.length;
+
+	await prisma.circle.update({
+		where: { id },
+		data: {
+			rating: averageRating ? averageRating : 0,
+		},
+	});
+
+	return averageRating;
+};
+
 export const getCircles = async (req: Req, res: Response) => {
 	const { limit = "10", sortedBy } = req.query;
 	const sortedByValues = ["num-asc", "num-desc", "rating-asc", "rating-desc"];
@@ -41,7 +66,7 @@ export const getCircles = async (req: Req, res: Response) => {
 					? "asc"
 					: "desc"
 				: undefined,
-			averageUserRating: sortedBy?.startsWith("rating")
+			rating: sortedBy?.startsWith("rating")
 				? sortedBy === "rating-asc"
 					? "asc"
 					: "desc"
@@ -50,7 +75,6 @@ export const getCircles = async (req: Req, res: Response) => {
 		select: {
 			id: true,
 			description: true,
-			averageUserRating: true,
 			rating: true,
 			members: {
 				select: UserSelectMinimized,
@@ -129,7 +153,6 @@ export const getCircle = async (req: Req, res: Response) => {
 				},
 			},
 			rating: true,
-			averageUserRating: true,
 			projects: {
 				select: {
 					description: true,

@@ -12,11 +12,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCircle = exports.editCircle = exports.leaveCircle = exports.removeCircleRequest = exports.requestToJoinCircle = exports.createCircle = exports.getCircle = exports.getCircles = void 0;
+exports.deleteCircle = exports.editCircle = exports.leaveCircle = exports.removeCircleRequest = exports.requestToJoinCircle = exports.createCircle = exports.getCircle = exports.getCircles = exports.calAverageRating = void 0;
 const db_1 = __importDefault(require("../model/db"));
 const utils_1 = require("../utils");
 const http_status_codes_1 = require("http-status-codes");
 const CustomError_1 = __importDefault(require("../middlewear/CustomError"));
+const calAverageRating = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    const ratings = yield db_1.default.projectRating.findMany({
+        where: {
+            project: {
+                circleId: id,
+            },
+        },
+        select: {
+            rating: true,
+        },
+    });
+    const totalRating = ratings.reduce((sum, rating) => sum + rating.rating, 0);
+    const averageRating = totalRating / ratings.length;
+    yield db_1.default.circle.update({
+        where: { id },
+        data: {
+            rating: averageRating ? averageRating : 0,
+        },
+    });
+    return averageRating;
+});
+exports.calAverageRating = calAverageRating;
 const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { limit = "10", sortedBy } = req.query;
     const sortedByValues = ["num-asc", "num-desc", "rating-asc", "rating-desc"];
@@ -35,7 +57,7 @@ const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     ? "asc"
                     : "desc"
                 : undefined,
-            averageUserRating: (sortedBy === null || sortedBy === void 0 ? void 0 : sortedBy.startsWith("rating"))
+            rating: (sortedBy === null || sortedBy === void 0 ? void 0 : sortedBy.startsWith("rating"))
                 ? sortedBy === "rating-asc"
                     ? "asc"
                     : "desc"
@@ -44,7 +66,6 @@ const getCircles = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         select: {
             id: true,
             description: true,
-            averageUserRating: true,
             rating: true,
             members: {
                 select: utils_1.UserSelectMinimized,
@@ -117,7 +138,6 @@ const getCircle = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             },
             rating: true,
-            averageUserRating: true,
             projects: {
                 select: {
                     description: true,
