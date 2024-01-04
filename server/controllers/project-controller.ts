@@ -106,6 +106,7 @@ export const getProject = async (req: Req, res: Response) => {
 			createdBy: {
 				select: UserSelectMinimized,
 			},
+			rating: true,
 			liveLink: true,
 			github: true,
 			id: true,

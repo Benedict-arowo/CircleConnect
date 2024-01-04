@@ -98,6 +98,7 @@ const getProject = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             createdBy: {
                 select: utils_1.UserSelectMinimized,
             },
+            rating: true,
             liveLink: true,
             github: true,
             id: true,
