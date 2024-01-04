@@ -36,7 +36,7 @@ const makeApp = (database) => {
     }));
     app.use("", (0, morgan_1.default)("dev"));
     app.use(cors({
-        origin: "http://localhost:5173",
+        origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
         credentials: true,
     }));
     app.use(express_1.default.json());
