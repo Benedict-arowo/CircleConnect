@@ -14,8 +14,8 @@ const ErrorHandler = (
 	next: NextFunction
 ) => {
 	let { code, message } = err;
-
 	// If the error is not an instance of the CustomError class meaning it won't have a code property.
+	console.log(err);
 	if (!(err instanceof CustomError)) {
 		return res.status(404).json({
 			success: false,

@@ -1,3 +1,5 @@
+import { User } from "./types";
+
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 
@@ -19,3 +21,25 @@ export const hash = async (value: any) => {
 	const hashedValue = await argon.hash(value);
 	return hashedValue;
 };
+
+export const UserSelectMinimized = {
+	email: true,
+	id: true,
+	profile_picture: true,
+	first_name: true,
+	projects: true,
+};
+
+export const UserSelectFull = {
+	email: true,
+	id: true,
+	profile_picture: true,
+	first_name: true,
+	projects: true,
+	leadOf: true,
+	coleadOf: true,
+	memberOf: true,
+};
+
+export const minimumCircleDescriptionLength = 80;
+export const MAX_RATING_VALUE = 5;

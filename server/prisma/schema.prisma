@@ -4,24 +4,102 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("TEST_DATABASE_URL")
 }
 
 model User {
-  id             String       @id @default(uuid())
-  google_id String? @unique
-  github_id String? @unique
-  password String?
-  first_name String 
-  last_name String?
-  email String @unique
-  profile_picture String?
-  joined DateTime @updatedAt()
-  last_login DateTime?
+  id               String          @id @default(uuid())
+  google_id        String?         @unique
+  github_id        String?         @unique
+  password         String?
+  first_name       String
+  last_name        String?
+  email            String          @unique
+  profile_picture  String?
+  joined           DateTime        @updatedAt()
+  last_login       DateTime?
+  leadOf           Circle?         @relation(fields: [leadOfId], references: [id], name: "leader of")
+  leadOfId         Int?            @unique
+  coleadOf         Circle?         @relation(fields: [coleadOfId], references: [id], name: "coleader of")
+  coleadOfId       Int?            @unique
+  pendingRequest   Circle?         @relation(fields: [pendingRequestId], references: [id], name: "Pending circle requests")
+  pendingRequestId Int?
+  memberOf         Circle?         @relation(fields: [memberOfId], references: [id], name: "member of")
+  memberOfId       Int?
+  projects         Project[]
+  projectRatings   ProjectRating[]
+  notifications    Notification[]
+  createdAt        DateTime        @default(now())
 }
 
 model Session {
-  sid        String   @unique @id
-  sess       Json
-  expire     DateTime
+  sid    String   @id @unique
+  sess   Json
+  expire DateTime
+}
+
+enum circleVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+model ProjectRating {
+  rating    Int     @default(0) 
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+
+  @@id([userId, projectId])
+}
+
+model Project {
+  id               String           @id @unique @default(uuid())
+  name             String
+  description      String
+  github           String?
+  liveLink         String?
+  techUsed         String[]
+  pictures         String[]
+  createdBy        User             @relation(fields: [createdById], references: [id])
+  createdById      String
+  circleVisibility circleVisibility @default(PUBLIC)
+  pinned           Boolean          @default(false)
+  rating           ProjectRating[]
+  circleId         Int?
+  circle           Circle?          @relation(fields: [circleId], references: [id])
+  createdAt        DateTime         @default(now())
+}
+
+model Circle {
+  // id                String           @id @unique @default(uuid())
+  id                Int            @id @unique
+  members           User[]         @relation(name: "member of")
+  lead              User?          @relation(name: "leader of")
+  colead            User?          @relation(name: "coleader of")
+  projects          Project[]
+  description       String         @db.VarChar(300)
+  rating            Float          @default(0.0)
+  requests          User[]         @relation(name: "Pending circle requests")
+  createdAt         DateTime       @default(now())
+}
+
+model Search {
+  id     String @id @default(uuid())
+  search String @unique
+  count  Int    @default(0)
+}
+
+enum NotificationStatus {
+  READ
+  UNREAD
+}
+
+model Notification {
+  id      String             @id @default(uuid())
+  content String
+  status  NotificationStatus @default(UNREAD)
+  url String?
+  user    User               @relation(fields: [userId], references: [id])
+  userId  String
 }

@@ -6,12 +6,12 @@ interface FetchParams {
 		useServerUrl?: boolean;
 		method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 		body?: object | undefined;
-        returnResponse?: boolean;
+		returnResponse?: boolean;
+		handleError?: boolean;
 	};
 }
 
 const UseFetch = async ({ url, options }: FetchParams) => {
-	console.log(url, options);
 	try {
 		const response = await fetch(
 			options.useServerUrl ? `${SERVER_URL}/${url}` : url,
@@ -27,7 +27,7 @@ const UseFetch = async ({ url, options }: FetchParams) => {
 
 		const data = await response.json();
 
-		if (!response.ok) {
+		if (!response.ok && options.handleError) {
 			if (data.message) throw new Error(data.message);
 			else
 				throw new Error(

@@ -26,10 +26,10 @@ const loginJWT = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         throw new CustomError_1.default("Email, and password must be provided.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     }
     const User = yield db_1.default.user.findUnique({
-        where: { email }
+        where: { email },
     });
     if (!User) {
-        throw new CustomError_1.default("User not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+        throw new CustomError_1.default("User not found.", http_status_codes_1.StatusCodes.NOT_FOUND);
     }
     if (!User.password)
         throw new CustomError_1.default("Try using google or github to sign into this account.", http_status_codes_1.StatusCodes.BAD_REQUEST);

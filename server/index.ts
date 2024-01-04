@@ -8,12 +8,17 @@ import jwtRouter from "./routes/Auth/jwt-route";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import dotenv from "dotenv";
+import circleRouter from "./routes/circle-route";
+import projectRouter from "./routes/project-route";
+import notificationRouter from "./routes/notification-route";
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
-
+const bodyParser = require("body-parser");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 dotenv.config();
 
 const makeApp = (
@@ -35,7 +40,7 @@ const makeApp = (
 	app.use("", morgan("dev"));
 	app.use(
 		cors({
-			origin: "http://localhost:5173",
+			origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
 			credentials: true,
 		})
 	);
@@ -51,11 +56,47 @@ const makeApp = (
 	app.use(passport.initialize());
 	app.use(passport.session());
 
+	const options = {
+		definition: {
+			openapi: "3.1.0",
+			info: {
+				title: "CircleConnect API",
+				version: "1.0.0",
+				description:
+					"API for an app, CircleConnect which is a versatile web application designed to empower users to effortlessly create and manage circles or groups, facilitating project sharing, collaboration, and transparency.",
+				license: {
+					name: "MIT",
+					url: "https://spdx.org/licenses/MIT.html",
+				},
+				contact: {
+					name: "Benedict",
+					email: "benedict.arowo@gmail.com",
+				},
+			},
+			servers: [
+				{
+					url: "http://localhost:8000",
+				},
+			],
+		},
+		apis: ["./routes/*.ts", , "./routes/Auth/*.ts"],
+	};
+
+	const specs = swaggerJsdoc(options);
+	app.use(
+		"/api-docs",
+		swaggerUi.serve,
+		swaggerUi.setup(specs, { explorer: true })
+	);
 	app.use("/auth/google", googleRouter);
 	app.use("/auth/github", githubRouter);
+
 	app.use("/auth/jwt", jwtRouter);
 
 	app.use("/", authRouter);
+	app.use("/circle", circleRouter);
+	app.use("/project", projectRouter);
+	app.use("/notification", notificationRouter);
 
 	app.use(ErrorHandler);
 	return app;

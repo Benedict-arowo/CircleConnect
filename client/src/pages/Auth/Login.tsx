@@ -8,11 +8,13 @@ import { GITHUB_AUTH_URL, GOOGLE_AUTH_URL } from "../../../config";
 import { Alert, AlertIcon, AlertDescription } from "@chakra-ui/react";
 import { Alert as AlertType } from "../../types";
 import UseFetch from "../../Components/Fetch";
-import Nav from "../../Components/Nav";
 import { useDispatch } from "react-redux";
-import { saveUser } from "./userSlice";
+import { loginUser } from "./userSlice";
+// import { useDispatch } from "react-redux";
+// import { saveUser } from "./userSlice";
 
 const Login = () => {
+	const dispatch = useDispatch();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [formData, setFormData] = useState({
 		email: "",
@@ -27,13 +29,13 @@ const Login = () => {
 
 	const fetchUser = async () => {
 		const { data, response } = await UseFetch({
-			url: "/user",
+			url: "user",
 			options: {
 				useServerUrl: true,
 				returnResponse: true,
 			},
 		});
-		console.log(data, response);
+		return { data, response };
 	};
 
 	const handleGoogleAuth = async () => {
@@ -44,17 +46,29 @@ const Login = () => {
 			"_blank",
 			"width=500,height=600"
 		);
-		timer = setInterval(() => {
+
+		timer = setInterval(async () => {
 			if (loginWindow && loginWindow.closed) {
 				setIsLoading(() => false);
-				console.log("You are authenticated.");
-				Navigate("/");
+				const User = await fetchUser();
 
-				if (timer) {
-					clearInterval(timer);
+				if (!User.response.ok) {
+					if (timer) clearInterval(timer);
+					setAlert(() => {
+						return {
+							status: "error",
+							description: "Error trying to log in.",
+						};
+					});
+				} else {
+					if (timer) clearInterval(timer);
+					dispatch(loginUser(User.data));
+					Navigate("/");
 				}
 			}
 		}, 500);
+
+		setIsLoading(() => false);
 	};
 
 	const handleGithubAuth = async () => {
@@ -65,16 +79,23 @@ const Login = () => {
 			"_blank",
 			"width=500,height=600"
 		);
-		timer = setInterval(() => {
+		timer = setInterval(async () => {
 			if (loginWindow && loginWindow.closed) {
 				setIsLoading(() => false);
-				data = fetchUser();
-				// TODO: Check if user is actually authenticated before redirecting
-				console.log("You are authenticated.");
-				Navigate("/");
-				// const user = fetchUser();
-				if (timer) {
-					clearInterval(timer);
+				const User = await fetchUser();
+
+				if (!User.response.ok) {
+					if (timer) clearInterval(timer);
+					setAlert(() => {
+						return {
+							status: "error",
+							description: "Error trying to log in.",
+						};
+					});
+				} else {
+					if (timer) clearInterval(timer);
+					dispatch(loginUser(User.data));
+					Navigate("/");
 				}
 			}
 		}, 500);
@@ -102,19 +123,14 @@ const Login = () => {
 					useServerUrl: true,
 				},
 			});
-			console.log(data);
 
+			if (!data.success) {
+				throw new Error(data.message);
+			}
+
+			// Save user's credentials to session storage
+			dispatch(loginUser(data.data));
 			// No error is found, hence it's successful.
-			// Dispatch(
-			// 	saveUser({
-			// 		id: data.id,
-			// 		email: data.email,
-			// 		profile_picture: data.profile_picture,
-			// 		first_name: data.first_name,
-			// 		last_name: data.last_name,
-			// 	})
-			// );
-
 			setAlert(() => {
 				return {
 					status: "success",
@@ -145,8 +161,7 @@ const Login = () => {
 					alt=""
 				/>
 			</aside>
-			<main className="flex-1 h-screen px-12 overflow-y-auto">
-				<Nav />
+			<main className="flex-1 h-screen px-12 overflow-y-auto auth_background">
 				<section className="mt-20 mb-8">
 					<h1 className="font-bold text-4xl font-['Jua']">Login</h1>
 					<p className="text-gray-600 font-light max-w-[20rem]">

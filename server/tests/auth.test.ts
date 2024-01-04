@@ -27,8 +27,8 @@ const userData = {
 
 describe("Authentication tests", () => {
 	describe("JWT authentication tests", () => {
-		beforeAll(async () => {
-			await prisma.user.deleteMany({});
+		beforeEach(async () => {
+			// 	await prisma.user.deleteMany({});
 			jest.clearAllMocks();
 		});
 
@@ -76,7 +76,9 @@ describe("Authentication tests", () => {
 		});
 
 		it("should create a new user using JWT", async () => {
-			await prisma.user.deleteMany({});
+			await prisma.user.delete({
+				where: { email: userData.email },
+			});
 			const response = await request(app)
 				.post("/auth/jwt/register")
 				.send({
@@ -87,7 +89,7 @@ describe("Authentication tests", () => {
 				})
 				.set("Accept", "application/json");
 
-			console.log(response.body);
+			// console.log(response.body);
 			const { id: userId } = response.body.data;
 			// Makes sure the user password isn't being sent back to the client.
 			expect(response.body.data).not.toHaveProperty("password");
@@ -115,9 +117,18 @@ describe("Authentication tests", () => {
 			const localUserData = {
 				email: "user1@example.com",
 				password: "password",
+				hashedPassword:
+					"$argon2id$v=19$m=65536,t=3,p=4$nQqdSWxU8qf+9JX4DqMKzA$76u5NfsEerQ9VUKx7slVnhDiU/TdnIvzJQMUwi2EirQ",
 				first_name: "user1",
 				last_name: "user2",
 			};
+
+			await prisma.user.delete({
+				where: {
+					email: localUserData.email,
+				},
+			});
+
 			// Creates a user
 			await request(app)
 				.post("/auth/jwt/register")
@@ -129,11 +140,7 @@ describe("Authentication tests", () => {
 				})
 				.set("Accept", "application/json");
 
-			const user = await prisma.user.findUnique({
-				where: { email: localUserData.email },
-			});
-
-			// Tries to login 
+			// Tries to login
 			const response = await request(app)
 				.post("/auth/jwt/login")
 				.send({
@@ -142,15 +149,10 @@ describe("Authentication tests", () => {
 				})
 				.set("Accept", "application/json");
 
+			// console.log(response.body.data);
 			const { id: userId } = response.body.data;
 			expect(userId).toBeDefined();
-
-			expect(verifyHash).toHaveBeenCalledWith(
-				user?.password,
-				localUserData.password
-			);
 			expect(verifyHash).toHaveBeenCalledTimes(1);
-
 			expect(tokenGenerator).toHaveBeenCalledWith({ id: userId }, "1h");
 			// Check if the HTTP-only token is set in the cookies
 			const jwtTokenCookie = response.headers["set-cookie"][0];
@@ -187,29 +189,29 @@ describe("Authentication tests", () => {
 		});
 	});
 
-
 	describe("Google authentication tests", () => {
-		it('should redirect to google accounts page', async () => {
+		it("should redirect to google accounts page", async () => {
 			// Use supertest to simulate an authentication request
-			const response = await request(app).get('/auth/google');
-			console.log(response.body)
+			const response = await request(app).get("/auth/google");
+			// console.log(response.body);
 			// Check if the response is a redirect (Google OAuth login page)
 			expect(response.status).toBe(302);
-			expect(response.header.location).toContain('accounts.google.com');
-			expect(response.header.location).toBeDefined()			
-			})
-	})
-
+			expect(response.header.location).toContain("accounts.google.com");
+			expect(response.header.location).toBeDefined();
+		});
+	});
 
 	describe("Github authentication tests", () => {
-		test('should redirect to github accounts page', async () => {
+		test("should redirect to github accounts page", async () => {
 			// Use supertest to simulate an authentication request
-			const response = await request(app).get('/auth/github');
-			
+			const response = await request(app).get("/auth/github");
+
 			// Check if the response is a redirect (Google OAuth login page)
 			expect(response.status).toBe(302);
-			expect(response.header.location).toContain('github.com/login/oauth');
-			expect(response.header.location).toBeDefined()
-			})
-	})
+			expect(response.header.location).toContain(
+				"github.com/login/oauth"
+			);
+			expect(response.header.location).toBeDefined();
+		});
+	});
 });

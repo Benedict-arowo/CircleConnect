@@ -11,11 +11,17 @@ const google_route_1 = __importDefault(require("./routes/Auth/google-route"));
 const github_route_1 = __importDefault(require("./routes/Auth/github-route"));
 const jwt_route_1 = __importDefault(require("./routes/Auth/jwt-route"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const circle_route_1 = __importDefault(require("./routes/circle-route"));
+const project_route_1 = __importDefault(require("./routes/project-route"));
+const notification_route_1 = __importDefault(require("./routes/notification-route"));
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
+const bodyParser = require("body-parser");
+const swaggerJsdoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
 dotenv_1.default.config();
 const makeApp = (database) => {
     const app = (0, express_1.default)();
@@ -30,7 +36,7 @@ const makeApp = (database) => {
     }));
     app.use("", (0, morgan_1.default)("dev"));
     app.use(cors({
-        origin: "http://localhost:5173",
+        origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
         credentials: true,
     }));
     app.use(express_1.default.json());
@@ -42,10 +48,39 @@ const makeApp = (database) => {
     // Initialize Passport
     app.use(passport.initialize());
     app.use(passport.session());
+    const options = {
+        definition: {
+            openapi: "3.1.0",
+            info: {
+                title: "CircleConnect API",
+                version: "1.0.0",
+                description: "API for an app, CircleConnect which is a versatile web application designed to empower users to effortlessly create and manage circles or groups, facilitating project sharing, collaboration, and transparency.",
+                license: {
+                    name: "MIT",
+                    url: "https://spdx.org/licenses/MIT.html",
+                },
+                contact: {
+                    name: "Benedict",
+                    email: "benedict.arowo@gmail.com",
+                },
+            },
+            servers: [
+                {
+                    url: "http://localhost:8000",
+                },
+            ],
+        },
+        apis: ["./routes/*.ts", , "./routes/Auth/*.ts"],
+    };
+    const specs = swaggerJsdoc(options);
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));
     app.use("/auth/google", google_route_1.default);
     app.use("/auth/github", github_route_1.default);
     app.use("/auth/jwt", jwt_route_1.default);
     app.use("/", auth_route_1.default);
+    app.use("/circle", circle_route_1.default);
+    app.use("/project", project_route_1.default);
+    app.use("/notification", notification_route_1.default);
     app.use(ErrorHandler_1.default);
     return app;
 };

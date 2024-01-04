@@ -21,6 +21,46 @@ export type User = {
 };
 
 export interface Req extends Request {
+	query: {
+		circle_num?: string;
+		id?: string;
+		circle_id?: string;
+		sortedBy?: string;
+		limit?: string;
+		circleId?: string;
+		pinned?: string;
+		userId?: string;
+		status?: string;
+	};
+	body: {
+		description?: string;
+		circle_num?: number;
+		email?: string;
+		pictures?: string[];
+		password?: string;
+		first_name?: string;
+		last_name?: string;
+		rating?: number;
+		circleId?: string;
+		body?: string;
+		name?: string;
+		pinned?: boolean;
+		github?: string;
+		liveLink?: string;
+		techUsed?: string[];
+		visibility?: "PUBLIC" | "PRIVATE";
+		request?: {
+			type: "ACCEPT" | "DECLINE";
+			userId: string;
+		};
+		removeUser?: {
+			userId: string;
+		};
+		manageUser?: {
+			action: "PROMOTE" | "DEMOTE";
+			userId: string;
+		};
+	};
 	user: User;
 	logout: Function;
 }

@@ -7,7 +7,6 @@ import { Alert, AlertDescription, AlertIcon, Spinner } from "@chakra-ui/react";
 import { GITHUB_AUTH_URL, GOOGLE_AUTH_URL } from "../../../config";
 import { Alert as AlertType } from "../../types";
 import UseFetch from "../../Components/Fetch";
-import Nav from "../../Components/Nav";
 
 const Register = () => {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -122,8 +121,7 @@ const Register = () => {
 					alt=""
 				/>
 			</aside>
-			<main className="flex-1 h-screen px-12 overflow-y-auto">
-				<Nav />
+			<main className="flex-1 h-screen px-12 overflow-y-auto auth_background">
 				<section className="mt-20 mb-8">
 					<h1 className="font-bold text-4xl font-['Jua']">
 						Register
