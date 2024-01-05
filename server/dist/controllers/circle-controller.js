@@ -238,19 +238,32 @@ const requestToJoinCircle = (req, res) => __awaiter(void 0, void 0, void 0, func
             },
         },
     });
+    const userFromDb = yield db_1.default.user.findUnique({
+        where: { id: req.user.id },
+    });
+    if (!userFromDb)
+        throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.INTERNAL_SERVER_ERROR, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
     if (!circle)
         throw new CustomError_1.default("Circle not found.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     if (!circle.lead)
         throw new CustomError_1.default(http_status_codes_1.ReasonPhrases.INTERNAL_SERVER_ERROR, http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR);
+    // Checks if user is a member of another circle.
+    // Checks if user is a lead or colead of another circle.
+    if (userFromDb.memberOfId !== null)
+        throw new CustomError_1.default("You're already a member of another circle, try leaving the circle before joining this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    else if (userFromDb.coleadOfId !== null)
+        throw new CustomError_1.default("You're currently a colead of another circle, try leaving the circle before joining this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    else if (userFromDb.leadOfId !== null)
+        throw new CustomError_1.default("You're currently a lead of another circle, try leaving the circle before joining this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
+    // Checks if the user is already the circle lead of the circle
     if (userId === circle.lead.id || userId === circle.lead.id)
         throw new CustomError_1.default("You're already a circle leader for this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
     // Checks if the user trying to join the circle is already a member of the circle.
     let memberExists = circle.members.some((member) => {
         return member.id === userId;
     });
-    if (memberExists) {
+    if (memberExists)
         throw new CustomError_1.default("You're already a member of this circle.", http_status_codes_1.StatusCodes.BAD_REQUEST);
-    }
     // Checks if the user trying to join the circle is already in the circle request list(list of user's who are trying to join the circle).
     let alreadyInRequestList = circle.requests.some((member) => {
         return member.id === userId;
