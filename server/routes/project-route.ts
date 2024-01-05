@@ -1,8 +1,8 @@
 /**
  * @swagger
  * tags:
- *   name: Circle
- *   description: The circle API route
+ *   name: Project
+ *   description: The project API route
  */
 
 import {
@@ -111,7 +111,7 @@ const projectRouter = express.Router();
 
 /**
  * @swagger
- * /projects:
+ * /project:
  *   get:
  *     summary: Get a list of projects
  *     tags: [Project]
@@ -679,12 +679,9 @@ projectRouter
 
 /**
  * @swagger
- * tags:
- *   name: ProjectRating
- *   description: API for managing project ratings.
- *
  * /project/{id}/rating:
  *   post:
+ *     tags: [Project]
  *     summary: Add Rating to Project
  *     description: Add a rating to a project.
  *     parameters:
