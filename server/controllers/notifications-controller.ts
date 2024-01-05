@@ -86,4 +86,22 @@ export const getNotifications = async (req: Req, res: Response) => {
 		.json({ success: true, data: userNotifications });
 };
 
-export const deleteNotification = async (req: Req, res: Response) => {};
+export const deleteNotification = async (req: Req, res: Response) => {
+	const { id } = req.params;
+
+	const notification = await prisma.notification.findUnique({
+		where: { id },
+	});
+
+	if (!notification)
+		throw new CustomError("Notification not found.", StatusCodes.NOT_FOUND);
+
+	if (notification.userId !== req.user.id)
+		throw new CustomError(
+			"You do not have permission to delete this notification.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	await prisma.notification.delete({ where: { id } });
+	return res.status(StatusCodes.OK).json({ success: true });
+};
