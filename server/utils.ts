@@ -30,6 +30,13 @@ export const UserSelectMinimized = {
 	projects: true,
 };
 
+export const UserSelectClean = {
+	email: true,
+	id: true,
+	profile_picture: true,
+	first_name: true,
+};
+
 export const UserSelectFull = {
 	email: true,
 	id: true,
