@@ -1,4 +1,4 @@
-import { Button } from "@chakra-ui/react";
+import { Avatar, Button } from "@chakra-ui/react";
 import Logo from "./Logo";
 import { Link, NavLink } from "react-router-dom";
 import UseFetch from "./Fetch";
@@ -74,18 +74,14 @@ const Nav = (props: Props) => {
 
 					<div>
 						{user.isLoggedIn && (
-							<a
-								onClick={logoutHandler}
-								className="cursor-pointer">
-								<img
-									src={
-										user.info.profile_picture ||
-										defaultProfilePicture
-									}
-									alt="My profile picture"
+							<a>
+								<Avatar
+									name={`${user.info.first_name}`}
+									src={user.info.profile_picture}
+									onClick={logoutHandler}
 									width="48px"
 									height="48px"
-									className="rounded-full"
+									className="cursor-pointer"
 								/>
 							</a>
 						)}
