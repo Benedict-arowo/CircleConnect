@@ -1,10 +1,19 @@
-import { Avatar, Button } from "@chakra-ui/react";
+import { Avatar, Button, Input, useDisclosure } from "@chakra-ui/react";
 import Logo from "./Logo";
 import { Link, NavLink } from "react-router-dom";
 import UseFetch from "./Fetch";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../pages/Auth/userSlice";
-import defaultProfilePicture from "../assets/Image-32.png";
+import {
+	Drawer,
+	DrawerBody,
+	DrawerFooter,
+	DrawerHeader,
+	DrawerOverlay,
+	DrawerContent,
+	DrawerCloseButton,
+} from "@chakra-ui/react";
+import { useRef } from "react";
 
 type Props = {
 	className?: string;
@@ -21,9 +30,12 @@ const Nav = (props: Props) => {
 	const dispatch = useDispatch();
 	const { className, type = "dark", useBackground = true } = props;
 	const user = useSelector((state) => state.user);
+	const { isOpen, onOpen, onClose } = useDisclosure();
+	const btnRef = useRef();
 
 	const logoutHandler = async () => {
 		dispatch(logoutUser());
+		onClose();
 		await UseFetch({
 			url: "logout",
 			options: {
@@ -74,16 +86,42 @@ const Nav = (props: Props) => {
 
 					<div>
 						{user.isLoggedIn && (
-							<a>
-								<Avatar
-									name={`${user.info.first_name}`}
-									src={user.info.profile_picture}
-									onClick={logoutHandler}
-									width="48px"
-									height="48px"
-									className="cursor-pointer"
-								/>
-							</a>
+							<section
+								className={`flex flex-row gap-4 items-center ${
+									type === "dark"
+										? "text-black"
+										: "text-white"
+								}`}>
+								<div className="relative">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										strokeWidth={1.25}
+										stroke="currentColor"
+										className="w-6 h-6 cursor-pointer">
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+										/>
+									</svg>
+									<div className="bg-red-500 rounded-full text-xs py-1 px-1 absolute bottom-1 right-0"></div>
+								</div>
+
+								<a>
+									<Avatar
+										name={`${user.info.first_name}`}
+										src={user.info.profile_picture}
+										width="32px"
+										height="32px"
+										className="cursor-pointer"
+										onClick={onOpen}
+										colorScheme="teal"
+										ref={btnRef}
+									/>
+								</a>
+							</section>
 						)}
 						{!user.isLoggedIn && (
 							<Link to={"/login"}>
@@ -93,6 +131,65 @@ const Nav = (props: Props) => {
 							</Link>
 						)}
 					</div>
+
+					<Drawer
+						isOpen={isOpen}
+						placement="right"
+						onClose={onClose}
+						finalFocusRef={btnRef}>
+						<DrawerOverlay />
+						<DrawerContent>
+							<DrawerCloseButton />
+							<DrawerHeader className="flex flex-row gap-2">
+								<Avatar
+									name={`${user.info.first_name}`}
+									src={user.info.profile_picture}
+									width="32px"
+									height="32px"
+									className="cursor-pointer outline outline-slate-600 outline-1"
+									onClick={onOpen}
+									colorScheme="red"
+									ref={btnRef}
+								/>
+								<div className="flex flex-col gap-0">
+									<h4 className="font-medium text-sm leading-tight">
+										{user.info.first_name}
+									</h4>
+									<p className="font-light text-xs leading-tight">
+										Benedict
+									</p>
+								</div>
+							</DrawerHeader>
+
+							<DrawerBody>
+								<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300 w-full mt-1">
+									Your Profile
+								</button>
+								<div className="w-full h-[1px] rounded-md bg-gray-200 my-1"></div>
+								<section className="flex flex-col gap-2 mt-2">
+									<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
+										Projects
+									</button>
+									<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
+										Reviews
+									</button>
+									<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
+										Stars
+									</button>
+									<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
+										Circle
+									</button>
+								</section>
+								<div className="w-full h-[1px] rounded-md bg-gray-200 my-1"></div>
+
+								<button
+									onClick={logoutHandler}
+									className="mt-2 px-2 font-light">
+									Logout
+								</button>
+							</DrawerBody>
+						</DrawerContent>
+					</Drawer>
 				</div>
 
 				{/* Mobile Screens */}
