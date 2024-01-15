@@ -1,3 +1,5 @@
+import { UserType } from "../types";
+
 export type CircleMemberType = {
 	role: "LEAD" | "MEMBER" | "COLEAD";
 	email: string;
@@ -21,6 +23,11 @@ export type ProjectsType = {
 	createdBy: CircleMemberType;
 	liveLink: string;
 	github: string;
+	rating: {
+		rating: number;
+		user: UserType;
+		project: ProjectsType;
+	}[];
 	techUsed: string[];
 	pinned: boolean;
 	id: string;

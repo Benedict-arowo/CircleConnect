@@ -15,9 +15,9 @@ import { makeReq } from "../../pages/Circle";
 type Props = {
 	displayStars?: boolean;
 	projects: ProjectsType[];
-	circle: CircleType;
+	circle?: CircleType;
 	showManageMenu?: boolean;
-	setAlertState: React.Dispatch<
+	setAlertState?: React.Dispatch<
 		React.SetStateAction<{
 			header: string;
 			body: string;
@@ -25,8 +25,8 @@ type Props = {
 			doneText: string;
 		}>
 	>;
-	fetchCircle: () => Promise<void>;
-	makeReq: ({
+	fetchCircle?: () => Promise<void>;
+	makeReq?: ({
 		url,
 		method,
 		body,
@@ -34,7 +34,7 @@ type Props = {
 		successMsg,
 		successFunc,
 	}: makeReq) => Promise<void>;
-	onOpen: () => void;
+	onOpen?: () => void;
 };
 
 const ListProjects = ({
@@ -49,8 +49,35 @@ const ListProjects = ({
 }: Props) => {
 	const User = useSelector((state) => state.user);
 
+	// Makes sure the user gives all needed parameters when showManageMenu is set to true.
+
+	// TODO: Create a seperate component for project list with showManageMenu set to true.
+	if (
+		showManageMenu &&
+		(!circle ||
+			!projects ||
+			!makeReq ||
+			!fetchCircle ||
+			!setAlertState ||
+			!onOpen ||
+			!circle)
+	)
+		throw new Error("Invalid arguments passed to ListProjects.");
+
 	return projects.map(
-		({ name, techUsed, description, id, createdBy, pinned }) => {
+		({ name, techUsed, description, id, createdBy, pinned, rating }) => {
+			let averageRating = 0;
+
+			// If displayStars is set to true, it calculates the average rating of each project.
+			if (displayStars) {
+				const totalRating = rating.reduce(
+					(accumulator, currentValue) =>
+						accumulator + currentValue.rating,
+					0
+				);
+				averageRating = totalRating / rating.length;
+			}
+
 			return (
 				<article
 					key={id}
@@ -229,7 +256,9 @@ const ListProjects = ({
 						<div className="flex flex-row flex-wrap w-full gap-2 justify-center">
 							{techUsed.slice(0, 3).map((tech: string) => {
 								return (
-									<span className="bg-red-500 uppercase text-white px-2 py-1 text-sm font-light cursor-pointer rounded-sm">
+									<span
+										key={tech}
+										className="bg-red-500 uppercase text-white px-2 py-1 text-sm font-light cursor-pointer rounded-sm">
 										{tech}
 									</span>
 								);
@@ -240,7 +269,7 @@ const ListProjects = ({
 					{displayStars && (
 						<div className="mx-auto">
 							<StarRatings
-								rating={3.75}
+								rating={averageRating}
 								starRatedColor="red"
 								numberOfStars={5}
 								name="rating"
