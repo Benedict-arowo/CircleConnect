@@ -3,6 +3,7 @@ import prisma from "../model/db";
 import { Req } from "../types";
 import { Response } from "express";
 import CustomError from "../middlewear/CustomError";
+import { UserSelectClean, UserSelectMinimized } from "../utils";
 
 type sendNotificationData = {
 	url?: string;
@@ -68,6 +69,14 @@ export const getNotifications = async (req: Req, res: Response) => {
 		query: { status },
 	} = req;
 
+	// await prisma.notification.create({
+	// 	data: {
+	// 		userId: "839e8515-e2f2-46e1-a1b6-b7641686cf75",
+	// 		content: "Test notification",
+	// 		url: "https://google.com",
+	// 	},
+	// });
+
 	if (status !== undefined && status !== "READ" && status !== "UNREAD") {
 		throw new CustomError(
 			"Invalid notification status",
@@ -86,4 +95,52 @@ export const getNotifications = async (req: Req, res: Response) => {
 		.json({ success: true, data: userNotifications });
 };
 
-export const deleteNotification = async (req: Req, res: Response) => {};
+export const getNotification = async (req: Req, res: Response) => {
+	const { id } = req.params;
+
+	const notification = await prisma.notification.findUnique({
+		where: { id },
+		select: {
+			id: true,
+			content: true,
+			status: true,
+			url: true,
+			user: {
+				select: UserSelectClean,
+			},
+		},
+	});
+
+	if (!notification)
+		throw new CustomError("Notification not found.", StatusCodes.NOT_FOUND);
+
+	if (notification.user.id !== req.user.id)
+		throw new CustomError(
+			"You're not allowed to view this notification.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	return res
+		.status(StatusCodes.OK)
+		.json({ status: true, data: notification });
+};
+
+export const deleteNotification = async (req: Req, res: Response) => {
+	const { id } = req.params;
+
+	const notification = await prisma.notification.findUnique({
+		where: { id },
+	});
+
+	if (!notification)
+		throw new CustomError("Notification not found.", StatusCodes.NOT_FOUND);
+
+	if (notification.userId !== req.user.id)
+		throw new CustomError(
+			"You do not have permission to delete this notification.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	await prisma.notification.delete({ where: { id } });
+	return res.status(StatusCodes.OK).json({ success: true });
+};

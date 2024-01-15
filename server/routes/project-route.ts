@@ -683,6 +683,7 @@ projectRouter
  *   post:
  *     tags: [Project]
  *     summary: Add Rating to Project
+ *     tags: [Project]
  *     description: Add a rating to a project.
  *     parameters:
  *       - name: "id"
