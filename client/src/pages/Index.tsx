@@ -2,17 +2,37 @@ import { useEffect, useState } from "react";
 import banner from "../assets/desola-lanre-ologun-IgUR1iX0mqM-unsplash.jpg";
 import Nav from "../Components/Nav";
 import UseFetch from "../Components/Fetch";
-import Project from "../Components/project_component";
 import CirclesComponent from "../Components/circle_component";
+import ListProjects from "../Components/Circle Page/ListProjects";
+import { Spinner } from "@chakra-ui/react";
+import { CircleType, ProjectsType } from "../Components/types";
+
+type StateType = {
+	projects: ProjectsType[];
+	top_projects: ProjectsType[];
+	top_circles: CircleType[];
+	top_circles_err: undefined | string;
+	top_projects_err: undefined | string;
+	projects_err: undefined | string;
+	loading: boolean;
+};
 
 const Index = () => {
-	const [featuredCircle, setFeaturedCircle] = useState([]);
+	const [state, setState] = useState<StateType>({
+		projects: [],
+		top_projects: [],
+		top_circles: [],
+		top_circles_err: undefined,
+		top_projects_err: undefined,
+		projects_err: undefined,
+		loading: true,
+	});
+
 	const [search, setSearch] = useState("");
 
-	const fetchFeaturedCircles = async () => {
-		// TODO: Sort by their rating.
+	const fetchTopCircles = async ({ limit = 5 }) => {
 		const { data, response } = await UseFetch({
-			url: "circle?limit=5&sortedBy=rating-desc",
+			url: `circle?limit=${limit}&sortedBy=rating-desc`,
 			options: {
 				method: "GET",
 				useServerUrl: true,
@@ -20,13 +40,73 @@ const Index = () => {
 			},
 		});
 
-		// TODO: Error handling
-		// TODO: Loading Component
 		if (!response.ok) {
-			console.log(response);
+			setState((prevState) => {
+				return {
+					...prevState,
+					top_circles_err: "Error trying to fetch top circles.",
+				};
+			});
 		}
 
-		setFeaturedCircle(() => data.data);
+		setState((prevState) => {
+			return {
+				...prevState,
+				top_circles: data.data,
+			};
+		});
+	};
+
+	const fetchProjects = async ({ limit = 5 }) => {
+		const { data, response } = await UseFetch({
+			url: `project?limit=${limit}`,
+			options: {
+				useServerUrl: true,
+				returnResponse: true,
+				method: "GET",
+			},
+		});
+
+		if (!response.ok)
+			setState((prevState) => {
+				return {
+					...prevState,
+					projects_err: "Error trying to fetch projects.",
+				};
+			});
+
+		setState((prevState) => {
+			return {
+				...prevState,
+				projects: data.data,
+			};
+		});
+	};
+
+	const fetchTopProjects = async ({ limit = 5 }) => {
+		const { data, response } = await UseFetch({
+			url: `project?limit=${limit}&sortedBy=rating-asc`,
+			options: {
+				useServerUrl: true,
+				returnResponse: true,
+				method: "GET",
+			},
+		});
+
+		if (!response.ok)
+			setState((prevState) => {
+				return {
+					...prevState,
+					top_projects_err: "Error trying to fetch top projects.",
+				};
+			});
+
+		setState((prevState) => {
+			return {
+				...prevState,
+				top_projects: data.data,
+			};
+		});
 	};
 
 	const searchHandler = () => {
@@ -34,7 +114,22 @@ const Index = () => {
 	};
 
 	useEffect(() => {
-		fetchFeaturedCircles();
+		// State is initialized to loading by default, and once it makes all the fetch requests, it sents the loading state to false.
+		fetchTopCircles({ limit: 5 })
+			.then(() => {
+				fetchProjects({ limit: 5 });
+			})
+			.then(() => {
+				fetchTopProjects({ limit: 5 });
+			})
+			.finally(() =>
+				setState((prevState) => {
+					return {
+						...prevState,
+						loading: false,
+					};
+				})
+			);
 	}, []);
 
 	return (
@@ -108,8 +203,23 @@ const Index = () => {
 				</section>
 			</div>
 
+			{state.top_circles_err && (
+				<div className="bg-red-500 text-white rounded-sm w-fit mx-auto px-2 py-1">
+					{state.top_circles_err}
+				</div>
+			)}
+			{state.top_projects_err && (
+				<div className="bg-red-500 text-white rounded-sm w-fit mx-auto px-2 py-1">
+					{state.top_projects_err}
+				</div>
+			)}
+			{state.projects_err && (
+				<div className="bg-red-500 text-white rounded-sm w-fit mx-auto px-2 py-1">
+					{state.projects_err}
+				</div>
+			)}
 			<section className="flex flex-col gap-20">
-				<section className="px-16 hidden">
+				{/* <section className="px-16 hidden">
 					<a
 						className="font-light mb-2 text-3xl text-gray-800 "
 						href="#search_results"
@@ -171,60 +281,69 @@ const Index = () => {
 							<Project />
 						</section>
 					</div>
-				</section>
+				</section> */}
 
-				<section className="pl-4 md:pl-16">
-					<a
-						className="font-light mb-2 text-3xl text-gray-800 "
-						href="#recent_projects"
-						id="recent_projects">
-						Recent Projects
-					</a>
-					<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
-						<Project />
-						<Project />
-						<Project />
-						<Project />
-						<Project />
-						<Project />
-						<Project />
-						<Project />
-						<Project />
-						<Project />
-						<Project />
-					</section>
-				</section>
-
-				<section className="pl-4 md:pl-16">
-					<a
-						className="font-light mb-2 text-3xl text-gray-800"
-						href="#featured_projects"
-						id="featured_projects">
-						Featured Projects
-					</a>
-					<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
-						<Project displayStars={true} />
-						<Project displayStars={true} />
-						<Project displayStars={true} />
-						<Project displayStars={true} />
-						<Project displayStars={true} />
-						<Project displayStars={true} />
-					</section>
-				</section>
-
-				<section className="px-4 md:px-16">
-					<a
-						className="font-light mb-2 text-3xl text-gray-800"
-						href="#circles"
-						id="circles">
-						Top Circles
-					</a>
-					<div className="flex flex-row gap-8 flex-wrap justify-center pt-2">
-						{featuredCircle && featuredCircle.length > 0 && (
-							<CirclesComponent circles={featuredCircle} />
-						)}
+				{state.loading && (
+					<div className="mx-auto">
+						<Spinner
+							thickness="4px"
+							speed="0.65s"
+							emptyColor="gray.200"
+							color="blue.500"
+							size="xl"
+						/>
 					</div>
-				</section>
+				)}
+
+				{!state.loading && state.projects && (
+					<section className="pl-4 md:pl-16">
+						<a
+							className="font-light mb-2 text-3xl text-gray-800 "
+							href="#recent_projects"
+							id="recent_projects">
+							Recent Projects
+						</a>
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
+							<ListProjects
+								displayStars={false}
+								projects={state.projects}
+								showManageMenu={false}
+							/>
+						</section>
+					</section>
+				)}
+
+				{!state.loading && state.top_projects && (
+					<section className="pl-4 md:pl-16">
+						<a
+							className="font-light mb-2 text-3xl text-gray-800"
+							href="#featured_projects"
+							id="featured_projects">
+							Top Projects
+						</a>
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
+							<ListProjects
+								displayStars={true}
+								projects={state.top_projects}
+								showManageMenu={false}
+							/>
+						</section>
+					</section>
+				)}
+
+				{!state.loading && state.top_circles && (
+					<section className="px-4 md:px-16">
+						<a
+							className="font-light mb-2 text-3xl text-gray-800"
+							href="#circles"
+							id="circles">
+							Top Circles
+						</a>
+						<div className="flex flex-row gap-8 flex-wrap justify-center pt-2">
+							<CirclesComponent circles={state.top_circles} />
+						</div>
+					</section>
+				)}
 			</section>
 		</main>
 	);
