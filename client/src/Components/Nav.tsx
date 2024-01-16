@@ -99,16 +99,12 @@ const Nav = (props: Props) => {
 					<div>
 						{user.isLoggedIn && (
 							<section
-								className={`flex flex-row gap-4 items-center ${
-									type === "dark"
-										? "text-black"
-										: "text-white"
-								}`}>
+								className={`flex flex-row gap-4 items-center text-black`}>
 								<div>
 									<Popover>
 										<PopoverTrigger>
 											<Button
-												variant="ghost"
+												variant="unstyled"
 												className="relative">
 												<svg
 													xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +112,8 @@ const Nav = (props: Props) => {
 													viewBox="0 0 24 24"
 													strokeWidth={1.25}
 													stroke="currentColor"
-													className="w-6 h-6 cursor-pointer">
+													className={`w-6 h-6 cursor-pointer duration-300 active:text-red-300
+													${type === "dark" ? "text-black" : "text-white"}`}>
 													<path
 														strokeLinecap="round"
 														strokeLinejoin="round"
