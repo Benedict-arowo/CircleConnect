@@ -6,6 +6,13 @@ import Login from "./pages/Auth/Login";
 import Test from "./pages/Test";
 import Circle from "./pages/Circle";
 import Discover from "./pages/Discover";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:8000");
+
+socket.on("connect", () => {
+	console.log(socket.id);
+});
 
 // TODO: Implement Lazy loading
 const App = () => {

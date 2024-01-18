@@ -22,6 +22,7 @@ export type User = {
 };
 
 export interface Req extends Request {
+	io: {};
 	query: {
 		circle_num?: string;
 		id?: string;
