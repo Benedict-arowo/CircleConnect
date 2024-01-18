@@ -13,6 +13,8 @@ export const getProjects = async (req: Req, res: Response) => {
 		"circle_id-desc",
 		"name-asc",
 		"name-desc",
+		"rating-desc",
+		"rating-asc",
 	];
 
 	if (isNaN(parseInt(limit)))
@@ -66,6 +68,15 @@ export const getProjects = async (req: Req, res: Response) => {
 					? "asc"
 					: "desc"
 				: undefined,
+			rating: sortedBy?.startsWith("rating")
+				? sortedBy === "rating-asc"
+					? {
+							_count: "asc",
+					  }
+					: {
+							_count: "desc",
+					  }
+				: undefined,
 		},
 		select: {
 			id: true,
@@ -76,8 +87,10 @@ export const getProjects = async (req: Req, res: Response) => {
 			createdBy: {
 				select: UserSelectMinimized,
 			},
+			rating: true,
 			liveLink: true,
 			github: true,
+			techUsed: true,
 		},
 		take: limit ? parseInt(limit) : undefined,
 	});
@@ -110,6 +123,7 @@ export const getProject = async (req: Req, res: Response) => {
 			liveLink: true,
 			github: true,
 			id: true,
+			techUsed: true,
 		},
 	});
 

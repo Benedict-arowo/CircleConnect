@@ -148,7 +148,7 @@ const circleRouter = express.Router();
  *             $ref: '#/components/schemas/CircleRequestBody'
  *     responses:
  *       200:
- *         description: The created book.
+ *         description: The created circle.
  *         content:
  *           application/json:
  *             schema:

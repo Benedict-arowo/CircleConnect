@@ -27,3 +27,4 @@
 *.njsproj
 *.sln
 *.sw?
+/server/dist
