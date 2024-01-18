@@ -88,6 +88,15 @@ export const getNotifications = async (req: Req, res: Response) => {
 			userId: user.id,
 			status: status ? status : undefined,
 		},
+		select: {
+			id: true,
+			content: true,
+			status: true,
+			url: true,
+			user: {
+				select: UserSelectClean,
+			},
+		},
 	});
 
 	return res
@@ -119,6 +128,14 @@ export const getNotification = async (req: Req, res: Response) => {
 			"You're not allowed to view this notification.",
 			StatusCodes.BAD_REQUEST
 		);
+
+	if (notification.status == "UNREAD")
+		await prisma.notification.update({
+			where: { id: notification.id },
+			data: {
+				status: "READ",
+			},
+		});
 
 	return res
 		.status(StatusCodes.OK)
