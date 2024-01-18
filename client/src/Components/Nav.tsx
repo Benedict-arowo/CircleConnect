@@ -25,7 +25,7 @@ import {
 	DrawerContent,
 	DrawerCloseButton,
 } from "@chakra-ui/react";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Props = {
 	className?: string;
@@ -43,7 +43,27 @@ const Nav = (props: Props) => {
 	const { className, type = "dark", useBackground = true } = props;
 	const user = useSelector((state) => state.user);
 	const { isOpen, onOpen, onClose } = useDisclosure();
+	const [notifications, setNotifications] = useState([]);
 	const btnRef = useRef();
+
+	const fetchNotifications = async () => {
+		const { data, response } = await UseFetch({
+			url: "notification",
+			options: {
+				method: "GET",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok)
+			throw new Error("Error trying to fetch notifications");
+		setNotifications(() => data.data);
+	};
+
+	useEffect(() => {
+		fetchNotifications();
+	}, []);
 
 	const logoutHandler = async () => {
 		dispatch(logoutUser());
@@ -130,13 +150,42 @@ const Nav = (props: Props) => {
 												Notifications
 											</PopoverHeader> */}
 											<PopoverBody>
-												<a href="">
-													<span className="font-medium">
-														User
-													</span>{" "}
-													just requested to join your
-													circle.
-												</a>
+												<div className="flex flex-col gap-2">
+													{notifications.length ===
+														0 && (
+														<p>
+															You currently have
+															no notifications!
+														</p>
+													)}
+													{notifications.length > 0 &&
+														notifications.map(
+															(notification) => {
+																const {
+																	id,
+																	content,
+																	status,
+																	url,
+																} =
+																	notification;
+																return (
+																	<a
+																		href={
+																			url
+																		}
+																		key={
+																			id
+																		}>
+																		{
+																			content
+																		}{" "}
+																		|{" "}
+																		{status}
+																	</a>
+																);
+															}
+														)}
+												</div>
 											</PopoverBody>
 										</PopoverContent>
 									</Popover>
