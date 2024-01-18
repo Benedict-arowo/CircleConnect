@@ -126,8 +126,8 @@ const projectRouter = express.Router();
  *         name: sortedBy
  *         schema:
  *           type: string
- *           enum: [circle_id-asc, circle_id-desc, name-asc, name-desc]
- *           description: The sorting order for projects based on circle ID or name.
+ *           enum: [circle_id-asc, circle_id-desc, name-asc, name-desc, rating-asc, rating-desc]
+ *           description: The sorting order for projects based on circle ID, rating or name.
  *         example: circle_id-asc
  *       - in: query
  *         name: userId
