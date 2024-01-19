@@ -18,7 +18,7 @@ type sendNotificationProps = {
 
 type updateNotificationProps = {
 	id: string;
-	status: "READ" | "UNREAD";
+	status: boolean;
 };
 
 export const sendNotification = async (props: sendNotificationProps) => {
@@ -56,7 +56,7 @@ export const updateNotificationStatus = async (
 			id: props.id,
 		},
 		data: {
-			status: props.status,
+			is_read: props.status,
 		},
 	});
 
@@ -77,25 +77,27 @@ export const getNotifications = async (req: Req, res: Response) => {
 	// 	},
 	// });
 
-	if (status !== undefined && status !== "READ" && status !== "UNREAD") {
+	if (status !== undefined && status !== "true" && status !== "false") {
 		throw new CustomError(
 			"Invalid notification status",
 			StatusCodes.BAD_REQUEST
 		);
 	}
+
 	const userNotifications = await prisma.notification.findMany({
 		where: {
 			userId: user.id,
-			status: status ? status : undefined,
+			is_read: status ? Boolean(status) : undefined,
 		},
 		select: {
 			id: true,
 			content: true,
-			status: true,
+			is_read: true,
 			url: true,
 			user: {
 				select: UserSelectClean,
 			},
+			createdAt: true,
 		},
 	});
 
@@ -112,11 +114,12 @@ export const getNotification = async (req: Req, res: Response) => {
 		select: {
 			id: true,
 			content: true,
-			status: true,
+			is_read: true,
 			url: true,
 			user: {
 				select: UserSelectClean,
 			},
+			createdAt: true,
 		},
 	});
 
@@ -129,11 +132,11 @@ export const getNotification = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	if (notification.status == "UNREAD")
+	if (!notification.is_read)
 		await prisma.notification.update({
 			where: { id: notification.id },
 			data: {
-				status: "READ",
+				is_read: true,
 			},
 		});
 
