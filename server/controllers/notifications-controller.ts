@@ -14,11 +14,12 @@ type sendNotificationData = {
 type sendNotificationProps = {
 	data: sendNotificationData | sendNotificationData[];
 	many: boolean;
+	io;
 };
 
 type updateNotificationProps = {
 	id: string;
-	status: "READ" | "UNREAD";
+	is_read: boolean;
 };
 
 export const sendNotification = async (props: sendNotificationProps) => {
@@ -42,7 +43,14 @@ export const sendNotification = async (props: sendNotificationProps) => {
 				userId: props.data.userId,
 				url: props.data.url,
 			},
+			include: {
+				user: true,
+			},
 		});
+
+		props.io
+			.to(`user_${props.data.userId}`)
+			.emit("notification", newNotification);
 
 		return newNotification;
 	}
@@ -56,7 +64,7 @@ export const updateNotificationStatus = async (
 			id: props.id,
 		},
 		data: {
-			status: props.status,
+			is_read: props.is_read,
 		},
 	});
 
@@ -77,7 +85,7 @@ export const getNotifications = async (req: Req, res: Response) => {
 	// 	},
 	// });
 
-	if (status !== undefined && status !== "READ" && status !== "UNREAD") {
+	if (status !== undefined && status !== "true" && status !== "false") {
 		throw new CustomError(
 			"Invalid notification status",
 			StatusCodes.BAD_REQUEST
@@ -86,12 +94,12 @@ export const getNotifications = async (req: Req, res: Response) => {
 	const userNotifications = await prisma.notification.findMany({
 		where: {
 			userId: user.id,
-			status: status ? status : undefined,
+			is_read: status ? Boolean(status) : undefined,
 		},
 		select: {
 			id: true,
 			content: true,
-			status: true,
+			is_read: true,
 			url: true,
 			user: {
 				select: UserSelectClean,
@@ -112,7 +120,7 @@ export const getNotification = async (req: Req, res: Response) => {
 		select: {
 			id: true,
 			content: true,
-			status: true,
+			is_read: true,
 			url: true,
 			user: {
 				select: UserSelectClean,
@@ -129,11 +137,11 @@ export const getNotification = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	if (notification.status == "UNREAD")
+	if (!notification.is_read)
 		await prisma.notification.update({
 			where: { id: notification.id },
 			data: {
-				status: "READ",
+				is_read: true,
 			},
 		});
 

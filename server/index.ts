@@ -52,7 +52,7 @@ const makeApp = (
 		})
 	);
 
-	app.use("", morgan("dev"));
+	// app.use("", morgan("dev"));
 	app.use(
 		cors({
 			origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
@@ -105,18 +105,20 @@ const makeApp = (
 		next();
 	});
 
-	io.on(
-		"connection",
-		(socket: { on: (arg0: string, arg1: () => void) => void }) => {
-			// Handle socket connections (optional)
-			console.log("A user connected");
-			console.log(socket.id);
+	io.on("connection", (socket) => {
+		// Handle socket connections (optional)
+		console.log("A user connected");
+		console.log(socket.id);
 
-			socket.on("disconnect", () => {
-				console.log("User disconnected");
-			});
-		}
-	);
+		socket.on("disconnect", () => {
+			console.log("User disconnected");
+		});
+
+		socket.on("joinRoom", (userId: string) => {
+			socket.join(`user_${userId}`);
+			console.log("User joined", userId);
+		});
+	});
 
 	app.use(
 		"/api-docs",
