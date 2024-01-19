@@ -3,6 +3,7 @@ import userSlice from "./pages/Auth/userSlice";
 import storage from "redux-persist/lib/storage";
 import { persistReducer, persistStore } from "redux-persist";
 import thunk from "redux-thunk";
+import socketSlice from "./Components/socketSlice";
 
 const persistConfig = {
 	key: "root",
@@ -11,6 +12,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
 	user: persistReducer(persistConfig, userSlice),
+	io: persistReducer(persistConfig, socketSlice),
 });
 
 export const store = configureStore({
