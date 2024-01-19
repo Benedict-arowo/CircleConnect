@@ -214,7 +214,7 @@ const Nav = (props: Props) => {
 												</h4>
 											</PopoverHeader>
 											<PopoverBody>
-												<div className="flex flex-col max-h-[350px] overflow-y-scroll">
+												<div className="flex flex-col max-h-[350px] overflow-y-auto">
 													{notifications.unread
 														.length === 0 &&
 														notifications.read
