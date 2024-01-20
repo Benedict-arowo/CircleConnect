@@ -12,7 +12,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
 	user: persistReducer(persistConfig, userSlice),
-	io: persistReducer(persistConfig, socketSlice),
+	// io: persistReducer(persistConfig, socketSlice),
 });
 
 export const store = configureStore({

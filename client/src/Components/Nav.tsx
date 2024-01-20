@@ -42,7 +42,7 @@ const Nav = (props: Props) => {
 	const dispatch = useDispatch();
 	const { className, type = "dark", useBackground = true } = props;
 	const user = useSelector((state) => state.user);
-	const { io, connected: socketConnected } = useSelector((state) => state.io);
+	// const { io, connected: socketConnected } = useSelector((state) => state.io);
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [notifications, setNotifications] = useState([]);
 	const btnRef = useRef();
@@ -109,16 +109,16 @@ const Nav = (props: Props) => {
 		// want to be respectful there is no need to bother them anymore.
 	}
 
-	console.log(socketConnected, io);
-	if (socketConnected)
-		io.on("notification", (notification) => {
-			console.log("Received notification:", notification);
-			setNotifications((prevNotifications) => {
-				return [notification, ...prevNotifications];
-			});
-			notifyMe(notification.content);
-			// Handle the notification as needed
-		});
+	// console.log(socketConnected, io);
+	// if (socketConnected)
+	// 	io.on("notification", (notification) => {
+	// 		console.log("Received notification:", notification);
+	// 		setNotifications((prevNotifications) => {
+	// 			return [notification, ...prevNotifications];
+	// 		});
+	// 		notifyMe(notification.content);
+	// 		// Handle the notification as needed
+	// 	});
 
 	return (
 		<>
