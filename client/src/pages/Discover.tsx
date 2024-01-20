@@ -132,7 +132,7 @@ const Circles = () => {
 											className="font-semibold mb-2 text-3xl text-gray-800 "
 											href="#circles"
 											id="circles">
-											Circles
+											Circles1
 										</a>
 									</h1>
 
