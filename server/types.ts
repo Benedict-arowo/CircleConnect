@@ -4,6 +4,7 @@ export type User = {
 	id: string;
 	email?: string;
 	username: string;
+	first_name: string;
 	name: {
 		familyName: string;
 		givenName: string;

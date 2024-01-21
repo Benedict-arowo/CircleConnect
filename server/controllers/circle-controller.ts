@@ -2,6 +2,7 @@ import { Response } from "express";
 import { Req } from "../types";
 import prisma from "../model/db";
 import {
+	UserSelectClean,
 	UserSelectFull,
 	UserSelectMinimized,
 	minimumCircleDescriptionLength,
@@ -9,6 +10,7 @@ import {
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
 import { Prisma } from "@prisma/client";
+import { sendNotification } from "./notifications-controller";
 
 export const calAverageRating = async (id: number) => {
 	const ratings = await prisma.projectRating.findMany({
@@ -270,7 +272,7 @@ export const createCircle = async (req: Req, res: Response) => {
 export const requestToJoinCircle = async (req: Req, res: Response) => {
 	const {
 		params: { id: circleId },
-		user: { id: userId },
+		user: { id: userId, first_name: userFirstName },
 	} = req;
 
 	if (!circleId)
@@ -340,6 +342,33 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 	}
+
+	// Send notification to circle lead, and co-lead about the person trying to join the circle.
+	if (circle.colead)
+		sendNotification({
+			data: [
+				{
+					content: `${userFirstName} has requested to join your circle.`,
+					userId: circle.lead.id,
+					url: "",
+				},
+				{
+					content: `${userFirstName} has requested to join your circle.`,
+					userId: circle.colead.id,
+					url: "",
+				},
+			],
+			many: true,
+		});
+	else
+		sendNotification({
+			data: {
+				content: `${userFirstName} has requested to join your circle.`,
+				userId: circle.lead.id,
+				url: "",
+			},
+			many: false,
+		});
 
 	const updatedCircle = await prisma.circle.update({
 		where: { id: Number(circleId) },
@@ -506,7 +535,7 @@ export const leaveCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	const Circle = await prisma.circle.update({
+	const updatedCircle = await prisma.circle.update({
 		where: {
 			id: isNaN(Number(id)) ? undefined : Number(id),
 		},
@@ -528,6 +557,12 @@ export const leaveCircle = async (req: Req, res: Response) => {
 					first_name: "desc",
 				},
 			},
+			colead: {
+				select: UserSelectClean,
+			},
+			lead: {
+				select: UserSelectClean,
+			},
 			projects: {
 				select: {
 					description: true,
@@ -541,6 +576,32 @@ export const leaveCircle = async (req: Req, res: Response) => {
 			},
 			createdAt: true,
 		},
+	});
+
+	// Send notification to the circle members.
+
+	const circleMembers = updatedCircle.members.map((member) => {
+		return {
+			userId: member.id,
+			content: `${req.user.first_name} has left your circle.`,
+		};
+	});
+
+	if (updatedCircle.colead)
+		circleMembers.push({
+			userId: updatedCircle.colead.id,
+			content: `${req.user.first_name} has left your circle.`,
+		});
+
+	sendNotification({
+		data: [
+			{
+				userId: circle.lead.id,
+				content: `${req.user.first_name} has left your circle.`,
+			},
+			...circleMembers,
+		],
+		many: true,
 	});
 
 	res.status(StatusCodes.OK).json({ success: true });
@@ -771,10 +832,13 @@ export const deleteCircle = async (req: Req, res: Response) => {
 		},
 		include: {
 			lead: {
-				select: UserSelectMinimized,
+				select: UserSelectClean,
 			},
 			colead: {
-				select: UserSelectMinimized,
+				select: UserSelectClean,
+			},
+			members: {
+				select: UserSelectClean,
 			},
 		},
 	});
@@ -788,6 +852,22 @@ export const deleteCircle = async (req: Req, res: Response) => {
 				id: isNaN(Number(circleId)) ? undefined : Number(circleId),
 			},
 		});
+
+		// Send notifications to the circle members, and co-lead.
+		const circleMembers = Circle.members.map((member) => {
+			return {
+				userId: member.id,
+				content: `Your circle, circle ${Circle.id} has been deleted by the circle lead.`,
+			};
+		});
+
+		if (Circle.colead)
+			circleMembers.push({
+				userId: Circle.colead.id,
+				content: `Your circle, circle ${Circle.id} has been deleted by the circle lead.`,
+			});
+		sendNotification({ data: circleMembers, many: true });
+
 		res.status(StatusCodes.OK).json({ success: true });
 	} else
 		throw new CustomError(

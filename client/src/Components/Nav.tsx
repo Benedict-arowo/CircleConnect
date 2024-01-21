@@ -26,6 +26,7 @@ import {
 	DrawerCloseButton,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
+import { NotificationType } from "../types";
 
 type Props = {
 	className?: string;
@@ -38,17 +39,26 @@ const activeStyles = {
 	fontWeight: "normal",
 };
 
+type Notification = {
+	read: NotificationType[];
+	unread: NotificationType[];
+};
+
 const Nav = (props: Props) => {
 	const dispatch = useDispatch();
 	const { className, type = "dark", useBackground = true } = props;
 	const user = useSelector((state) => state.user);
 	const { isOpen, onOpen, onClose } = useDisclosure();
-	const [notifications, setNotifications] = useState([]);
+	const [notifications, setNotifications] = useState<Notification>({
+		unread: [],
+		read: [],
+	});
 	const btnRef = useRef();
+	const maxNotifications = 20;
 
 	const fetchNotifications = async () => {
 		const { data, response } = await UseFetch({
-			url: "notification",
+			url: `notification?limit=${maxNotifications}`,
 			options: {
 				method: "GET",
 				useServerUrl: true,
@@ -58,7 +68,17 @@ const Nav = (props: Props) => {
 
 		if (!response.ok)
 			throw new Error("Error trying to fetch notifications");
-		setNotifications(() => data.data);
+		setNotifications(() => {
+			// Filters the notification by the read status.
+			return {
+				read: data.data.filter(
+					(notification: NotificationType) => notification.is_read
+				),
+				unread: data.data.filter(
+					(notification: NotificationType) => !notification.is_read
+				),
+			};
+		});
 	};
 
 	useEffect(() => {
@@ -84,6 +104,38 @@ const Nav = (props: Props) => {
 			});
 	};
 
+	const DisplayNotifications = () => {
+		// Puts all notifications into an array, and sorts them by their timestamp
+		const allNotifications = [
+			...notifications.unread,
+			...notifications.read,
+		].sort((a, b) => {
+			if (a.createdAt < b.createdAt) return -1;
+			else if (a.createdAt > b.createdAt) return 1;
+			else return 0;
+		});
+
+		return allNotifications.map((notification) => {
+			const { id, content, is_read, url, user } = notification;
+			return (
+				<div
+					key={id}
+					className={`px-2 py-3 flex flex-row gap-3 items-center border-b border-b-slate-200 border-1 hover:bg-slate-100 duration-300 cursor-pointer bg-white}`}>
+					<Avatar
+						name={`${user.first_name}`}
+						src={user.profile_picture}
+						width="32px"
+						height="32px"
+						className="cursor-pointer"
+						colorScheme="teal"
+					/>
+					<a href={url} className="font-light">
+						{content}
+					</a>
+				</div>
+			);
+		});
+	};
 	return (
 		<>
 			<header
@@ -140,51 +192,45 @@ const Nav = (props: Props) => {
 														d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
 													/>
 												</svg>
-												<div className="bg-red-500 rounded-full text-xs py-1 px-1 absolute bottom-3 right-4"></div>
+												{notifications.unread.length >
+													0 && (
+													<div className="bg-red-500 rounded-full text-xs py-1 px-1 absolute bottom-3 right-4"></div>
+												)}
 											</Button>
 										</PopoverTrigger>
-										<PopoverContent className="mx-4">
+										<PopoverContent className="mx-2">
 											<PopoverArrow />
-											{/* <PopoverCloseButton />
+											<PopoverCloseButton />
 											<PopoverHeader>
-												Notifications
-											</PopoverHeader> */}
+												<h4 className="font-light text-sm text-center">
+													Notifications (
+													<span className="text-red-500">
+														{notifications.unread
+															.length +
+															notifications.read
+																.length}
+													</span>
+													)
+												</h4>
+											</PopoverHeader>
 											<PopoverBody>
-												<div className="flex flex-col gap-2">
-													{notifications.length ===
-														0 && (
-														<p>
-															You currently have
-															no notifications!
-														</p>
-													)}
-													{notifications.length > 0 &&
-														notifications.map(
-															(notification) => {
-																const {
-																	id,
-																	content,
-																	status,
-																	url,
-																} =
-																	notification;
-																return (
-																	<a
-																		href={
-																			url
-																		}
-																		key={
-																			id
-																		}>
-																		{
-																			content
-																		}{" "}
-																		|{" "}
-																		{status}
-																	</a>
-																);
-															}
+												<div className="flex flex-col max-h-[350px] overflow-y-auto">
+													{notifications.unread
+														.length === 0 &&
+														notifications.read
+															.length === 0 && (
+															<p>
+																You currently
+																have no
+																notifications!
+															</p>
 														)}
+													{notifications.read.length >
+														0 ||
+														(notifications.unread
+															.length > 0 && (
+															<DisplayNotifications />
+														))}
 												</div>
 											</PopoverBody>
 										</PopoverContent>
