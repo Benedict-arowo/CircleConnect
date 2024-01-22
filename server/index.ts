@@ -11,6 +11,9 @@ import dotenv from "dotenv";
 import circleRouter from "./routes/circle-route";
 import projectRouter from "./routes/project-route";
 import notificationRouter from "./routes/notification-route";
+import { Req } from "./types";
+import { Server } from "socket.io";
+const http = require("http");
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
@@ -19,12 +22,24 @@ const pgSession = require("connect-pg-simple")(session);
 const bodyParser = require("body-parser");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const sockerIO = require("socket.io");
+
 dotenv.config();
 
 const makeApp = (
 	database: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>
 ) => {
 	const app: Express = express();
+	const server = http.createServer(app);
+	// const io = sockerIO(server);
+
+	const io = new Server(server, {
+		cors: {
+			origin: "http://localhost:5173",
+			credentials: true,
+		},
+	});
+
 	app.use(
 		session({
 			secret: process.env.SESSION_SECRET,
@@ -37,7 +52,7 @@ const makeApp = (
 		})
 	);
 
-	app.use("", morgan("dev"));
+	// app.use("", morgan("dev"));
 	app.use(
 		cors({
 			origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
@@ -83,6 +98,28 @@ const makeApp = (
 	};
 
 	const specs = swaggerJsdoc(options);
+
+	// Socket.io
+	app.use((req, res, next) => {
+		req.io = io;
+		next();
+	});
+
+	io.on("connection", (socket) => {
+		// Handle socket connections (optional)
+		console.log("A user connected");
+		console.log(socket.id);
+
+		socket.on("disconnect", () => {
+			console.log("User disconnected");
+		});
+
+		socket.on("joinRoom", (userId: string) => {
+			socket.join(`user_${userId}`);
+			console.log("User joined", userId);
+		});
+	});
+
 	app.use(
 		"/api-docs",
 		swaggerUi.serve,
@@ -98,7 +135,7 @@ const makeApp = (
 	app.use("/notification", notificationRouter);
 
 	app.use(ErrorHandler);
-	return app;
+	return { app, server };
 };
 
 export default makeApp;

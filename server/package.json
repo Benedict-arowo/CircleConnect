@@ -29,6 +29,7 @@
 		"passport-github2": "^0.1.12",
 		"passport-google-oauth20": "^2.0.0",
 		"passport-jwt": "^4.0.1",
+		"socket.io": "^4.7.4",
 		"swagger-jsdoc": "^6.2.8",
 		"swagger-ui-express": "^5.0.0"
 	},

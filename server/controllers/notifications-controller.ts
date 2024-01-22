@@ -14,11 +14,12 @@ type sendNotificationData = {
 type sendNotificationProps = {
 	data: sendNotificationData | sendNotificationData[];
 	many: boolean;
+	io;
 };
 
 type updateNotificationProps = {
 	id: string;
-	status: boolean;
+	is_read: boolean;
 };
 
 export const sendNotification = async (props: sendNotificationProps) => {
@@ -42,7 +43,14 @@ export const sendNotification = async (props: sendNotificationProps) => {
 				userId: props.data.userId,
 				url: props.data.url,
 			},
+			include: {
+				user: true,
+			},
 		});
+
+		props.io
+			.to(`user_${props.data.userId}`)
+			.emit("notification", newNotification);
 
 		return newNotification;
 	}

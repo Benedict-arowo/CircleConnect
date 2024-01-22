@@ -359,6 +359,7 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 				},
 			],
 			many: true,
+			io: req.io,
 		});
 	else
 		sendNotification({
@@ -368,6 +369,7 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 				url: "",
 			},
 			many: false,
+			io: req.io,
 		});
 
 	const updatedCircle = await prisma.circle.update({
@@ -602,6 +604,7 @@ export const leaveCircle = async (req: Req, res: Response) => {
 			...circleMembers,
 		],
 		many: true,
+		io: req.io,
 	});
 
 	res.status(StatusCodes.OK).json({ success: true });
@@ -916,7 +919,7 @@ export const deleteCircle = async (req: Req, res: Response) => {
 				userId: Circle.colead.id,
 				content: `Your circle, circle ${Circle.id} has been deleted by the circle lead.`,
 			});
-		sendNotification({ data: circleMembers, many: true });
+		sendNotification({ data: circleMembers, many: true, io: req.io });
 
 		res.status(StatusCodes.OK).json({ success: true });
 	} else
