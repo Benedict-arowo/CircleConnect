@@ -1,10 +1,3 @@
-/**
- * @swagger
- * tags:
- *   name: Project
- *   description: The project API route
- */
-
 import {
 	addProjectToCircle,
 	createProject,

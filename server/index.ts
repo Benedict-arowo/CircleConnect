@@ -92,7 +92,6 @@ const makeApp = (
 	app.use("/auth/github", githubRouter);
 
 	app.use("/auth/jwt", jwtRouter);
-
 	app.use("/", authRouter);
 	app.use("/circle", circleRouter);
 	app.use("/project", projectRouter);
