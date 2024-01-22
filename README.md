@@ -66,3 +66,16 @@
 ## Setup and Installation
 
 -   Coming Soon
+
+### TODO:
+
+-   Project Page
+
+    -   Create a new project
+    -   Manage project page (A list of user's projects so they can edit, or delete them).
+    -   Ability to be able to add reviews to projects.
+    -   Ability to be able to rate the projects.
+    -   Possibly use github's API to get more info about projects.
+
+-   Circle Page
+    -   Create a new circle

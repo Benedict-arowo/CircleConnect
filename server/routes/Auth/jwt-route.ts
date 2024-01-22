@@ -24,7 +24,7 @@ jwtRouter.get(
 
 /**
  * @swagger
- * /login:
+ * /auth/jwt/login:
  *   post:
  *     summary: Log in with email and password to obtain JWT token.
  *     tags: [Authentication]
@@ -101,7 +101,7 @@ jwtRouter.post("/login", wrapper(loginJWT));
 
 /**
  * @swagger
- * /register:
+ * /auth/jwt/register:
  *   post:
  *     summary: Register a new user and obtain JWT token.
  *     tags: [Authentication]

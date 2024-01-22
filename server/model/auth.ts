@@ -10,7 +10,6 @@ type findUserProp = {
 };
 
 export const findUser = async ({ where, select }: findUserProp) => {
-
 	const User = prisma.user.findUnique({
 		where: {
 			...where,
