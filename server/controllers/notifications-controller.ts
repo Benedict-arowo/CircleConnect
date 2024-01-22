@@ -64,7 +64,7 @@ export const updateNotificationStatus = async (
 			id: props.id,
 		},
 		data: {
-			is_read: props.is_read,
+			is_read: props.status,
 		},
 	});
 
@@ -91,6 +91,7 @@ export const getNotifications = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 	}
+
 	const userNotifications = await prisma.notification.findMany({
 		where: {
 			userId: user.id,
@@ -104,6 +105,7 @@ export const getNotifications = async (req: Req, res: Response) => {
 			user: {
 				select: UserSelectClean,
 			},
+			createdAt: true,
 		},
 	});
 
@@ -125,6 +127,7 @@ export const getNotification = async (req: Req, res: Response) => {
 			user: {
 				select: UserSelectClean,
 			},
+			createdAt: true,
 		},
 	});
 

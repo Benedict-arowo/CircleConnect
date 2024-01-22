@@ -625,6 +625,7 @@ export const editCircle = async (req: Req, res: Response) => {
 	const leadConnect: Prisma.UserWhereUniqueInput = { id: undefined };
 	const coleadConnect: Prisma.UserWhereUniqueInput = { id: undefined };
 	const coleadDisconnect: Prisma.UserWhereUniqueInput = { id: undefined };
+	const notificationList = [];
 
 	if (!id)
 		throw new CustomError(
@@ -690,8 +691,19 @@ export const editCircle = async (req: Req, res: Response) => {
 		if (request.type === "ACCEPT") {
 			requestDisconnectList.push({ id: request.userId });
 			connectList.push({ id: request.userId });
+
+			// Send notification to the user that they've been accepted into the circle.
+			notificationList.push({
+				userId: request.userId,
+				content: `You have been accepted into circle ${id}.`,
+			});
 		} else if (request.type === "DECLINE") {
 			requestDisconnectList.push({ id: request.userId });
+			// Send notification to the user that they've been declined to join the circle.
+			notificationList.push({
+				userId: request.userId,
+				content: `Your request to join circle ${id} has been declined.`,
+			});
 		}
 	}
 
@@ -700,13 +712,23 @@ export const editCircle = async (req: Req, res: Response) => {
 		// Checks if the user they are trying to remove exists as a member in their circle.
 		// If exists, remove them from the circle member.
 
-		if (circle.colead && circle.colead.id === removeUser.userId)
+		if (circle.colead && circle.colead.id === removeUser.userId) {
 			coleadDisconnect.id = removeUser.userId;
-		else if (
+			// Send notification to the co-lead that they've been removed from the circle.
+			notificationList.push({
+				userId: removeUser.userId,
+				content: `You have been kicked out of circle ${id}.`,
+			});
+		} else if (
 			circle.members.find((member) => member.id === removeUser.userId)
-		)
+		) {
 			disconnectList.push({ id: removeUser.userId });
-		else
+			// Send notification to the user that they've been removed from the circle.
+			notificationList.push({
+				userId: removeUser.userId,
+				content: `You have been kicked out of circle ${id}.`,
+			});
+		} else
 			throw new CustomError(
 				"User is not a member of this circle.",
 				StatusCodes.BAD_REQUEST
@@ -741,10 +763,20 @@ export const editCircle = async (req: Req, res: Response) => {
 				connectList.push({ id: circle.lead.id });
 				coleadDisconnect.id = circle.colead.id;
 				leadConnect.id = circle.colead.id;
+				// Send notification to the co-lead becoming lead that they've been promoted.
+				notificationList.push({
+					userId: circle.colead.id,
+					content: `You have been promoted to Circle-lead on Circle ${id}.`,
+				});
 			} else if (manageUser.action === "DEMOTE") {
 				// Demotting a circle co-lead back to a member.
 				coleadDisconnect.id = circle.colead.id;
 				connectList.push({ id: circle.colead.id });
+				// Send notification to the co-lead that they've been demoted.
+				notificationList.push({
+					userId: circle.colead.id,
+					content: `You have been demoted from Circle Co-lead to Circle Member on Circle ${id}.`,
+				});
 			}
 		} else if (
 			circle.members.find((member) => member.id === manageUser.userId)
@@ -755,8 +787,20 @@ export const editCircle = async (req: Req, res: Response) => {
 				// 2. If there's a co-lead already, make the co-lead a member
 				// 3. Makes the member a circle co-lead
 				coleadConnect.id = manageUser.userId;
-				if (circle.colead) connectList.push({ id: circle.colead.id });
+				if (circle.colead) {
+					connectList.push({ id: circle.colead.id });
+					// Send notification to the current co-lead that they've been demoted.
+					notificationList.push({
+						userId: circle.colead.id,
+						content: `You have been demoted from Circle Co-lead to Circle Member on Circle ${id}.`,
+					});
+				}
 				disconnectList.push({ id: manageUser.userId });
+				// Send notification to the member that they've been promoted.
+				notificationList.push({
+					userId: manageUser.userId,
+					content: `You have been promoted from Circle Member to Circle Co-lead on Circle ${id}.`,
+				});
 			} else if (manageUser.action === "DEMOTE")
 				throw new CustomError(
 					"Circle member cannot be demoted further!",
@@ -820,6 +864,12 @@ export const editCircle = async (req: Req, res: Response) => {
 			},
 			createdAt: true,
 		},
+	});
+
+	// Sends all the notifications
+	sendNotification({
+		data: notificationList,
+		many: true,
 	});
 
 	res.status(StatusCodes.OK).json({ success: true, data: Circle });
