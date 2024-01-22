@@ -11,7 +11,7 @@ if (process.env.USE_TEST_DB === "true") {
 	prisma = new PrismaClient({
 		datasources: {
 			db: {
-				url: process.env.TEST_DATABASE_URL, // Use a file-based in-memory SQLite database
+				url: process.env.DATABASE_URL,
 			},
 		},
 	});
