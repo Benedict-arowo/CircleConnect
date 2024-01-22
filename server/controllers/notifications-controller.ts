@@ -3,7 +3,8 @@ import prisma from "../model/db";
 import { Req } from "../types";
 import { Response } from "express";
 import CustomError from "../middlewear/CustomError";
-import { UserSelectClean, UserSelectMinimized } from "../utils";
+import { UserSelectClean } from "../utils";
+import { Socket } from "socket.io";
 
 type sendNotificationData = {
 	url?: string;
@@ -14,7 +15,7 @@ type sendNotificationData = {
 type sendNotificationProps = {
 	data: sendNotificationData | sendNotificationData[];
 	many: boolean;
-	io;
+	io: Socket;
 };
 
 type updateNotificationProps = {
@@ -26,16 +27,31 @@ export const sendNotification = async (props: sendNotificationProps) => {
 	if (props.many) {
 		const data = Array.isArray(props.data) ? props.data : [props.data];
 
-		const newNotifications = await prisma.notification.createMany({
-			skipDuplicates: true,
-			data: data.map((notificationData: sendNotificationData) => ({
-				content: notificationData.content,
-				userId: notificationData.userId,
-				url: notificationData.url,
-			})),
+		data.forEach(async (notification) => {
+			const newNotification = await prisma.notification.create({
+				data: {
+					content: notification.content,
+					userId: notification.userId,
+					url: notification.url,
+				},
+				select: {
+					content: true,
+					createdAt: true,
+					id: true,
+					is_read: true,
+					url: true,
+					user: {
+						select: UserSelectClean,
+					},
+				},
+			});
+
+			props.io
+				.to(`user_${newNotification.user.id}`)
+				.emit("notification", newNotification);
 		});
 
-		return newNotifications;
+		return 0;
 	} else if ("content" in props.data && "userId" in props.data) {
 		const newNotification = await prisma.notification.create({
 			data: {
@@ -52,7 +68,7 @@ export const sendNotification = async (props: sendNotificationProps) => {
 			.to(`user_${props.data.userId}`)
 			.emit("notification", newNotification);
 
-		return newNotification;
+		return 0;
 	}
 };
 
@@ -64,7 +80,7 @@ export const updateNotificationStatus = async (
 			id: props.id,
 		},
 		data: {
-			is_read: props.status,
+			is_read: props.is_read,
 		},
 	});
 

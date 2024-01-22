@@ -870,6 +870,7 @@ export const editCircle = async (req: Req, res: Response) => {
 	sendNotification({
 		data: notificationList,
 		many: true,
+		io: req.io,
 	});
 
 	res.status(StatusCodes.OK).json({ success: true, data: Circle });

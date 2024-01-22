@@ -11,7 +11,6 @@ import dotenv from "dotenv";
 import circleRouter from "./routes/circle-route";
 import projectRouter from "./routes/project-route";
 import notificationRouter from "./routes/notification-route";
-import { Req } from "./types";
 import { Server } from "socket.io";
 const http = require("http");
 const cors = require("cors");
@@ -19,10 +18,8 @@ const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
-const bodyParser = require("body-parser");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-const sockerIO = require("socket.io");
 
 dotenv.config();
 
@@ -31,7 +28,6 @@ const makeApp = (
 ) => {
 	const app: Express = express();
 	const server = http.createServer(app);
-	// const io = sockerIO(server);
 
 	const io = new Server(server, {
 		cors: {
@@ -52,7 +48,7 @@ const makeApp = (
 		})
 	);
 
-	// app.use("", morgan("dev"));
+	app.use("", morgan("dev"));
 	app.use(
 		cors({
 			origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
@@ -105,7 +101,7 @@ const makeApp = (
 		next();
 	});
 
-	io.on("connection", (socket) => {
+	io.on("connection", (socket: any) => {
 		// Handle socket connections (optional)
 		console.log("A user connected");
 		console.log(socket.id);

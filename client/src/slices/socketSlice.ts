@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 type initialState = {
-	io: object | undefined;
+	io: string | undefined;
 	connected: boolean;
 };
 
@@ -11,11 +11,11 @@ const initialState: initialState = {
 };
 
 export const socketSlice = createSlice({
-	name: "io",
+	name: "socker",
 	initialState,
 	reducers: {
 		connect: (state, payload) => {
-			state.io = payload.payload;
+			state.io = JSON.stringify(payload.payload);
 			state.connected = true;
 		},
 	},
