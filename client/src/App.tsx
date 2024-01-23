@@ -10,8 +10,6 @@ import SocketContext from "./contexts/SocketContext";
 
 // TODO: Implement Lazy loading
 const App = () => {
-	const User = useSelector((state) => state.user);
-
 	return (
 		<div className="max-w-screen-2xl mx-auto">
 			<SocketContext>

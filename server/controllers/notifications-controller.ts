@@ -24,6 +24,7 @@ type updateNotificationProps = {
 };
 
 export const sendNotification = async (props: sendNotificationProps) => {
+	console.log(props.data);
 	if (props.many) {
 		const data = Array.isArray(props.data) ? props.data : [props.data];
 
@@ -45,7 +46,7 @@ export const sendNotification = async (props: sendNotificationProps) => {
 					},
 				},
 			});
-
+			console.log("Sending multiple notifications");
 			props.io
 				.to(`user_${newNotification.user.id}`)
 				.emit("notification", newNotification);
@@ -64,6 +65,7 @@ export const sendNotification = async (props: sendNotificationProps) => {
 			},
 		});
 
+		console.log("Sending a single notification");
 		props.io
 			.to(`user_${props.data.userId}`)
 			.emit("notification", newNotification);

@@ -88,6 +88,7 @@ const Nav = (props: Props) => {
 	useEffect(() => {
 		if (socket.connected) {
 			socket.on("notification", (notification) => {
+				console.log("New notification");
 				setNotifications((prev) => ({
 					unread: [notification, ...prev.unread],
 					read: prev.read,
