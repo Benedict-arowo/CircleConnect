@@ -12,7 +12,6 @@ import {
 	markAllAsRead,
 	markAsRead,
 	markAsUnread,
-	send,
 } from "../controllers/notifications-controller";
 import isLoggedIn from "../middlewear/isLoggedIn";
 import wrapper from "../middlewear/wrapper";
@@ -300,5 +299,4 @@ notificationRouter.patch(
 	wrapper(markAsUnread)
 );
 
-notificationRouter.post("/send/:id", isLoggedIn, wrapper(send));
 export default notificationRouter;

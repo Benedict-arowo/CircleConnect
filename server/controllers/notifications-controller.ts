@@ -107,21 +107,6 @@ export const markAllAsRead = async (req: Req, res: Response) => {
 		.json({ success: true, data: notifications });
 };
 
-export const send = async (req: Req, res: Response) => {
-	const { id } = req.params;
-	sendNotification({
-		io: req.io,
-		data: {
-			content: "Test",
-			userId: id,
-			url: "",
-		},
-		many: false,
-	});
-
-	res.json({ success: true });
-};
-
 export const markAsRead = async (req: Req, res: Response) => {
 	const { id: notificationId } = req.params;
 
