@@ -8,6 +8,10 @@ services:
         volumes:
             - node_modules_backend:/home/server/node_modules
             - ./server:/home/server
+        environment:
+            - WDS_SOCKET_HOST=127.0.0.1
+            - CHOKIDAR_USEPOLLING=true
+            - WATCHPACK_POLLING=true
         depends_on:
             - db
     frontend:
@@ -19,6 +23,10 @@ services:
         volumes:
             - node_modules_frontend:/home/client/node_modules
             - ./client:/home/client
+        environment:
+            - WDS_SOCKET_HOST=127.0.0.1
+            - CHOKIDAR_USEPOLLING=true
+            - WATCHPACK_POLLING=true
         depends_on:
             - backend
     db:
