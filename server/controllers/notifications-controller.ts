@@ -61,7 +61,9 @@ export const sendNotification = async (props: sendNotificationProps) => {
 				url: props.data.url,
 			},
 			include: {
-				user: true,
+				user: {
+					select: UserSelectClean,
+				},
 			},
 		});
 
@@ -74,19 +76,118 @@ export const sendNotification = async (props: sendNotificationProps) => {
 	}
 };
 
-export const updateNotificationStatus = async (
-	props: updateNotificationProps
-) => {
-	const notification = await prisma.notification.update({
+// export const updateNotificationStatus = async (
+// 	props: updateNotificationProps
+// ) => {
+// 	const notification = await prisma.notification.update({
+// 		where: {
+// 			id: props.id,
+// 		},
+// 		data: {
+// 			is_read: props.is_read,
+// 		},
+// 	});
+
+// 	return notification;
+// };
+
+export const markAllAsRead = async (req: Req, res: Response) => {
+	const notifications = await prisma.notification.updateMany({
 		where: {
-			id: props.id,
+			userId: req.user.id,
+			is_read: false,
 		},
 		data: {
-			is_read: props.is_read,
+			is_read: true,
 		},
 	});
 
-	return notification;
+	return res
+		.status(StatusCodes.OK)
+		.json({ success: true, data: notifications });
+};
+
+export const send = async (req: Req, res: Response) => {
+	const { id } = req.params;
+	sendNotification({
+		io: req.io,
+		data: {
+			content: "Test",
+			userId: id,
+			url: "",
+		},
+		many: false,
+	});
+
+	res.json({ success: true });
+};
+
+export const markAsRead = async (req: Req, res: Response) => {
+	const { id: notificationId } = req.params;
+
+	const notification = await prisma.notification.findUnique({
+		where: { id: notificationId },
+	});
+
+	if (!notification)
+		throw new CustomError("Notification not found", StatusCodes.NOT_FOUND);
+
+	if (notification.is_read)
+		throw new CustomError(
+			"Notification is already read.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (notification.userId !== req.user.id)
+		throw new CustomError(
+			"You do not have permission to modify this notification",
+			StatusCodes.BAD_REQUEST
+		);
+
+	const updatedNotification = await prisma.notification.update({
+		where: { id: notificationId },
+		data: {
+			is_read: true,
+		},
+	});
+
+	return res
+		.status(StatusCodes.OK)
+		.json({ success: true, data: updatedNotification });
+};
+
+export const markAsUnread = async (req: Req, res: Response) => {
+	const { id: notificationId } = req.params;
+
+	const notification = await prisma.notification.findUnique({
+		where: { id: notificationId },
+	});
+
+	if (!notification)
+		throw new CustomError("Notification not found", StatusCodes.NOT_FOUND);
+
+	if (!notification.is_read)
+		throw new CustomError(
+			"Notification is already unread",
+			StatusCodes.BAD_GATEWAY
+		);
+
+	if (notification.userId !== req.user.id)
+		throw new CustomError(
+			"You do not have permission to modify this notification",
+			StatusCodes.BAD_REQUEST
+		);
+
+	const updatedNotification = await prisma.notification.update({
+		where: { id: notificationId },
+		data: {
+			is_read: false,
+		},
+	});
+
+	return res
+		.status(StatusCodes.OK)
+		.json({ success: true, data: updatedNotification });
 };
 
 export const getNotifications = async (req: Req, res: Response) => {
@@ -158,13 +259,19 @@ export const getNotification = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	if (!notification.is_read)
-		await prisma.notification.update({
-			where: { id: notification.id },
+	// If the notification is marked as unread, mark it as read.
+	if (!notification.is_read) {
+		let updatedNotification = await prisma.notification.update({
+			where: { id },
 			data: {
 				is_read: true,
 			},
 		});
+
+		return res
+			.status(StatusCodes.OK)
+			.json({ status: true, data: updatedNotification });
+	}
 
 	return res
 		.status(StatusCodes.OK)
