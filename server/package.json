@@ -14,6 +14,7 @@
 	"license": "ISC",
 	"dependencies": {
 		"@prisma/client": "^5.8.1",
+		"@socket.io/admin-ui": "^0.5.1",
 		"argon2": "^0.31.2",
 		"connect-pg-simple": "^9.0.1",
 		"cookie-parser": "^1.4.6",
