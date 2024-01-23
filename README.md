@@ -73,7 +73,7 @@
 #### 1. Clone the Repository
 
 ```bash
-git  clone  https://github.com/Benedict-arowo/CircleConnect.git
+git clone https://github.com/Benedict-arowo/CircleConnect.git
 ```
 
 #### 2. Configure Environment Variables
@@ -104,13 +104,13 @@ JWT_SECRET="secret"
 #### 3. Build Docker Images
 
 ```bash
-docker-compose  build  --no-cache
+docker-compose build --no-cache
 ```
 
 #### 4. Start Docker Containers
 
 ```bash
-docker-compose  up
+docker-compose up
 ```
 
 #### 5. Run Prisma Migrate
@@ -118,7 +118,7 @@ docker-compose  up
 Once the containers are up and running, open a new terminal window and run the Prisma migrate command.
 
 ```bash
-docker  exec  circleconnect_backend  npx  prisma  migrate  dev
+docker exec circleconnect_backend npx prisma migrate dev
 ```
 
 #### 6. Access the Application
