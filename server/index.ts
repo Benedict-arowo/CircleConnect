@@ -22,6 +22,7 @@ const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const { instrument } = require("@socket.io/admin-ui");
 
 dotenv.config();
 
@@ -50,7 +51,13 @@ const makeApp = (
 			}),
 		})
 	);
+
 	// Socket.io
+	instrument(io, {
+		auth: false,
+		mode: "development",
+	});
+
 	app.use(socketMiddleware(io));
 
 	app.use("", morgan("dev"));

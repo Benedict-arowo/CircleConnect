@@ -9,6 +9,10 @@ import {
 	deleteNotification,
 	getNotification,
 	getNotifications,
+	markAllAsRead,
+	markAsRead,
+	markAsUnread,
+	send,
 } from "../controllers/notifications-controller";
 import isLoggedIn from "../middlewear/isLoggedIn";
 import wrapper from "../middlewear/wrapper";
@@ -288,4 +292,13 @@ notificationRouter
 	.get(isLoggedIn, wrapper(getNotification))
 	.delete(isLoggedIn, wrapper(deleteNotification));
 
+notificationRouter.patch("/markAll", isLoggedIn, wrapper(markAllAsRead));
+notificationRouter.patch("/:id/markAsRead", isLoggedIn, wrapper(markAsRead));
+notificationRouter.patch(
+	"/:id/markAsUnread",
+	isLoggedIn,
+	wrapper(markAsUnread)
+);
+
+notificationRouter.post("/send/:id", isLoggedIn, wrapper(send));
 export default notificationRouter;

@@ -86,17 +86,13 @@ const Nav = (props: Props) => {
 	};
 
 	useEffect(() => {
-		if (socket.connected) {
-			socket.on("notification", (notification) => {
-				console.log("New notification");
-				setNotifications((prev) => ({
-					unread: [notification, ...prev.unread],
-					read: prev.read,
-				}));
-				Notify(notification.content);
-				DisplayNotifications();
-			});
-		}
+		socket.on("notification", (notification) => {
+			setNotifications((prev) => ({
+				unread: [notification, ...prev.unread],
+				read: prev.read,
+			}));
+			Notify(notification.content);
+		});
 	}, [socket]);
 
 	useEffect(() => {
@@ -120,6 +116,20 @@ const Nav = (props: Props) => {
 			.catch((error) => {
 				console.log(error);
 			});
+	};
+
+	const updateNotification = async (id: string, status: boolean) => {
+		const { data, response } = await UseFetch({
+			url: `notification/${id}/${status ? "markAsUnread" : "markAsRead"}`,
+			options: {
+				method: "PATCH",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok) console.log(response);
+		fetchNotifications();
 	};
 
 	const DisplayNotifications = () => {
@@ -153,9 +163,14 @@ const Nav = (props: Props) => {
 						<a href={url} className="font-light">
 							{content}
 						</a>
-						<p className="font-light text-xs text-gray-400">
-							{format(createdAt)}
-						</p>
+						<div className="flex flex-row justify-between font-light text-xs text-gray-400">
+							<p className=" ">{format(createdAt)}</p>
+							<button
+								className="hover:underline"
+								onClick={() => updateNotification(id, is_read)}>
+								{is_read ? "Unread" : "Mark as read"}
+							</button>
+						</div>
 					</div>
 				</div>
 			);
@@ -251,12 +266,12 @@ const Nav = (props: Props) => {
 																notifications!
 															</p>
 														)}
-													{notifications.read.length >
-														0 ||
-														(notifications.unread
-															.length > 0 && (
-															<DisplayNotifications />
-														))}
+													{(notifications.read
+														.length > 0 ||
+														notifications.unread
+															.length > 0) && (
+														<DisplayNotifications />
+													)}
 												</div>
 											</PopoverBody>
 										</PopoverContent>
