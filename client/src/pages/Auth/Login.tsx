@@ -9,7 +9,7 @@ import { Alert, AlertIcon, AlertDescription } from "@chakra-ui/react";
 import { Alert as AlertType } from "../../types";
 import UseFetch from "../../Components/Fetch";
 import { useDispatch } from "react-redux";
-import { loginUser } from "./userSlice";
+import { loginUser } from "../../slices/userSlice";
 // import { useDispatch } from "react-redux";
 // import { saveUser } from "./userSlice";
 

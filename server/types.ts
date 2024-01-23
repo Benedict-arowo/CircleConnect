@@ -1,4 +1,5 @@
 import { Request } from "express";
+import { Socket } from "socket.io";
 
 export type User = {
 	id: string;
@@ -22,7 +23,7 @@ export type User = {
 };
 
 export interface Req extends Request {
-	io: {};
+	io: Socket;
 	query: {
 		circle_num?: string;
 		id?: string;

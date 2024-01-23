@@ -1,7 +1,6 @@
 import {
 	Avatar,
 	Button,
-	Input,
 	Popover,
 	PopoverArrow,
 	PopoverBody,
@@ -15,11 +14,10 @@ import Logo from "./Logo";
 import { Link, NavLink } from "react-router-dom";
 import UseFetch from "./Fetch";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../pages/Auth/userSlice";
+import { logoutUser } from "../slices/userSlice";
 import {
 	Drawer,
 	DrawerBody,
-	DrawerFooter,
 	DrawerHeader,
 	DrawerOverlay,
 	DrawerContent,
@@ -27,6 +25,10 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { NotificationType } from "../types";
+import { format } from "timeago.js";
+import { UseSocketContext } from "../contexts/SocketContext";
+import Notify from "./Notify";
+import { Socket } from "socket.io-client";
 
 type Props = {
 	className?: string;
@@ -46,9 +48,10 @@ type Notification = {
 
 const Nav = (props: Props) => {
 	const dispatch = useDispatch();
+	const socket: Socket = UseSocketContext();
 	const { className, type = "dark", useBackground = true } = props;
 	const user = useSelector((state) => state.user);
-	const { io, connected: socketConnected } = useSelector((state) => state.io);
+	// const { io, connected: socketConnected } = useSelector((state) => state.io);
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [notifications, setNotifications] = useState<Notification>({
 		unread: [],
@@ -83,6 +86,20 @@ const Nav = (props: Props) => {
 	};
 
 	useEffect(() => {
+		if (socket.connected) {
+			socket.on("notification", (notification) => {
+				console.log("New notification");
+				setNotifications((prev) => ({
+					unread: [notification, ...prev.unread],
+					read: prev.read,
+				}));
+				Notify(notification.content);
+				DisplayNotifications();
+			});
+		}
+	}, [socket]);
+
+	useEffect(() => {
 		fetchNotifications();
 	}, []);
 
@@ -111,17 +128,19 @@ const Nav = (props: Props) => {
 			...notifications.unread,
 			...notifications.read,
 		].sort((a, b) => {
-			if (a.createdAt < b.createdAt) return -1;
-			else if (a.createdAt > b.createdAt) return 1;
+			if (a.createdAt < b.createdAt) return 1;
+			else if (a.createdAt > b.createdAt) return -1;
 			else return 0;
 		});
 
 		return allNotifications.map((notification) => {
-			const { id, content, is_read, url, user } = notification;
+			const { id, content, is_read, url, user, createdAt } = notification;
 			return (
 				<div
 					key={id}
-					className={`px-2 py-3 flex flex-row gap-3 items-center border-b border-b-slate-200 border-1 hover:bg-slate-100 duration-300 cursor-pointer bg-white}`}>
+					className={`px-2 py-3 flex flex-row gap-3 items-center border-b border-b-slate-200 border-1 hover:bg-slate-100 duration-300 cursor-pointer bg-white ${
+						!is_read ? "bg-red-50" : ""
+					}`}>
 					<Avatar
 						name={`${user.first_name}`}
 						src={user.profile_picture}
@@ -130,47 +149,18 @@ const Nav = (props: Props) => {
 						className="cursor-pointer"
 						colorScheme="teal"
 					/>
-					<a href={url} className="font-light">
-						{content}
-					</a>
+					<div className="flex flex-col gap-0">
+						<a href={url} className="font-light">
+							{content}
+						</a>
+						<p className="font-light text-xs text-gray-400">
+							{format(createdAt)}
+						</p>
+					</div>
 				</div>
 			);
 		});
 	};
-	function notifyMe(notificationContent: string) {
-		if (!("Notification" in window)) {
-			// Check if the browser supports notifications
-			alert("This browser does not support desktop notification");
-		} else if (Notification.permission === "granted") {
-			// Check whether notification permissions have already been granted;
-			// if so, create a notification
-			const notification = new Notification(notificationContent);
-			// …
-		} else if (Notification.permission !== "denied") {
-			// We need to ask the user for permission
-			Notification.requestPermission().then((permission) => {
-				// If the user accepts, let's create a notification
-				if (permission === "granted") {
-					const notification = new Notification(notificationContent);
-					// …
-				}
-			});
-		}
-
-		// At last, if the user has denied notifications, and you
-		// want to be respectful there is no need to bother them anymore.
-	}
-
-	console.log(socketConnected, io);
-	if (socketConnected)
-		io.on("notification", (notification) => {
-			console.log("Received notification:", notification);
-			setNotifications((prevNotifications) => {
-				return [notification, ...prevNotifications];
-			});
-			notifyMe(notification.content);
-			// Handle the notification as needed
-		});
 
 	return (
 		<>

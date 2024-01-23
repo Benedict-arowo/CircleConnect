@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import morgan from "morgan";
 import ErrorHandler from "./middlewear/ErrorHandler";
 import authRouter from "./routes/Auth/auth-route";
@@ -11,18 +11,17 @@ import dotenv from "dotenv";
 import circleRouter from "./routes/circle-route";
 import projectRouter from "./routes/project-route";
 import notificationRouter from "./routes/notification-route";
-import { Req } from "./types";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
+import socketMiddleware from "./middlewear/Socket";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 const http = require("http");
 const cors = require("cors");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
-const bodyParser = require("body-parser");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-const sockerIO = require("socket.io");
 
 dotenv.config();
 
@@ -31,14 +30,14 @@ const makeApp = (
 ) => {
 	const app: Express = express();
 	const server = http.createServer(app);
-	// const io = sockerIO(server);
 
-	const io = new Server(server, {
-		cors: {
-			origin: "http://localhost:5173",
-			credentials: true,
-		},
-	});
+	const io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap> =
+		new Server(server, {
+			cors: {
+				origin: "http://localhost:5173",
+				credentials: true,
+			},
+		});
 
 	app.use(
 		session({
@@ -51,8 +50,10 @@ const makeApp = (
 			}),
 		})
 	);
+	// Socket.io
+	app.use(socketMiddleware(io));
 
-	// app.use("", morgan("dev"));
+	app.use("", morgan("dev"));
 	app.use(
 		cors({
 			origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
@@ -99,17 +100,7 @@ const makeApp = (
 
 	const specs = swaggerJsdoc(options);
 
-	// Socket.io
-	app.use((req, res, next) => {
-		req.io = io;
-		next();
-	});
-
-	io.on("connection", (socket) => {
-		// Handle socket connections (optional)
-		console.log("A user connected");
-		console.log(socket.id);
-
+	io.on("connection", (socket: Socket) => {
 		socket.on("disconnect", () => {
 			console.log("User disconnected");
 		});
@@ -135,6 +126,7 @@ const makeApp = (
 	app.use("/notification", notificationRouter);
 
 	app.use(ErrorHandler);
+
 	return { app, server };
 };
 

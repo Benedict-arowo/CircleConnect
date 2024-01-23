@@ -31,7 +31,6 @@ export const userSlice = createSlice({
 	initialState,
 	reducers: {
 		loginUser: (state, payload) => {
-			console.log(payload);
 			state.isLoggedIn = true;
 			state.status = "active";
 			state.info = {
