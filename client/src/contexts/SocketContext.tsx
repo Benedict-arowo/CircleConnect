@@ -18,6 +18,7 @@ const SocketContext = ({ children }) => {
 	if (User.isLoggedIn)
 		socket.on("connect", () => {
 			socket.emit("joinRoom", User.info.id);
+			console.log("Joined room");
 		});
 
 	return (
