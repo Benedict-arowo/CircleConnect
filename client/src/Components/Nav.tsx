@@ -58,11 +58,10 @@ const Nav = (props: Props) => {
 		read: [],
 	});
 	const btnRef = useRef();
-	const maxNotifications = 20;
 
 	const fetchNotifications = async () => {
 		const { data, response } = await UseFetch({
-			url: `notification?limit=${maxNotifications}`,
+			url: `notification`,
 			options: {
 				method: "GET",
 				useServerUrl: true,
@@ -86,17 +85,13 @@ const Nav = (props: Props) => {
 	};
 
 	useEffect(() => {
-		if (socket.connected) {
-			socket.on("notification", (notification) => {
-				console.log("New notification");
-				setNotifications((prev) => ({
-					unread: [notification, ...prev.unread],
-					read: prev.read,
-				}));
-				Notify(notification.content);
-				DisplayNotifications();
-			});
-		}
+		socket.on("notification", (notification) => {
+			setNotifications((prev) => ({
+				unread: [notification, ...prev.unread],
+				read: prev.read,
+			}));
+			Notify(notification.content);
+		});
 	}, [socket]);
 
 	useEffect(() => {
@@ -120,6 +115,34 @@ const Nav = (props: Props) => {
 			.catch((error) => {
 				console.log(error);
 			});
+	};
+
+	const updateNotification = async (id: string, status: boolean) => {
+		const { data, response } = await UseFetch({
+			url: `notification/${id}/${status ? "markAsUnread" : "markAsRead"}`,
+			options: {
+				method: "PATCH",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok) console.log(response);
+		fetchNotifications();
+	};
+
+	const markAllAsRead = async () => {
+		const { data, response } = await UseFetch({
+			url: `notification/markAll`,
+			options: {
+				method: "PATCH",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok) console.log(response);
+		fetchNotifications();
 	};
 
 	const DisplayNotifications = () => {
@@ -153,9 +176,14 @@ const Nav = (props: Props) => {
 						<a href={url} className="font-light">
 							{content}
 						</a>
-						<p className="font-light text-xs text-gray-400">
-							{format(createdAt)}
-						</p>
+						<div className="flex flex-row justify-between font-light text-xs text-gray-400">
+							<p className=" ">{format(createdAt)}</p>
+							<button
+								className="hover:underline"
+								onClick={() => updateNotification(id, is_read)}>
+								{is_read ? "Unread" : "Mark as read"}
+							</button>
+						</div>
 					</div>
 				</div>
 			);
@@ -228,16 +256,24 @@ const Nav = (props: Props) => {
 											<PopoverArrow />
 											<PopoverCloseButton />
 											<PopoverHeader>
-												<h4 className="font-light text-sm text-center">
-													Notifications (
-													<span className="text-red-500">
-														{notifications.unread
-															.length +
-															notifications.read
-																.length}
-													</span>
-													)
-												</h4>
+												<div className="flex flex-col gap-0 items-center">
+													<h4 className="font-light text-base text-center">
+														Notifications (
+														<span className="text-red-500">
+															{notifications
+																.unread.length +
+																notifications
+																	.read
+																	.length}
+														</span>
+														)
+													</h4>
+													<button
+														onClick={markAllAsRead}
+														className="font-light self-end text-xs text-gray-500">
+														Mark all as read
+													</button>
+												</div>
 											</PopoverHeader>
 											<PopoverBody>
 												<div className="flex flex-col max-h-[350px] overflow-y-auto">
@@ -251,12 +287,12 @@ const Nav = (props: Props) => {
 																notifications!
 															</p>
 														)}
-													{notifications.read.length >
-														0 ||
-														(notifications.unread
-															.length > 0 && (
-															<DisplayNotifications />
-														))}
+													{(notifications.read
+														.length > 0 ||
+														notifications.unread
+															.length > 0) && (
+														<DisplayNotifications />
+													)}
 												</div>
 											</PopoverBody>
 										</PopoverContent>
