@@ -58,11 +58,10 @@ const Nav = (props: Props) => {
 		read: [],
 	});
 	const btnRef = useRef();
-	const maxNotifications = 20;
 
 	const fetchNotifications = async () => {
 		const { data, response } = await UseFetch({
-			url: `notification?limit=${maxNotifications}`,
+			url: `notification`,
 			options: {
 				method: "GET",
 				useServerUrl: true,
@@ -121,6 +120,20 @@ const Nav = (props: Props) => {
 	const updateNotification = async (id: string, status: boolean) => {
 		const { data, response } = await UseFetch({
 			url: `notification/${id}/${status ? "markAsUnread" : "markAsRead"}`,
+			options: {
+				method: "PATCH",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok) console.log(response);
+		fetchNotifications();
+	};
+
+	const markAllAsRead = async () => {
+		const { data, response } = await UseFetch({
+			url: `notification/markAll`,
 			options: {
 				method: "PATCH",
 				useServerUrl: true,
@@ -243,16 +256,24 @@ const Nav = (props: Props) => {
 											<PopoverArrow />
 											<PopoverCloseButton />
 											<PopoverHeader>
-												<h4 className="font-light text-sm text-center">
-													Notifications (
-													<span className="text-red-500">
-														{notifications.unread
-															.length +
-															notifications.read
-																.length}
-													</span>
-													)
-												</h4>
+												<div className="flex flex-col gap-0 items-center">
+													<h4 className="font-light text-base text-center">
+														Notifications (
+														<span className="text-red-500">
+															{notifications
+																.unread.length +
+																notifications
+																	.read
+																	.length}
+														</span>
+														)
+													</h4>
+													<button
+														onClick={markAllAsRead}
+														className="font-light self-end text-xs text-gray-500">
+														Mark all as read
+													</button>
+												</div>
 											</PopoverHeader>
 											<PopoverBody>
 												<div className="flex flex-col max-h-[350px] overflow-y-auto">
