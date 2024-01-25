@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 import { makeReq } from "../../pages/Circle";
+import { format } from "timeago.js";
 
 type Props = {
 	displayStars?: boolean;
@@ -65,17 +66,28 @@ const ListProjects = ({
 		throw new Error("Invalid arguments passed to ListProjects.");
 
 	return projects.map(
-		({ name, techUsed, description, id, createdBy, pinned, rating }) => {
+		({
+			name,
+			techUsed,
+			description,
+			id,
+			createdBy,
+			pinned,
+			rating,
+			createdAt,
+		}) => {
 			let averageRating = 0;
 
 			// If displayStars is set to true, it calculates the average rating of each project.
 			if (displayStars) {
-				const totalRating = rating.reduce(
-					(accumulator, currentValue) =>
-						accumulator + currentValue.rating,
-					0
-				);
-				averageRating = totalRating / rating.length;
+				if (rating.length > 0) {
+					const totalRating = rating.reduce(
+						(accumulator, currentValue) =>
+							accumulator + currentValue.rating,
+						0
+					);
+					averageRating = totalRating / rating.length;
+				} else averageRating = 0;
 			}
 
 			return (
@@ -281,7 +293,7 @@ const ListProjects = ({
 
 					<footer className="flex flex-row justify-between">
 						<span className="font-light text-sm text-gray-500 cursor-default">
-							Created 10 days ago.
+							{format(createdAt)}
 						</span>
 						<a href="" className="text-red-500 hover:underline">
 							@{createdBy.first_name}

@@ -1,8 +1,9 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import userSlice from "./pages/Auth/userSlice";
+import userSlice from "./slices/userSlice";
 import storage from "redux-persist/lib/storage";
 import { persistReducer, persistStore } from "redux-persist";
 import thunk from "redux-thunk";
+import socketSlice from "./slices/socketSlice";
 
 const persistConfig = {
 	key: "root",
@@ -11,6 +12,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
 	user: persistReducer(persistConfig, userSlice),
+	socker: persistReducer(persistConfig, socketSlice),
 });
 
 export const store = configureStore({
@@ -20,6 +22,7 @@ export const store = configureStore({
 });
 
 export const persistor = persistStore(store);
+
 // import { configureStore } from "@reduxjs/toolkit";
 // import { persistStore, persistReducer } from "redux-persist";
 // import storage from "redux-persist/lib/storage"; // defaults to localStorage for web

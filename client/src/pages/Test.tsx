@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "./Auth/userSlice";
+import { loginUser } from "../slices/userSlice";
 // import { increment, decrement } from "./Auth/userSlice";
 const Test = () => {
 	const dispatch = useDispatch();

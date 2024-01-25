@@ -1,10 +1,3 @@
-/**
- * @swagger
- * tags:
- *   name: Project
- *   description: The project API route
- */
-
 import {
 	addProjectToCircle,
 	createProject,
@@ -681,7 +674,6 @@ projectRouter
  * @swagger
  * /project/{id}/rating:
  *   post:
- *     tags: [Project]
  *     summary: Add Rating to Project
  *     tags: [Project]
  *     description: Add a rating to a project.
