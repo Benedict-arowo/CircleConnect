@@ -23,6 +23,7 @@ export const getReviews = async (req: Req, res: Response) => {
 					user: {
 						select: UserSelectClean,
 					},
+					createdAt: true,
 				},
 			},
 		},

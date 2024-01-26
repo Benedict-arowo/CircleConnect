@@ -2,7 +2,11 @@ import { StatusCodes } from "http-status-codes";
 import { Req } from "../types";
 import { Response } from "express";
 import CustomError from "../middlewear/CustomError";
-import { MAX_RATING_VALUE, UserSelectMinimized } from "../utils";
+import {
+	MAX_RATING_VALUE,
+	UserSelectClean,
+	UserSelectMinimized,
+} from "../utils";
 import prisma from "../model/db";
 import { calAverageRating } from "./circle-controller";
 
@@ -117,13 +121,23 @@ export const getProject = async (req: Req, res: Response) => {
 			circle: true,
 			createdAt: true,
 			createdBy: {
-				select: UserSelectMinimized,
+				select: UserSelectClean,
 			},
 			rating: true,
 			liveLink: true,
 			github: true,
 			id: true,
 			techUsed: true,
+			reviews: {
+				select: {
+					id: true,
+					review: true,
+					user: {
+						select: UserSelectClean,
+					},
+					createdAt: true,
+				},
+			},
 		},
 	});
 
