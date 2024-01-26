@@ -14,6 +14,7 @@ import notificationRouter from "./routes/notification-route";
 import { Server, Socket } from "socket.io";
 import socketMiddleware from "./middlewear/Socket";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import projectReviewsRouter from "./routes/project-reviews";
 const http = require("http");
 const cors = require("cors");
 const passport = require("passport");
@@ -130,6 +131,7 @@ const makeApp = (
 	app.use("/", authRouter);
 	app.use("/circle", circleRouter);
 	app.use("/project", projectRouter);
+	app.use("/reviews", projectReviewsRouter);
 	app.use("/notification", notificationRouter);
 
 	app.use(ErrorHandler);

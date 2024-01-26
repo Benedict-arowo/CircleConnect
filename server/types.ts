@@ -63,6 +63,7 @@ export interface Req extends Request {
 			action: "PROMOTE" | "DEMOTE";
 			userId: string;
 		};
+		content?: string;
 	};
 	user: User;
 	logout: Function;
