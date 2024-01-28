@@ -3,7 +3,7 @@ import { Req } from "../types";
 import prisma from "../model/db";
 import CustomError from "../middlewear/CustomError";
 import { StatusCodes } from "http-status-codes";
-import { PrismaNotFoundErrorCode, UserSelectClean } from "../utils";
+import { UserSelectClean } from "../utils";
 
 export const getReviews = async (req: Req, res: Response) => {
 	const {
@@ -32,7 +32,9 @@ export const getReviews = async (req: Req, res: Response) => {
 	if (!project)
 		throw new CustomError("Project not found", StatusCodes.NOT_FOUND);
 
-	return res.json({ success: true, data: project }).status(StatusCodes.OK);
+	return res
+		.json({ success: true, data: project.reviews })
+		.status(StatusCodes.OK);
 };
 
 export const createReview = async (req: Req, res: Response) => {
@@ -77,21 +79,38 @@ export const editReview = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	try {
-		const review = await prisma.projectReview.update({
-			where: { id: reviewId },
-			data: {
-				review: content,
+	const review = await prisma.projectReview.findUnique({
+		where: { id: reviewId },
+	});
+
+	if (!review)
+		throw new CustomError("Review not found.", StatusCodes.NOT_FOUND);
+
+	if (review.userId !== req.user.id)
+		throw new CustomError(
+			"You do not have permission to modify this review.",
+			StatusCodes.UNAUTHORIZED
+		);
+
+	const updatedReview = await prisma.projectReview.update({
+		where: { id: reviewId },
+		data: {
+			review: content,
+		},
+		select: {
+			id: true,
+			review: true,
+			projectId: true,
+			user: {
+				select: UserSelectClean,
 			},
-		});
-		return res.json({ success: true, data: review });
-	} catch (err: any) {
-		// Prisma error code for not found
-		if (err.code === PrismaNotFoundErrorCode)
-			throw new CustomError("Review not found", StatusCodes.NOT_FOUND);
-		else throw new CustomError(err.message, StatusCodes.BAD_REQUEST);
-	}
+			createdAt: true,
+		},
+	});
+
+	return res.json({ success: true, data: updatedReview });
 };
+
 export const deleteReview = async (req: Req, res: Response) => {
 	const {
 		params: { id: reviewId },
