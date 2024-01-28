@@ -95,7 +95,7 @@ const ListProjects = ({
 					key={id}
 					className="w-[400px] relative h-fit border flex-shrink-0 border-gray-300 pt-4 pb-2 flex flex-col gap-4 px-4 snap-normal snap-center">
 					<h3 className="text-2xl text-center font-semibold cursor-pointer">
-						<a href="">{name}</a>
+						<a href={`/project/${id}`}>{name}</a>
 					</h3>
 
 					{showManageMenu &&
