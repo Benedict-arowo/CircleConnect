@@ -94,7 +94,7 @@ export const getProjects = async (req: Req, res: Response) => {
 			rating: true,
 			liveLink: true,
 			github: true,
-			techUsed: true,
+			tags: true,
 		},
 		take: limit ? parseInt(limit) : undefined,
 	});
@@ -127,7 +127,7 @@ export const getProject = async (req: Req, res: Response) => {
 			liveLink: true,
 			github: true,
 			id: true,
-			techUsed: true,
+			tags: true,
 			reviews: {
 				select: {
 					id: true,
@@ -148,15 +148,8 @@ export const getProject = async (req: Req, res: Response) => {
 };
 
 export const createProject = async (req: Req, res: Response) => {
-	const {
-		name,
-		description,
-		circleId,
-		techUsed,
-		github,
-		liveLink,
-		pictures,
-	} = req.body;
+	const { name, description, circleId, tags, github, liveLink, pictures } =
+		req.body;
 
 	if (!name || !description)
 		throw new CustomError(
@@ -200,7 +193,7 @@ export const createProject = async (req: Req, res: Response) => {
 		data: {
 			name,
 			description,
-			techUsed: techUsed ? techUsed : undefined,
+			tags: tags ? tags : undefined,
 			// circleId: circleId ? Number(circleId) : undefined,
 			createdById: req.user.id,
 			github: github ? github : undefined,
@@ -219,7 +212,7 @@ export const editProject = async (req: Req, res: Response) => {
 			name,
 			description,
 			github,
-			techUsed,
+			tags,
 			liveLink,
 			visibility,
 			pictures,
@@ -288,16 +281,16 @@ export const editProject = async (req: Req, res: Response) => {
 			);
 	}
 
-	if (techUsed) {
-		if (!Array.isArray(techUsed))
+	if (tags) {
+		if (!Array.isArray(tags))
 			throw new CustomError(
-				"techUsed must be an array.",
+				"tags must be an array.",
 				StatusCodes.BAD_REQUEST
 			);
-		techUsed.forEach((tech) => {
-			if (typeof tech !== "string")
+		tags.forEach((tag) => {
+			if (typeof tag !== "string")
 				throw new CustomError(
-					"Tech used must be an array of strings.",
+					"tag used must be an array of strings.",
 					StatusCodes.BAD_REQUEST
 				);
 		});
@@ -309,7 +302,7 @@ export const editProject = async (req: Req, res: Response) => {
 			name: name ? name : undefined,
 			description: description ? description : undefined,
 			github: github !== undefined ? github : undefined,
-			techUsed: techUsed ? techUsed : undefined,
+			tags: tags ? tags : undefined,
 			liveLink: liveLink !== undefined ? liveLink : undefined,
 			circleVisibility: visibility ? visibility : undefined,
 			pictures: pictures ? pictures : undefined,

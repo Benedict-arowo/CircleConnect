@@ -69,7 +69,7 @@ model Project {
   description      String
   github           String?
   liveLink         String?
-  techUsed         String[]
+  tags         String[]
   pictures         String[]
   createdBy        User             @relation(fields: [createdById], references: [id])
   createdById      String

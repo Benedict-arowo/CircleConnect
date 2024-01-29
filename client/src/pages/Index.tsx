@@ -295,15 +295,15 @@ const Index = () => {
 					</div>
 				)}
 
-				{!state.loading && state.projects && (
+				{!state.loading && state.projects.length > 0 && (
 					<section className="pl-4 md:pl-16">
 						<a
-							className="font-light mb-2 text-3xl text-gray-800 "
+							className="font-light mb-2 text-3xl text-gray-800"
 							href="#recent_projects"
 							id="recent_projects">
 							Recent Projects
 						</a>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-4 pb-7 px-8">
 							<ListProjects
 								displayStars={false}
 								projects={state.projects}
@@ -313,7 +313,7 @@ const Index = () => {
 					</section>
 				)}
 
-				{!state.loading && state.top_projects && (
+				{!state.loading && state.top_projects.length > 0 && (
 					<section className="pl-4 md:pl-16">
 						<a
 							className="font-light mb-2 text-3xl text-gray-800"
@@ -321,7 +321,7 @@ const Index = () => {
 							id="featured_projects">
 							Top Projects
 						</a>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-4 pb-7 px-8">
 							<ListProjects
 								displayStars={true}
 								projects={state.top_projects}
@@ -331,7 +331,7 @@ const Index = () => {
 					</section>
 				)}
 
-				{!state.loading && state.top_circles && (
+				{!state.loading && state.top_circles.length > 0 && (
 					<section className="px-4 md:px-16">
 						<a
 							className="font-light mb-2 text-3xl text-gray-800"
@@ -339,7 +339,7 @@ const Index = () => {
 							id="circles">
 							Top Circles
 						</a>
-						<div className="flex flex-row gap-8 flex-wrap justify-center pt-2">
+						<div className="flex flex-row gap-8 flex-wrap justify-center pt-4">
 							<CirclesComponent circles={state.top_circles} />
 						</div>
 					</section>
