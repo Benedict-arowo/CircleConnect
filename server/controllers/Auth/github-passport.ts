@@ -1,6 +1,7 @@
 import CustomError from "../../middlewear/CustomError";
 import prisma from "../../model/db";
 import { User } from "../../types";
+import { DEFAULT_MEMBER_ROLE_ID } from "../../utils";
 const passport = require("passport");
 const GithubStrategy = require("passport-github2").Strategy;
 
@@ -73,6 +74,7 @@ passport.use(
 						last_name: "",
 						profile_picture: profile.photos[0].value,
 						github_id: profile.id,
+						roleId: DEFAULT_MEMBER_ROLE_ID,
 						last_login: new Date(),
 					},
 				});

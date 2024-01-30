@@ -29,6 +29,9 @@ passport.use(
 
 				const user = await prisma.user.findUnique({
 					where: { id },
+					include: {
+						role: true,
+					},
 				});
 
 				if (user) {

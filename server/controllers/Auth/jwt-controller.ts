@@ -5,7 +5,12 @@ import { Response } from "express";
 import prisma from "../../model/db";
 import { Prisma } from "@prisma/client";
 import { findUser } from "../../model/auth";
-import { hash, tokenGenerator, verifyHash } from "../../utils";
+import {
+	DEFAULT_MEMBER_ROLE_ID,
+	hash,
+	tokenGenerator,
+	verifyHash,
+} from "../../utils";
 
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
@@ -78,6 +83,7 @@ export const registerJWT = async (req: Req, res: Response) => {
 				first_name,
 				last_name,
 				password: hashedPassword,
+				roleId: DEFAULT_MEMBER_ROLE_ID,
 			},
 		});
 

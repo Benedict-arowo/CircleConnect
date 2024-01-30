@@ -20,6 +20,23 @@ export type User = {
 	google_id: string;
 	github_id: string;
 	emails: [{ value: string }];
+	role: {
+		id: string;
+		name: string;
+		canCreateCircle: boolean;
+		canModifyOwnCircle: boolean;
+		canMotifyOtherCircle: boolean;
+		canDeleteOwnCircle: boolean;
+		canDeleteOtherCircles: boolean;
+		canLeaveCircle: boolean;
+		canJoinCircle: boolean;
+		canCreateProject: boolean;
+		canModifyOwnProject: boolean;
+		canModifyOtherProject: boolean;
+		canDeleteOwnProject: boolean;
+		canDeleteOtherProject: boolean;
+		isAdmin: boolean;
+	};
 };
 
 export interface Req extends Request {

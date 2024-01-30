@@ -1,5 +1,6 @@
 import prisma from "../../model/db";
 import { User } from "../../types";
+import { DEFAULT_MEMBER_ROLE_ID } from "../../utils";
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
@@ -73,6 +74,7 @@ passport.use(
 					first_name: profile._json.given_name,
 					last_name: profile._json.family_name,
 					profile_picture: profile._json.picture,
+					roleId: DEFAULT_MEMBER_ROLE_ID,
 					joined: new Date(),
 					last_login: new Date(),
 				},
