@@ -25,7 +25,7 @@ export type User = {
 		name: string;
 		canCreateCircle: boolean;
 		canModifyOwnCircle: boolean;
-		canMotifyOtherCircle: boolean;
+		canModifyOtherCircle: boolean;
 		canDeleteOwnCircle: boolean;
 		canDeleteOtherCircles: boolean;
 		canLeaveCircle: boolean;

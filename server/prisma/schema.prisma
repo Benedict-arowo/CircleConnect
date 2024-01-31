@@ -13,7 +13,7 @@ model Role {
 
   canCreateCircle Boolean @default(false) 
   canModifyOwnCircle Boolean @default(false)
-  canMotifyOtherCircle Boolean @default(false)
+  canModifyOtherCircle Boolean @default(false)
   canDeleteOwnCircle Boolean @default(false)
   canDeleteOtherCircles Boolean @default(false)
   canLeaveCircle Boolean @default(false)
