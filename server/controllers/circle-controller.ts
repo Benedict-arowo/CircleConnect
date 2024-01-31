@@ -184,6 +184,14 @@ export const getCircle = async (req: Req, res: Response) => {
 
 export const createCircle = async (req: Req, res: Response) => {
 	const { circle_num: num, description } = req.body;
+	// TODO: Option for adding circle lead, co-lead, and members when creating circle.
+
+	// Either the user role has the permission to create a circle or the user's role has isAdmin permission.
+	if (!(req.user.role.canCreateCircle || req.user.role.isAdmin))
+		throw new CustomError(
+			"You do not have permission to create circles.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	if (!description)
 		throw new CustomError(
@@ -209,40 +217,41 @@ export const createCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	const userInfo = await prisma.user.findUnique({
-		where: { id: req.user.id },
-		select: { leadOfId: true, coleadOfId: true, memberOfId: true },
-	});
+	// const userInfo = await prisma.user.findUnique({
+	// 	where: { id: req.user.id },
+	// 	select: { leadOfId: true, coleadOfId: true, memberOfId: true },
+	// });
 
-	if (!userInfo)
-		throw new CustomError(
-			"User not found",
-			StatusCodes.INTERNAL_SERVER_ERROR
-		);
+	// if (!userInfo)
+	// 	throw new CustomError(
+	// 		"User not found",
+	// 		StatusCodes.INTERNAL_SERVER_ERROR
+	// 	);
 
 	// Checks if the user is already a member of another circle, and if so return an error otherwise continue.
-	if (
-		!(
-			userInfo.leadOfId === null &&
-			userInfo.coleadOfId === null &&
-			userInfo.memberOfId === null
-		)
-	)
-		throw new CustomError(
-			"You must leave the circle you are currently in to create a new one.",
-			StatusCodes.BAD_REQUEST
-		);
+	// if (
+	// 	!(
+	// 		userInfo.leadOfId === null &&
+	// 		userInfo.coleadOfId === null &&
+	// 		userInfo.memberOfId === null
+	// 	)
+	// )
+	// 	throw new CustomError(
+	// 		"You must leave the circle you are currently in to create a new one.",
+	// 		StatusCodes.BAD_REQUEST
+	// 	);
 
 	try {
 		const Circle = await prisma.circle.create({
 			data: {
 				description: description,
 				id: Number(num),
-				lead: {
-					connect: {
-						id: req.user.id,
-					},
-				},
+				// TODO: ability to add a lead, co lead when creating the user
+				// lead: {
+				// 	connect: {
+				// 		id: req.user.id,
+				// 	},
+				// },
 			},
 		});
 
@@ -257,7 +266,7 @@ export const createCircle = async (req: Req, res: Response) => {
 		// Check if the error is being thrown by prisma, and it's about the num field already existing.
 		if (error.code === "P2002" && error.meta?.target?.includes("id")) {
 			throw new CustomError(
-				"A circle with this number already exists, try joining it.",
+				"A circle with this number already exists.",
 				StatusCodes.BAD_REQUEST
 			);
 		} else {
@@ -272,13 +281,19 @@ export const createCircle = async (req: Req, res: Response) => {
 export const requestToJoinCircle = async (req: Req, res: Response) => {
 	const {
 		params: { id: circleId },
-		user: { id: userId, first_name: userFirstName },
+		user: { id: userId, first_name: userFirstName, role: userRole },
 	} = req;
 
 	if (!circleId)
 		throw new CustomError(
 			"An ID must be provided.",
 			StatusCodes.BAD_REQUEST
+		);
+
+	if (!userRole.canJoinCircle)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
 		);
 
 	const circle = await prisma.circle.findUnique({
@@ -307,15 +322,18 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 	if (!circle)
 		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
 
-	if (!circle.lead)
-		throw new CustomError(
-			ReasonPhrases.INTERNAL_SERVER_ERROR,
-			StatusCodes.INTERNAL_SERVER_ERROR
-		);
+	// if (!circle.lead)
+	// 	throw new CustomError(
+	// 		ReasonPhrases.INTERNAL_SERVER_ERROR,
+	// 		StatusCodes.INTERNAL_SERVER_ERROR
+	// 	);
 
-	if (userId === circle.lead.id || userId === circle.lead.id)
+	if (
+		(circle.lead && userId === circle.lead.id) ||
+		(circle.colead && userId === circle.colead.id)
+	)
 		throw new CustomError(
-			"You're already a circle leader for this circle.",
+			"You're already a member of this circle.",
 			StatusCodes.BAD_REQUEST
 		);
 
@@ -343,34 +361,46 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 		);
 	}
 
-	// Send notification to circle lead, and co-lead about the person trying to join the circle.
+	const notifications = [];
+
+	if (circle.lead)
+		notifications.push({
+			content: `${userFirstName} has requested to join your circle.`,
+			userId: circle.lead.id,
+			url: "",
+		});
+
 	if (circle.colead)
-		sendNotification({
-			data: [
-				{
-					content: `${userFirstName} has requested to join your circle.`,
-					userId: circle.lead.id,
-					url: "",
-				},
-				{
-					content: `${userFirstName} has requested to join your circle.`,
-					userId: circle.colead.id,
-					url: "",
-				},
-			],
-			many: true,
-			io: req.io,
+		notifications.push({
+			content: `${userFirstName} has requested to join your circle.`,
+			userId: circle.colead.id,
+			url: "",
 		});
-	else
-		sendNotification({
-			data: {
-				content: `${userFirstName} has requested to join your circle.`,
-				userId: circle.lead.id,
-				url: "",
-			},
-			many: false,
-			io: req.io,
-		});
+
+	// Send notification to circle lead, and co-lead about the person trying to join the circle.
+	// if (circle.colead)
+	// 	sendNotification({
+	// 		data: [
+	// 			{
+	// 				content: `${userFirstName} has requested to join your circle.`,
+	// 				userId: circle.lead.id,
+	// 				url: "",
+	// 			},
+	// 			{
+	// 				content: `${userFirstName} has requested to join your circle.`,
+	// 				userId: circle.colead.id,
+	// 				url: "",
+	// 			},
+	// 		],
+	// 		many: true,
+	// 		io: req.io,
+	// 	});
+
+	sendNotification({
+		data: notifications,
+		many: true,
+		io: req.io,
+	});
 
 	const updatedCircle = await prisma.circle.update({
 		where: { id: Number(circleId) },
@@ -392,12 +422,18 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 export const removeCircleRequest = async (req: Req, res: Response) => {
 	const {
 		params: { id: circleId },
-		user: { id: userId },
+		user: { id: userId, role: userRole },
 	} = req;
 
 	if (!circleId)
 		throw new CustomError(
 			"An ID must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (!userRole.canLeaveCircle)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
 			StatusCodes.BAD_REQUEST
 		);
 
@@ -427,19 +463,19 @@ export const removeCircleRequest = async (req: Req, res: Response) => {
 	if (!circle)
 		throw new CustomError("Circle not found.", StatusCodes.NOT_FOUND);
 
-	if (!circle.lead)
-		throw new CustomError(
-			ReasonPhrases.INTERNAL_SERVER_ERROR,
-			StatusCodes.INTERNAL_SERVER_ERROR
-		);
+	// if (!circle.lead)
+	// 	throw new CustomError(
+	// 		ReasonPhrases.INTERNAL_SERVER_ERROR,
+	// 		StatusCodes.INTERNAL_SERVER_ERROR
+	// 	);
 
-	if (userId === circle.lead.id || userId === circle.lead.id)
-		throw new CustomError(
-			"You may not leave this circle since you're the leader. Try deleting it instead.",
-			StatusCodes.BAD_REQUEST
-		);
+	// if (circle.lead && userId === circle.lead.id)
+	// 	throw new CustomError(
+	// 		"You may not leave this circle since you're the leader. Try deleting it instead.",
+	// 		StatusCodes.BAD_REQUEST
+	// 	);
 
-	// Checks if the user trying to join the circle is a member of the circle.
+	// Checks if the user trying to leave the circle is a member of the circle.
 	let memberExists = circle.members.some((member) => {
 		return member.id === userId;
 	});
@@ -481,7 +517,18 @@ export const removeCircleRequest = async (req: Req, res: Response) => {
 };
 
 export const leaveCircle = async (req: Req, res: Response) => {
-	const { id } = req.params;
+	const {
+		params: { id },
+		user: { role: userRole },
+	} = req;
+
+	// User must have permission to leave a circle, or be an admin to be able to leave circle.
+	if (!(userRole.canLeaveCircle || userRole.isAdmin))
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
+
 	const circle = await prisma.circle.findUnique({
 		where: {
 			id: isNaN(Number(id)) ? undefined : Number(id),
@@ -504,6 +551,7 @@ export const leaveCircle = async (req: Req, res: Response) => {
 			},
 		},
 	});
+
 	const disconnectList:
 		| Prisma.UserWhereUniqueInput
 		| Prisma.UserWhereUniqueInput[] = [];
@@ -611,8 +659,11 @@ export const leaveCircle = async (req: Req, res: Response) => {
 };
 
 export const editCircle = async (req: Req, res: Response) => {
-	const { id } = req.params;
-	const { description, request, removeUser, manageUser } = req.body;
+	const {
+		body: { description, request, removeUser, manageUser },
+		params: { id },
+		user: { role: userRole, id: userId },
+	} = req;
 	const disconnectList:
 		| Prisma.UserWhereUniqueInput
 		| Prisma.UserWhereUniqueInput[] = [];
@@ -626,6 +677,18 @@ export const editCircle = async (req: Req, res: Response) => {
 	const coleadConnect: Prisma.UserWhereUniqueInput = { id: undefined };
 	const coleadDisconnect: Prisma.UserWhereUniqueInput = { id: undefined };
 	const notificationList = [];
+
+	if (
+		!(
+			userRole.canModifyOwnCircle ||
+			userRole.canModifyOtherCircle ||
+			userRole.isAdmin
+		)
+	)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	if (!id)
 		throw new CustomError(
@@ -659,22 +722,34 @@ export const editCircle = async (req: Req, res: Response) => {
 	if (!circle)
 		throw new CustomError("Circle not found.", StatusCodes.NOT_FOUND);
 
-	if (!circle.lead)
-		throw new CustomError(
-			ReasonPhrases.INTERNAL_SERVER_ERROR,
-			StatusCodes.INTERNAL_SERVER_ERROR
-		);
-
-	if (
-		!(
-			req.user.id === circle.lead.id ||
-			(circle.colead && req.user.id === circle.colead.id)
+	// If user is not an admin, and they can't modify other circles, they must be a circle lead or colead to modify this circle.
+	if (!userRole.isAdmin && !userRole.canModifyOtherProject) {
+		if (
+			(circle.lead && circle.lead.id !== req.user.id) ||
+			(circle.colead && circle.colead.id !== req.user.id)
 		)
-	)
-		throw new CustomError(
-			"You must be the circle lead or co-lead to manage this operation.",
-			StatusCodes.BAD_REQUEST
-		);
+			throw new CustomError(
+				"You do not have permission to perform this action.",
+				StatusCodes.UNAUTHORIZED
+			);
+	}
+
+	// if (!circle.lead)
+	// 	throw new CustomError(
+	// 		ReasonPhrases.INTERNAL_SERVER_ERROR,
+	// 		StatusCodes.INTERNAL_SERVER_ERROR
+	// 	);
+
+	// if (
+	// 	!(
+	// 		req.user.id === circle.lead.id ||
+	// 		(circle.colead && req.user.id === circle.colead.id)
+	// 	)
+	// )
+	// 	throw new CustomError(
+	// 		"You must be the circle lead or co-lead to manage this operation.",
+	// 		StatusCodes.BAD_REQUEST
+	// 	);
 
 	if (request) {
 		// Checks if the user exists in the circle request
@@ -742,7 +817,7 @@ export const editCircle = async (req: Req, res: Response) => {
 		);
 
 	if (manageUser) {
-		if (circle.lead.id === manageUser.userId)
+		if (circle.lead && circle.lead.id === manageUser.userId)
 			throw new CustomError(
 				"You cannot perform this action on yourself.",
 				StatusCodes.BAD_REQUEST
@@ -760,7 +835,7 @@ export const editCircle = async (req: Req, res: Response) => {
 				// Promotting a circle co-lead to lead.
 				// 1. Makes the current circle lead a member
 				// 2. Remove the circle co-lead, and make the current circle co-lead the circle lead.
-				connectList.push({ id: circle.lead.id });
+				if (circle.lead) connectList.push({ id: circle.lead.id });
 				coleadDisconnect.id = circle.colead.id;
 				leadConnect.id = circle.colead.id;
 				// Send notification to the co-lead becoming lead that they've been promoted.
@@ -877,8 +952,22 @@ export const editCircle = async (req: Req, res: Response) => {
 };
 
 export const deleteCircle = async (req: Req, res: Response) => {
-	const { id: userId } = req.user;
-	const { id: circleId } = req.params;
+	const {
+		params: { id: circleId },
+		user: { id: userId, role: userRole },
+	} = req;
+
+	if (
+		!(
+			userRole.canDeleteOwnCircle ||
+			userRole.canDeleteOtherCircles ||
+			userRole.isAdmin
+		)
+	)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	const Circle = await prisma.circle.findUnique({
 		where: {
@@ -900,7 +989,12 @@ export const deleteCircle = async (req: Req, res: Response) => {
 	if (!Circle)
 		throw new CustomError("Circle does not exist.", StatusCodes.NOT_FOUND);
 
-	if (Circle.lead && Circle.lead.id === userId) {
+	// If the user is the circle lead, has permission to delete other circles or the user is an admin.
+	if (
+		(Circle.lead && Circle.lead.id === userId) ||
+		userRole.isAdmin ||
+		userRole.canDeleteOtherCircles
+	) {
 		await prisma.circle.delete({
 			where: {
 				id: isNaN(Number(circleId)) ? undefined : Number(circleId),
@@ -911,15 +1005,22 @@ export const deleteCircle = async (req: Req, res: Response) => {
 		const circleMembers = Circle.members.map((member) => {
 			return {
 				userId: member.id,
-				content: `Your circle, circle ${Circle.id} has been deleted by the circle lead.`,
+				content: `Your circle, circle ${Circle.id} has been deleted.`,
 			};
 		});
 
 		if (Circle.colead)
 			circleMembers.push({
 				userId: Circle.colead.id,
-				content: `Your circle, circle ${Circle.id} has been deleted by the circle lead.`,
+				content: `Your circle, circle ${Circle.id} has been deleted.`,
 			});
+
+		if (Circle.lead)
+			circleMembers.push({
+				userId: Circle.lead.id,
+				content: `Your circle, circle ${Circle.id} has been deleted.`,
+			});
+
 		sendNotification({ data: circleMembers, many: true, io: req.io });
 
 		res.status(StatusCodes.OK).json({ success: true });

@@ -51,7 +51,7 @@ export const UserSelectFull = {
 	role: true,
 };
 
-export const minimumCircleDescriptionLength = 80;
+export const minimumCircleDescriptionLength = 60;
 export const MAX_RATING_VALUE = 5;
 export const DEFAULT_MEMBER_ROLE_ID = "c53fc77e-cb8b-4c05-ae3f-3cdb0bd7fc60";
 export const DEFAULT_ADMIN_ROLE_ID = "9fadb132-f4c5-478e-8b35-bdff9c2342d6";
