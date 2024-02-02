@@ -24,6 +24,8 @@ model Role {
   canModifyOtherProject Boolean @default(false)
   canDeleteOwnProject Boolean @default(false)
   canDeleteOtherProject Boolean @default(false)
+  canAddProjectToCircle Boolean @default(false)
+  canRemoveProjectFromCircle Boolean @default(false)
 
   isAdmin Boolean @default(false)
   

@@ -35,6 +35,8 @@ export type User = {
 		canModifyOtherProject: boolean;
 		canDeleteOwnProject: boolean;
 		canDeleteOtherProject: boolean;
+		canAddProjectToCircle: boolean;
+		canRemoveProjectFromCircle: boolean;
 		isAdmin: boolean;
 	};
 };
@@ -51,6 +53,9 @@ export interface Req extends Request {
 		pinned?: string;
 		userId?: string;
 		status?: string;
+		first_name?: string;
+		last_name?: string;
+		roleId?: string;
 	};
 	body: {
 		description?: string;
