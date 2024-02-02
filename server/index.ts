@@ -14,6 +14,7 @@ import notificationRouter from "./routes/notification-route";
 import { Server, Socket } from "socket.io";
 import socketMiddleware from "./middlewear/Socket";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import rolesRouter from "./routes/roles-route";
 const http = require("http");
 const cors = require("cors");
 const passport = require("passport");
@@ -128,6 +129,7 @@ const makeApp = (
 
 	app.use("/auth/jwt", jwtRouter);
 	app.use("/", authRouter);
+	app.use("/role", rolesRouter);
 	app.use("/circle", circleRouter);
 	app.use("/project", projectRouter);
 	app.use("/notification", notificationRouter);
