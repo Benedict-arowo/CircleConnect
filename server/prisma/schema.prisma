@@ -27,6 +27,8 @@ model Role {
   canAddProjectToCircle Boolean @default(false)
   canRemoveProjectFromCircle Boolean @default(false)
 
+  canManageRoles Boolean @default(false)
+
   isAdmin Boolean @default(false)
   
   users User[] 
