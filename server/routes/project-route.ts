@@ -5,7 +5,6 @@ import {
 	editProject,
 	getProject,
 	getProjects,
-	removeProjectFromCircle,
 	addRatingToProject,
 } from "../controllers/project-controller";
 import isLoggedIn from "../middlewear/isLoggedIn";
@@ -666,9 +665,9 @@ projectRouter
 projectRouter
 	.route("/:id/addToCircle")
 	.patch(isLoggedIn, wrapper(addProjectToCircle));
-projectRouter
-	.route("/:id/removeFromCircle")
-	.delete(isLoggedIn, wrapper(removeProjectFromCircle));
+// projectRouter
+// 	.route("/:id/removeFromCircle")
+// 	.delete(isLoggedIn, wrapper(removeProjectFromCircle));
 
 /**
  * @swagger
