@@ -6,34 +6,15 @@ import {
 	DEFAULT_USER_PASSWORD,
 	hash,
 } from "../utils";
+import CreateDefaultRoles from "./roles";
 const prisma = new PrismaClient();
 
 async function main() {
 	const adminUserPassword = await hash(ADMIN_USER_PASSWORD);
 	const defaultUserPassword = await hash(DEFAULT_USER_PASSWORD);
 
-	const adminRole = await prisma.role.upsert({
-		where: { id: DEFAULT_ADMIN_ROLE_ID },
-		update: {},
-		create: {
-			id: DEFAULT_ADMIN_ROLE_ID,
-			name: "Admin",
-			isAdmin: true,
-		},
-	});
-
-	const memberRole = await prisma.role.upsert({
-		where: { id: DEFAULT_MEMBER_ROLE_ID },
-		update: {},
-		create: {
-			id: DEFAULT_MEMBER_ROLE_ID,
-			name: "Member",
-			canDeleteOwnProject: true,
-			canModifyOwnCircle: true,
-			canModifyOwnProject: true,
-			canCreateProject: true,
-		},
-	});
+	// TODO Default projects, and circles.
+	await CreateDefaultRoles();
 
 	const adminUser = await prisma.user.upsert({
 		where: { email: "admin@circleconnect.com" },
@@ -42,7 +23,7 @@ async function main() {
 			email: "admin@circleconnect.com",
 			first_name: "Admin",
 			password: adminUserPassword,
-			roleId: adminRole.id,
+			roleId: DEFAULT_ADMIN_ROLE_ID,
 			track: "FRONTEND",
 		},
 	});
@@ -54,7 +35,7 @@ async function main() {
 			email: "member@circleconnect.com",
 			first_name: "Member",
 			password: defaultUserPassword,
-			roleId: memberRole.id,
+			roleId: DEFAULT_MEMBER_ROLE_ID,
 			track: "CLOUD",
 		},
 	});
