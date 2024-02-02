@@ -38,6 +38,7 @@ export type User = {
 		canAddProjectToCircle: boolean;
 		canRemoveProjectFromCircle: boolean;
 		canManageRoles: boolean;
+		canManageUsers: boolean;
 		isAdmin: boolean;
 	};
 };
@@ -74,6 +75,10 @@ export interface Req extends Request {
 		github?: string;
 		liveLink?: string;
 		techUsed?: string[];
+		roleId?: string;
+		school?: string;
+		profile_picture?: string;
+		track?: string;
 		visibility?: "PUBLIC" | "PRIVATE";
 		permissions?: {
 			canCreateCircle: boolean;

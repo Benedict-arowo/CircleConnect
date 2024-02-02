@@ -9,17 +9,17 @@ import isLoggedIn from "../middlewear/isLoggedIn";
 import wrapper from "../middlewear/wrapper";
 
 const express = require("express");
-const rolesRouter = express.Router();
+const roleRouter = express.Router();
 
-rolesRouter
+roleRouter
 	.route("/")
 	.get(wrapper(getRoles))
 	.post(isLoggedIn, wrapper(createRole));
 
-rolesRouter
+roleRouter
 	.route("/:id")
 	.get(wrapper(getRole))
 	.patch(isLoggedIn, wrapper(editRole))
 	.delete(isLoggedIn, wrapper(deleteRole));
 
-export default rolesRouter;
+export default roleRouter;
