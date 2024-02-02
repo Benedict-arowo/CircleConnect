@@ -37,6 +37,7 @@ export type User = {
 		canDeleteOtherProject: boolean;
 		canAddProjectToCircle: boolean;
 		canRemoveProjectFromCircle: boolean;
+		canManageRoles: boolean;
 		isAdmin: boolean;
 	};
 };
@@ -74,6 +75,23 @@ export interface Req extends Request {
 		liveLink?: string;
 		techUsed?: string[];
 		visibility?: "PUBLIC" | "PRIVATE";
+		permissions?: {
+			canCreateCircle: boolean;
+			canModifyOwnCircle: boolean;
+			canModifyOtherCircle: boolean;
+			canDeleteOwnCircle: boolean;
+			canDeleteOtherCircles: boolean;
+			canLeaveCircle: boolean;
+			canJoinCircle: boolean;
+			canCreateProject: boolean;
+			canModifyOwnProject: boolean;
+			canModifyOtherProject: boolean;
+			canDeleteOwnProject: boolean;
+			canDeleteOtherProject: boolean;
+			canAddProjectToCircle: boolean;
+			canRemoveProjectFromCircle: boolean;
+			isAdmin: boolean;
+		};
 		request?: {
 			type: "ACCEPT" | "DECLINE";
 			userId: string;
