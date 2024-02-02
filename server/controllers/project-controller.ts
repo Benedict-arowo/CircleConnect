@@ -258,8 +258,7 @@ export const editProject = async (req: Req, res: Response) => {
 	// If user is not an admin, and they can't modify other projects, then it means they have to be the owner of this project to be able to modify it.
 	if (
 		!(
-			!userRole.isAdmin &&
-			!userRole.canModifyOtherProject &&
+			(!userRole.isAdmin || !userRole.canModifyOtherProject) &&
 			project.createdById === userId
 		)
 	)
@@ -372,8 +371,7 @@ export const deleteProject = async (req: Req, res: Response) => {
 
 	if (
 		!(
-			!userRole.isAdmin &&
-			!userRole.canModifyOtherProject &&
+			(!userRole.isAdmin || !userRole.canModifyOtherProject) &&
 			Project.createdById === userId
 		)
 	)

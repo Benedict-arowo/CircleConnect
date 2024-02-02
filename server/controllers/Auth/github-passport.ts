@@ -14,6 +14,9 @@ passport.deserializeUser(async (id: string, done: Function) => {
 	try {
 		const user = await prisma.user.findUnique({
 			where: { id },
+			include: {
+				role: true,
+			},
 		});
 		if (!user) {
 			return done(null, false); // User not found
