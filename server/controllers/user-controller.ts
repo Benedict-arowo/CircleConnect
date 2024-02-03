@@ -2,6 +2,7 @@ import { Response } from "express";
 import { Req } from "../types";
 import prisma from "../model/db";
 import {
+	DEFAULT_MEMBER_ROLE_ID,
 	MIN_PASSWORD_LENGTH,
 	SCHOOL_LIST,
 	TRACK_LIST,
@@ -10,7 +11,7 @@ import {
 	hash,
 } from "../utils";
 import CustomError from "../middlewear/CustomError";
-import { StatusCodes } from "http-status-codes";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 export const getUsers = async (req: Req, res: Response) => {
 	const users = await prisma.user.findMany({
@@ -64,7 +65,110 @@ export const getUser = async (req: Req, res: Response) => {
 };
 
 // TODO: createUser route
-// export const createUser = async (req: Request, res: Response) => {};
+export const createUser = async (req: Req, res: Response) => {
+	const {
+		user: { id: userId, role: userRole },
+		body: {
+			first_name,
+			last_name,
+			email,
+			password,
+			roleId,
+			school,
+			profile_picture,
+			track,
+		},
+	} = req;
+
+	if (!(userRole.isAdmin || userRole.canManageUsers))
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
+
+	if (!first_name || !last_name)
+		throw new CustomError(
+			"First and last names must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+	if (!email || !password)
+		throw new CustomError(
+			"Email and password must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+	if (password.length < MIN_PASSWORD_LENGTH)
+		throw new CustomError(
+			"Password must be at least " + MIN_PASSWORD_LENGTH,
+			StatusCodes.BAD_REQUEST
+		);
+	if (!school)
+		throw new CustomError(
+			"School must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+	if (!track)
+		throw new CustomError(
+			"Track must be provided.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (roleId) {
+		const role = await prisma.role.findUnique({ where: { id: roleId } });
+		if (!role)
+			throw new CustomError("Invalid role id.", StatusCodes.BAD_REQUEST);
+	}
+
+	const hashedPassword = await hash(password);
+
+	// If user has provided a school, it ensures that it's a valid school by comparing it with school list.
+	if (school && !SCHOOL_LIST.includes(school.toUpperCase()))
+		throw new CustomError(
+			"School provided is not valid.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	// If user has provided a track, it ensures that it's a valid track by comparing it with track list.
+	const allTracks = [...TRACK_LIST.engineering, ...TRACK_LIST.product];
+	if (track && !allTracks.includes(track.toUpperCase()))
+		throw new CustomError(
+			"Track provided is not valid.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	try {
+		const newUser = await prisma.user.create({
+			data: {
+				first_name,
+				last_name,
+				email,
+				password: hashedPassword,
+				profile_picture: profile_picture ? profile_picture : undefined,
+				roleId: roleId ? roleId : DEFAULT_MEMBER_ROLE_ID,
+				school: school
+					? (school.toUpperCase() as "ENGINEERING")
+					: undefined,
+				track: track ? (track.toUpperCase() as TrackType) : undefined,
+			},
+		});
+
+		return res
+			.status(StatusCodes.CREATED)
+			.json({ success: true, data: newUser });
+	} catch (error: any) {
+		console.log(error);
+
+		if (error.code === "P2002" && error.meta.target.includes("email")) {
+			throw new CustomError(
+				"User with email already exists.",
+				StatusCodes.BAD_REQUEST
+			);
+		}
+		throw new CustomError(
+			ReasonPhrases.INTERNAL_SERVER_ERROR,
+			StatusCodes.INTERNAL_SERVER_ERROR
+		);
+	}
+};
 
 export const editUser = async (req: Req, res: Response) => {
 	const {

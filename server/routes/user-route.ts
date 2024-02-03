@@ -1,5 +1,5 @@
 import {
-	// createUser,
+	createUser,
 	deleteUser,
 	editUser,
 	getUser,
@@ -11,8 +11,10 @@ import wrapper from "../middlewear/wrapper";
 const express = require("express");
 const userRouter = express.Router();
 
-userRouter.route("/").get(wrapper(getUsers));
-// .post(isLoggedIn, wrapper(createUser));
+userRouter
+	.route("/")
+	.get(wrapper(getUsers))
+	.post(isLoggedIn, wrapper(createUser));
 
 userRouter
 	.route("/:id")
