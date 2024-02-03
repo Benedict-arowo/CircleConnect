@@ -82,3 +82,4 @@ export const TRACK_LIST = {
 	product: [],
 };
 export type TrackType = "CLOUD" | "FRONTEND" | "BACKEND";
+export const ACCESS_TOKEN_VALIDITY_TIME = "1h";

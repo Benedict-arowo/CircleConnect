@@ -6,6 +6,7 @@ import prisma from "../../model/db";
 import { Prisma } from "@prisma/client";
 import { findUser } from "../../model/auth";
 import {
+	ACCESS_TOKEN_VALIDITY_TIME,
 	DEFAULT_MEMBER_ROLE_ID,
 	hash,
 	tokenGenerator,
@@ -44,7 +45,10 @@ export const loginJWT = async (req: Req, res: Response) => {
 	// passwordIsValid = await argon.verify(User.password, password);
 
 	if (passwordIsValid) {
-		const token = await tokenGenerator({ id: User.id }, "1h");
+		const token = await tokenGenerator(
+			{ id: User.id },
+			ACCESS_TOKEN_VALIDITY_TIME
+		);
 		console.log(`TOKEN: ${token}`);
 		return res
 			.cookie("jwtToken", token, { httpOnly: true })
