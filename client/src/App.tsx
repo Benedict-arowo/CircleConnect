@@ -6,24 +6,27 @@ import Login from "./pages/Auth/Login";
 import Test from "./pages/Test";
 import Circle from "./pages/Circle";
 import Discover from "./pages/Discover";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard-Circles";
+import Members from "./pages/Members";
 
 // TODO: Implement Lazy loading
 const App = () => {
-	return (
-		<div className="max-w-screen-2xl mx-auto">
-			<Routes>
-				<Route path="/" element={<Index />} />
-				<Route path="/discover" element={<Discover />} />
-				 <Route path="/dashboard" element={<Dashboard/>}/> 
-				<Route path="/circle/:id" element={<Circle />} />
-				<Route path="/test" element={<Test />} />
-				<Route path="/login" element={<Login />} />
-				<Route path="/register" element={<Register />} />
-				<Route path="/auth/success" element={<Success />} />
-			</Routes>
-		</div>
-	);
+  return (
+    <div className="max-w-screen-2xl mx-auto">
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/discover" element={<Discover />} />
+
+        <Route path="/circle/:id" element={<Circle />} />
+        <Route path="/test" element={<Test />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/auth/success" element={<Success />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/members" element={<Members />} />
+      </Routes>
+    </div>
+  );
 };
 
 export default App;
