@@ -290,7 +290,7 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	if (!userRole.canJoinCircle)
+	if (!(userRole.canJoinCircle || userRole.isAdmin))
 		throw new CustomError(
 			"You do not have permission to perform this action.",
 			StatusCodes.UNAUTHORIZED
