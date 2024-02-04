@@ -10,7 +10,6 @@ import {
 } from "../controllers/circle-controller";
 import isLoggedIn from "../middlewear/isLoggedIn";
 import wrapper from "../middlewear/wrapper";
-import "../swagger/circle-swagger";
 
 const express = require("express");
 const circleRouter = express.Router();

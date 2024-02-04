@@ -826,7 +826,7 @@ export const editCircle = async (req: Req, res: Response) => {
 		if (circle.colead && circle.colead.id === req.user.id)
 			throw new CustomError(
 				"You do not have the permission to perform this operation.",
-				StatusCodes.BAD_REQUEST
+				StatusCodes.UNAUTHORIZED
 			);
 
 		// Checks if the user being managed is a colead, and if not, checks if the user is a member, and if not, an error gets thrown.
