@@ -204,12 +204,12 @@ export default function Dashboard() {
 					<Table
 						sx={{
 							"& tr > *:not(:first-child)": {
-								textAlign: "right",
+								textAlign: "center",
 							},
 						}}>
 						<thead>
 							<tr>
-								<th>ID</th>
+								<th className="w-[64px]">ID</th>
 								<th> MEMBER</th>
 								<th>PROJECT</th>
 								<th>RATING</th>
