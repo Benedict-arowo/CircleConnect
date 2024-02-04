@@ -104,7 +104,7 @@ const makeApp = (
 				},
 			],
 		},
-		apis: ["./routes/*.ts", , "./routes/Auth/*.ts"],
+		apis: ["./routes/*.ts", , "./routes/Auth/*.ts", "./swagger/*.ts"],
 	};
 
 	const specs = swaggerJsdoc(options);
