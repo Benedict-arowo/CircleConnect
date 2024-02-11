@@ -195,7 +195,7 @@ const Circle = () => {
 				// If user is colead
 				// If user is requesting to join
 				// If user is a member
-
+				console.log(data);
 				if (data.lead && data.lead.id === User.info.id) {
 					setState(() => {
 						return {
@@ -233,8 +233,7 @@ const Circle = () => {
 					});
 				} else if (
 					data.requests.some(
-						(members: CircleMemberType) =>
-							members.id === User.info.id
+						(member: CircleMemberType) => member.id === User.info.id
 					)
 				) {
 					setState(() => {
@@ -773,152 +772,155 @@ const Circle = () => {
 											</h4>
 											<div className="flex flex-row justify-between">
 												{circle.colead.first_name}
-												{circle.lead.id ===
-													User.info.id && (
-													<div className="flex flex-row items-center gap-2">
-														<p
-															className="bg-red-500 text-white px-2 py-1"
-															onClick={() => {
-																setAlertState(
-																	() => {
-																		return {
-																			body: "Are you sure you want to promote this user? You may not be able to undo this action afterwards.",
-																			doneText:
-																				"Promote user",
-																			doneFunc:
-																				() =>
-																					makeReq(
-																						{
-																							url: `circle/${circle.id}`,
-																							method: "PATCH",
-																							body: {
-																								manageUser:
-																									{
-																										action: "PROMOTE",
-																										userId: circle
-																											.colead
-																											.id,
-																									},
-																							},
-																							loadingMsg:
-																								"Promoting user...",
-																							successMsg:
-																								"Successfully promoted user.",
-																							successFunc:
-																								fetchCircle,
-																						}
-																					),
-																			header: "Promote user",
-																		};
-																	}
-																);
-																onOpen();
-															}}>
-															Promote
-														</p>
-														<p
-															className="bg-red-500 text-white px-2 py-1"
-															onClick={() => {
-																setAlertState(
-																	() => {
-																		return {
-																			body: "Are you sure you want to demote this user?",
-																			doneText:
-																				"Demote user",
-																			doneFunc:
-																				() =>
-																					// demoteUser(
-																					// 	circle.id,
-																					// 	circle
-																					// 		.colead
-																					// 		.id
-																					// ),
-																					makeReq(
-																						{
-																							url: `circle/${circle.id}`,
-																							method: "PATCH",
-																							body: {
-																								manageUser:
-																									{
-																										action: "DEMOTE",
-																										userId: circle
-																											.colead
-																											.id,
-																									},
-																							},
-																							loadingMsg:
-																								"Demoting user...",
-																							successMsg:
-																								"Successfully demoted user.",
-																							successFunc:
-																								fetchCircle,
-																						}
-																					),
-																			header: "Demote user",
-																		};
-																	}
-																);
-																onOpen();
-															}}>
-															Demote
-														</p>
-														<svg
-															xmlns="http://www.w3.org/2000/svg"
-															fill="none"
-															viewBox="0 0 24 24"
-															strokeWidth={1.5}
-															stroke="currentColor"
-															onClick={() => {
-																setAlertState(
-																	() => {
-																		return {
-																			body: "Are you sure you want to remove this user? You can't undo this action afterwards.",
-																			doneText:
-																				"Remove user",
-																			doneFunc:
-																				() =>
-																					// removeUser(
-																					// 	circle.id,
-																					// 	circle
-																					// 		.colead
-																					// 		.id
-																					// ),
+												{circle.lead &&
+													circle.lead.id ===
+														User.info.id && (
+														<div className="flex flex-row items-center gap-2">
+															<p
+																className="bg-red-500 text-white px-2 py-1"
+																onClick={() => {
+																	setAlertState(
+																		() => {
+																			return {
+																				body: "Are you sure you want to promote this user? You may not be able to undo this action afterwards.",
+																				doneText:
+																					"Promote user",
+																				doneFunc:
+																					() =>
+																						makeReq(
+																							{
+																								url: `circle/${circle.id}`,
+																								method: "PATCH",
+																								body: {
+																									manageUser:
+																										{
+																											action: "PROMOTE",
+																											userId: circle
+																												.colead
+																												.id,
+																										},
+																								},
+																								loadingMsg:
+																									"Promoting user...",
+																								successMsg:
+																									"Successfully promoted user.",
+																								successFunc:
+																									fetchCircle,
+																							}
+																						),
+																				header: "Promote user",
+																			};
+																		}
+																	);
+																	onOpen();
+																}}>
+																Promote
+															</p>
+															<p
+																className="bg-red-500 text-white px-2 py-1"
+																onClick={() => {
+																	setAlertState(
+																		() => {
+																			return {
+																				body: "Are you sure you want to demote this user?",
+																				doneText:
+																					"Demote user",
+																				doneFunc:
+																					() =>
+																						// demoteUser(
+																						// 	circle.id,
+																						// 	circle
+																						// 		.colead
+																						// 		.id
+																						// ),
+																						makeReq(
+																							{
+																								url: `circle/${circle.id}`,
+																								method: "PATCH",
+																								body: {
+																									manageUser:
+																										{
+																											action: "DEMOTE",
+																											userId: circle
+																												.colead
+																												.id,
+																										},
+																								},
+																								loadingMsg:
+																									"Demoting user...",
+																								successMsg:
+																									"Successfully demoted user.",
+																								successFunc:
+																									fetchCircle,
+																							}
+																						),
+																				header: "Demote user",
+																			};
+																		}
+																	);
+																	onOpen();
+																}}>
+																Demote
+															</p>
+															<svg
+																xmlns="http://www.w3.org/2000/svg"
+																fill="none"
+																viewBox="0 0 24 24"
+																strokeWidth={
+																	1.5
+																}
+																stroke="currentColor"
+																onClick={() => {
+																	setAlertState(
+																		() => {
+																			return {
+																				body: "Are you sure you want to remove this user? You can't undo this action afterwards.",
+																				doneText:
+																					"Remove user",
+																				doneFunc:
+																					() =>
+																						// removeUser(
+																						// 	circle.id,
+																						// 	circle
+																						// 		.colead
+																						// 		.id
+																						// ),
 
-																					makeReq(
-																						{
-																							url: `circle/${id}`,
-																							method: "PATCH",
-																							body: {
-																								removeUser:
-																									{
-																										userId: circle
-																											.colead
-																											.id,
-																									},
-																							},
-																							loadingMsg:
-																								"Removing user...",
-																							successMsg:
-																								"Successfully removed user from circle.",
-																							successFunc:
-																								fetchCircle,
-																						}
-																					),
-																			header: "Remove user",
-																		};
-																	}
-																);
-																onOpen();
-															}}
-															className="w-4 h-4 hover:text-red-500 duration-300 transition-all">
-															<path
-																strokeLinecap="round"
-																strokeLinejoin="round"
-																d="M6 18L18 6M6 6l12 12"
-															/>
-														</svg>
-													</div>
-												)}
+																						makeReq(
+																							{
+																								url: `circle/${id}`,
+																								method: "PATCH",
+																								body: {
+																									removeUser:
+																										{
+																											userId: circle
+																												.colead
+																												.id,
+																										},
+																								},
+																								loadingMsg:
+																									"Removing user...",
+																								successMsg:
+																									"Successfully removed user from circle.",
+																								successFunc:
+																									fetchCircle,
+																							}
+																						),
+																				header: "Remove user",
+																			};
+																		}
+																	);
+																	onOpen();
+																}}
+																className="w-4 h-4 hover:text-red-500 duration-300 transition-all">
+																<path
+																	strokeLinecap="round"
+																	strokeLinejoin="round"
+																	d="M6 18L18 6M6 6l12 12"
+																/>
+															</svg>
+														</div>
+													)}
 											</div>
 										</div>
 									)}

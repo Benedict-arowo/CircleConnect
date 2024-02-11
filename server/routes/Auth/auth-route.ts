@@ -19,19 +19,19 @@ require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 
-// router.get(
-// 	"/user",
-// 	isLoggedIn,
-// 	wrapper(async (req: Req, res: Response) => {
-// 		// TODO: This route is currently just for testing purposes.
-// 		let user = await prisma.user.findUnique({
-// 			where: { id: req.user.id },
-// 			select: UserSelectFull,
-// 		});
+router.get(
+	"/activeUser",
+	isLoggedIn,
+	wrapper(async (req: Req, res: Response) => {
+		// TODO: This route is currently just for testing purposes.
+		let user = await prisma.user.findUnique({
+			where: { id: req.user.id },
+			select: UserSelectFull,
+		});
 
-// 		res.status(StatusCodes.OK).json(user);
-// 	})
-// );
+		res.status(StatusCodes.OK).json(user);
+	})
+);
 
 /**
  * @swagger
