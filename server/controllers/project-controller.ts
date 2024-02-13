@@ -4,98 +4,19 @@ import { Response } from "express";
 import CustomError from "../middlewear/CustomError";
 import { MAX_RATING_VALUE, UserSelectMinimized } from "../utils";
 import prisma from "../model/db";
-import { calAverageRating } from "./circle-controller";
+import { calAverageRating } from "../service/circle.service";
+import {
+	BodyUserArgs,
+	CreateProjectService,
+	DeleteProjectService,
+	EditProjectService,
+	GetProjectService,
+	GetProjectsService,
+} from "../service/project.service";
 
 export const getProjects = async (req: Req, res: Response) => {
-	const { limit = "10", sortedBy, userId, circleId, pinned } = req.query;
-	const sortedByValues = [
-		"circle_id-asc",
-		"circle_id-desc",
-		"name-asc",
-		"name-desc",
-		"rating-desc",
-		"rating-asc",
-	];
-
-	if (isNaN(parseInt(limit)))
-		throw new CustomError(
-			"Invalid limit provided",
-			StatusCodes.BAD_REQUEST
-		);
-
-	if (sortedBy && !sortedByValues.includes(sortedBy)) {
-		throw new CustomError(
-			"Invalid sorting parameters",
-			StatusCodes.BAD_REQUEST
-		);
-	}
-
-	if (Number(limit) > 25 || Number(limit) < 1)
-		throw new CustomError(
-			"Invalid limit, must be between 1 and 25",
-			StatusCodes.BAD_REQUEST
-		);
-
-	const Projects = await prisma.project.findMany({
-		where: {
-			OR:
-				circleId || userId || pinned
-					? [
-							{
-								circleId: circleId
-									? !isNaN(Number(circleId))
-										? Number(circleId)
-										: undefined
-									: undefined,
-							},
-							{
-								createdById: userId ? userId : undefined,
-							},
-							{
-								pinned: pinned ? true : undefined,
-							},
-					  ]
-					: undefined,
-		},
-		orderBy: {
-			circleId: sortedBy?.startsWith("circle_id")
-				? sortedBy === "circle_id-asc"
-					? "asc"
-					: "desc"
-				: undefined,
-			name: sortedBy?.startsWith("name")
-				? sortedBy === "name-asc"
-					? "asc"
-					: "desc"
-				: undefined,
-			rating: sortedBy?.startsWith("rating")
-				? sortedBy === "rating-asc"
-					? {
-							_count: "asc",
-					  }
-					: {
-							_count: "desc",
-					  }
-				: undefined,
-		},
-		select: {
-			id: true,
-			name: true,
-			description: true,
-			circle: true,
-			createdAt: true,
-			createdBy: {
-				select: UserSelectMinimized,
-			},
-			rating: true,
-			liveLink: true,
-			github: true,
-			techUsed: true,
-		},
-		take: limit ? parseInt(limit) : undefined,
-	});
-
-	res.status(StatusCodes.OK).json({ success: true, data: Projects });
+	const projects = await GetProjectsService({ query: req.query });
+	res.status(StatusCodes.OK).json({ success: true, data: projects });
 };
 
 export const getProject = async (req: Req, res: Response) => {
@@ -107,43 +28,13 @@ export const getProject = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	const Project = await prisma.project.findUnique({
-		where: {
-			id: id,
-		},
-		select: {
-			name: true,
-			description: true,
-			circle: true,
-			createdAt: true,
-			createdBy: {
-				select: UserSelectMinimized,
-			},
-			rating: true,
-			liveLink: true,
-			github: true,
-			id: true,
-			techUsed: true,
-		},
-	});
+	const project = await GetProjectService(id);
 
-	if (!Project)
-		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
-
-	return res.status(StatusCodes.OK).json({ success: true, data: Project });
+	return res.status(StatusCodes.OK).json({ success: true, data: project });
 };
 
 export const createProject = async (req: Req, res: Response) => {
 	const {
-		body: {
-			name,
-			description,
-			circleId,
-			techUsed,
-			github,
-			liveLink,
-			pictures,
-		},
 		user: { role: userRole },
 	} = req;
 
@@ -153,73 +44,17 @@ export const createProject = async (req: Req, res: Response) => {
 			StatusCodes.UNAUTHORIZED
 		);
 
-	if (!name || !description)
-		throw new CustomError(
-			"Name, and Description must be provided.",
-			StatusCodes.BAD_REQUEST
-		);
-
-	// // Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
-	// if (circleId) {
-	// 	const circle = await prisma.circle.findUnique({
-	// 		where: {
-	// 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
-	// 		},
-	// 		select: {
-	// 			members: true,
-	// 			colead: true,
-	// 			lead: true,
-	// 		},
-	// 	});
-
-	// 	if (!circle)
-	// 		throw new CustomError(
-	// 			"Invalid circle provided.",
-	// 			StatusCodes.BAD_REQUEST
-	// 		);
-
-	// 	if (
-	// 		!(
-	// 			(circle.colead && circle.colead.id === req.user.id) ||
-	// 			(circle.lead && circle.lead.id === req.user.id) ||
-	// 			circle.members.find((member) => member.id === req.user.id)
-	// 		)
-	// 	)
-	// 		throw new CustomError(
-	// 			"You're not a member of the circle provided.",
-	// 			StatusCodes.BAD_REQUEST
-	// 		);
-	// }
-
-	const Project = await prisma.project.create({
-		data: {
-			name,
-			description,
-			techUsed: techUsed ? techUsed : undefined,
-			// circleId: circleId ? Number(circleId) : undefined,
-			createdById: req.user.id,
-			github: github ? github : undefined,
-			liveLink: liveLink ? liveLink : undefined,
-			pictures: pictures ? pictures : undefined,
-		},
+	const project = await CreateProjectService({
+		body: req.body as BodyUserArgs["body"],
+		user: req.user,
 	});
 
-	return res.status(StatusCodes.OK).json({ success: true, data: Project });
+	return res.status(StatusCodes.OK).json({ success: true, data: project });
 };
 
 export const editProject = async (req: Req, res: Response) => {
 	const {
 		params: { id },
-		body: {
-			name,
-			description,
-			github,
-			techUsed,
-			liveLink,
-			visibility,
-			pictures,
-			pinned,
-		},
 		user: { role: userRole, id: userId },
 	} = req;
 
@@ -237,117 +72,19 @@ export const editProject = async (req: Req, res: Response) => {
 			StatusCodes.UNAUTHORIZED
 		);
 
-	const project = await prisma.project.findUnique({
-		where: { id },
-		select: {
-			circleId: true,
-			circle: {
-				select: {
-					lead: true,
-					colead: true,
-				},
-			},
-			pinned: true,
-			createdById: true,
-		},
+	const project = await EditProjectService({
+		id,
+		user: req.user,
+		body: req.body as BodyUserArgs["body"],
 	});
 
-	if (!project)
-		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
-
-	// If user is not an admin, and they can't modify other projects, then it means they have to be the owner of this project to be able to modify it.
-	if (
-		!(
-			(!userRole.isAdmin || !userRole.canModifyOtherProject) &&
-			project.createdById === userId
-		)
-	)
-		throw new CustomError(
-			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
-		);
-
-	if (visibility && !(visibility === "PUBLIC" || visibility === "PRIVATE"))
-		throw new CustomError(
-			"Invalid visibility value provided.",
-			StatusCodes.BAD_REQUEST
-		);
-
-	if (pinned !== undefined && pinned !== false && pinned !== true)
-		throw new CustomError(
-			"Invalid pinned value provided.",
-			StatusCodes.BAD_REQUEST
-		);
-
-	if (pinned !== undefined && project.circleId !== null) {
-		if (!project.circle)
-			throw new CustomError(
-				"Circle not found.",
-				StatusCodes.INTERNAL_SERVER_ERROR
-			);
-
-		if (pinned && project.pinned === true)
-			throw new CustomError(
-				"Project is already pinned.",
-				StatusCodes.BAD_REQUEST
-			);
-		if (!pinned && project.pinned === false)
-			throw new CustomError(
-				"Project is not currently pinned.",
-				StatusCodes.BAD_REQUEST
-			);
-
-		if (
-			!(
-				(project.circle.lead &&
-					project.circle.lead.id === req.user.id) ||
-				(project.circle.colead &&
-					project.circle.colead.id === req.user.id)
-			)
-		)
-			throw new CustomError(
-				"You do not have permission to pin/unpin this project.",
-				StatusCodes.BAD_REQUEST
-			);
-	}
-
-	if (techUsed) {
-		if (!Array.isArray(techUsed))
-			throw new CustomError(
-				"techUsed must be an array.",
-				StatusCodes.BAD_REQUEST
-			);
-		techUsed.forEach((tech) => {
-			if (typeof tech !== "string")
-				throw new CustomError(
-					"Tech used must be an array of strings.",
-					StatusCodes.BAD_REQUEST
-				);
-		});
-	}
-
-	const Project = await prisma.project.update({
-		where: { id },
-		data: {
-			name: name ? name : undefined,
-			description: description ? description : undefined,
-			github: github !== undefined ? github : undefined,
-			techUsed: techUsed ? techUsed : undefined,
-			liveLink: liveLink !== undefined ? liveLink : undefined,
-			circleVisibility: visibility ? visibility : undefined,
-			pictures: pictures ? pictures : undefined,
-			pinned: pinned !== undefined ? pinned : undefined,
-			// circleId: circleId ? Number(circleId) : undefined,
-		},
-	});
-
-	return res.status(StatusCodes.OK).json({ success: true, data: Project });
+	return res.status(StatusCodes.OK).json({ success: true, data: project });
 };
 
 export const deleteProject = async (req: Req, res: Response) => {
 	const {
 		params: { id },
-		user: { role: userRole, id: userId },
+		user: { role: userRole },
 	} = req;
 
 	if (
@@ -362,31 +99,7 @@ export const deleteProject = async (req: Req, res: Response) => {
 			StatusCodes.UNAUTHORIZED
 		);
 
-	const Project = await prisma.project.findUnique({
-		where: { id },
-	});
-
-	if (!Project)
-		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
-
-	if (
-		!(
-			(!userRole.isAdmin || !userRole.canModifyOtherProject) &&
-			Project.createdById === userId
-		)
-	)
-		throw new CustomError(
-			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
-		);
-
-	if (Project.createdById !== req.user.id)
-		throw new CustomError(
-			"You do not have permission to delete this project.",
-			StatusCodes.BAD_REQUEST
-		);
-
-	await prisma.project.delete({ where: { id } });
+	DeleteProjectService({ user: req.user, id, body: {} });
 	return res.status(StatusCodes.OK).json({ success: true });
 };
 
