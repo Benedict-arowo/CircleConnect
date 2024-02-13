@@ -76,21 +76,6 @@ export const sendNotification = async (props: sendNotificationProps) => {
 	}
 };
 
-// export const updateNotificationStatus = async (
-// 	props: updateNotificationProps
-// ) => {
-// 	const notification = await prisma.notification.update({
-// 		where: {
-// 			id: props.id,
-// 		},
-// 		data: {
-// 			is_read: props.is_read,
-// 		},
-// 	});
-
-// 	return notification;
-// };
-
 export const markAllAsRead = async (req: Req, res: Response) => {
 	const notifications = await prisma.notification.updateMany({
 		where: {
