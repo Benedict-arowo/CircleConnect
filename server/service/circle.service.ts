@@ -48,6 +48,31 @@ type EditCircleArgs = {
 	};
 };
 
+export const calAverageRating = async (id: number) => {
+	const ratings = await prisma.projectRating.findMany({
+		where: {
+			project: {
+				circleId: id,
+			},
+		},
+		select: {
+			rating: true,
+		},
+	});
+
+	const totalRating = ratings.reduce((sum, rating) => sum + rating.rating, 0);
+	const averageRating = totalRating / ratings.length;
+
+	await prisma.circle.update({
+		where: { id },
+		data: {
+			rating: averageRating ? averageRating : 0,
+		},
+	});
+
+	return averageRating;
+};
+
 export const CirclesService = async ({ query }: CirclesServiceArgs) => {
 	const { limit = "10", sortedBy } = query;
 	const sortedByValues = ["num-asc", "num-desc", "rating-asc", "rating-desc"];

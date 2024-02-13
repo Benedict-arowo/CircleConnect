@@ -15,31 +15,6 @@ import {
 	RequestToJoinCircleService,
 } from "../service/circle.service";
 
-export const calAverageRating = async (id: number) => {
-	const ratings = await prisma.projectRating.findMany({
-		where: {
-			project: {
-				circleId: id,
-			},
-		},
-		select: {
-			rating: true,
-		},
-	});
-
-	const totalRating = ratings.reduce((sum, rating) => sum + rating.rating, 0);
-	const averageRating = totalRating / ratings.length;
-
-	await prisma.circle.update({
-		where: { id },
-		data: {
-			rating: averageRating ? averageRating : 0,
-		},
-	});
-
-	return averageRating;
-};
-
 export const getCircles = async (req: Req, res: Response) => {
 	const Circles = await CirclesService({ query: req.query });
 	res.status(StatusCodes.OK).json({ success: true, data: Circles });
