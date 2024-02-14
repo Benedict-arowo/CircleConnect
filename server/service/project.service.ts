@@ -2,7 +2,8 @@ import { StatusCodes } from "http-status-codes";
 import prisma from "../model/db";
 import CustomError from "../middlewear/CustomError";
 import { UserSelectMinimized } from "../utils";
-import { Req, User } from "../types";
+import { User } from "../types";
+import { calAverageRating } from "./circle.service";
 
 type GetProjectsService = {
 	query: {
@@ -35,6 +36,18 @@ export type BodyUserArgs = {
 		visibility?: string;
 		pinned?: boolean;
 	};
+};
+
+type ManageProjectCircleServiceArgs = {
+	circleId?: string;
+	projectId: string;
+	user: User;
+};
+
+type RateProjectServiceArgs = {
+	id: string;
+	rating: number;
+	user: User;
 };
 
 export const GetProjectsService = async ({ query }: GetProjectsService) => {
@@ -360,4 +373,122 @@ export const DeleteProjectService = async ({ id, user }: BodyUserArgs) => {
 
 	await prisma.project.delete({ where: { id } });
 	return 0;
+};
+
+export const ManageProjectCircleService = async ({
+	circleId,
+	projectId,
+	user,
+}: ManageProjectCircleServiceArgs) => {
+	const { role: userRole } = user;
+
+	const Project = await prisma.project.findUnique({
+		where: { id: projectId },
+	});
+
+	if (!Project)
+		throw new CustomError(
+			"Project with a matching ID not found",
+			StatusCodes.NOT_FOUND
+		);
+
+	if (circleId) {
+		const Circle = await prisma.circle.findUnique({
+			where: { id: Number(circleId) },
+			select: {
+				lead: true,
+				colead: true,
+				members: true,
+			},
+		});
+
+		if (!Circle)
+			throw new CustomError(
+				"Circle with a matching ID not found",
+				StatusCodes.NOT_FOUND
+			);
+
+		if (
+			!(
+				(Circle.lead && Circle.lead.id === user.id) ||
+				(Circle.colead && Circle.colead.id === user.id) ||
+				Circle.members.find((member) => member.id === user.id) ||
+				userRole.isAdmin
+			)
+		)
+			throw new CustomError(
+				"You do not have permission to add this project to this circle.",
+				StatusCodes.BAD_REQUEST
+			);
+	}
+
+	// if (!(req.user.id === Project.createdById))
+	// 	throw new CustomError(
+	// 		"You do not have permission to modify this project",
+	// 		StatusCodes.BAD_REQUEST
+	// 	);
+
+	if (circleId && Project.circleId === Number(circleId))
+		throw new CustomError(
+			"This project is already in the circle provided.",
+			StatusCodes.BAD_REQUEST
+		);
+	else if (!circleId && !Project.circleId)
+		throw new CustomError(
+			"This project is not apart of any circle.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	const updatedProject = await prisma.project.update({
+		where: { id: projectId },
+		data: {
+			circleId: circleId ? Number(circleId) : null,
+		},
+	});
+
+	await calAverageRating(Number(circleId));
+
+	return updatedProject;
+};
+
+export const RateProjectService = async ({
+	id,
+	rating,
+	user,
+}: RateProjectServiceArgs) => {
+	const project = await prisma.project.findUnique({
+		where: {
+			id,
+		},
+	});
+
+	if (!project)
+		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
+
+	if (user.id === project.createdById)
+		throw new CustomError(
+			"You can't rate your own project.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	const userRating = await prisma.projectRating.upsert({
+		where: {
+			userId_projectId: {
+				projectId: id,
+				userId: user.id,
+			},
+		},
+		create: {
+			projectId: id,
+			userId: user.id,
+			rating: rating,
+		},
+		update: {
+			rating: rating,
+		},
+	});
+
+	if (project.circleId) await calAverageRating(project.circleId);
+
+	return userRating;
 };

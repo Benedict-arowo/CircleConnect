@@ -1,11 +1,11 @@
 import {
-	addProjectToCircle,
 	createProject,
 	deleteProject,
 	editProject,
 	getProject,
 	getProjects,
-	addRatingToProject,
+	manageProjectCircle,
+	rateProject,
 } from "../controllers/project-controller";
 import isLoggedIn from "../middlewear/isLoggedIn";
 import wrapper from "../middlewear/wrapper";
@@ -664,7 +664,7 @@ projectRouter
 
 projectRouter
 	.route("/:id/addToCircle")
-	.patch(isLoggedIn, wrapper(addProjectToCircle));
+	.patch(isLoggedIn, wrapper(manageProjectCircle));
 // projectRouter
 // 	.route("/:id/removeFromCircle")
 // 	.delete(isLoggedIn, wrapper(removeProjectFromCircle));
@@ -748,7 +748,5 @@ projectRouter
  *                   message: "Project not found."
  */
 
-projectRouter
-	.route("/:id/addRating")
-	.patch(isLoggedIn, wrapper(addRatingToProject));
+projectRouter.route("/:id/addRating").patch(isLoggedIn, wrapper(rateProject));
 export default projectRouter;

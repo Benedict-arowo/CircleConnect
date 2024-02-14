@@ -1,6 +1,5 @@
 import { Response } from "express";
 import { Req } from "../types";
-import prisma from "../model/db";
 import { StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
 import { sendNotification } from "./notifications-controller";
