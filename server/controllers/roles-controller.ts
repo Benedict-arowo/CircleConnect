@@ -7,44 +7,9 @@ import {
 	CreateRoleService,
 	DeleteRoleService,
 	EditRoleService,
+	PermsObj,
+	permissionList,
 } from "../service/roles.service";
-
-type Permission =
-	| "canCreateCircle"
-	| "canModifyOwnCircle"
-	| "canModifyOtherCircle"
-	| "canDeleteOwnCircle"
-	| "canDeleteOtherCircles"
-	| "canLeaveCircle"
-	| "canJoinCircle"
-	| "canCreateProject"
-	| "canModifyOwnProject"
-	| "canModifyOtherProject"
-	| "canDeleteOwnProject"
-	| "canDeleteOtherProject"
-	| "canAddProjectToCircle"
-	| "canRemoveProjectFromCircle"
-	| "isAdmin";
-
-type PermsObj = Record<Permission, boolean>;
-
-export const permissionList = [
-	"canCreateCircle",
-	"canModifyOwnCircle",
-	"canModifyOtherCircle",
-	"canDeleteOwnCircle",
-	"canDeleteOtherCircles",
-	"canLeaveCircle",
-	"canJoinCircle",
-	"canCreateProject",
-	"canModifyOwnProject",
-	"canModifyOtherProject",
-	"canDeleteOwnProject",
-	"canDeleteOtherProject",
-	"canAddProjectToCircle",
-	"canRemoveProjectFromCircle",
-	"isAdmin",
-];
 
 const validatePermission = (permsObj: PermsObj) => {
 	for (const permission in permsObj) {

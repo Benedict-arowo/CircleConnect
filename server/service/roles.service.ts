@@ -2,7 +2,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
 import prisma from "../model/db";
 
-type Permission =
+export type Permission =
 	| "canCreateCircle"
 	| "canModifyOwnCircle"
 	| "canModifyOtherCircle"
@@ -19,7 +19,24 @@ type Permission =
 	| "canRemoveProjectFromCircle"
 	| "isAdmin";
 
-type PermsObj = Record<Permission, boolean>;
+export type PermsObj = Record<Permission, boolean>;
+export const permissionList = [
+	"canCreateCircle",
+	"canModifyOwnCircle",
+	"canModifyOtherCircle",
+	"canDeleteOwnCircle",
+	"canDeleteOtherCircles",
+	"canLeaveCircle",
+	"canJoinCircle",
+	"canCreateProject",
+	"canModifyOwnProject",
+	"canModifyOtherProject",
+	"canDeleteOwnProject",
+	"canDeleteOtherProject",
+	"canAddProjectToCircle",
+	"canRemoveProjectFromCircle",
+	"isAdmin",
+];
 
 type RoleServiceArgs = {
 	roleId?: string;
