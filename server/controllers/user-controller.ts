@@ -1,17 +1,9 @@
 import { Response } from "express";
 import { Req } from "../types";
 import prisma from "../model/db";
-import {
-	DEFAULT_MEMBER_ROLE_ID,
-	MIN_PASSWORD_LENGTH,
-	SCHOOL_LIST,
-	TRACK_LIST,
-	TrackType,
-	UserSelectMinimized,
-	hash,
-} from "../utils";
+import { UserSelectMinimized } from "../utils";
 import CustomError from "../middlewear/CustomError";
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import {
 	CreateUserService,
 	DeleteUserService,
