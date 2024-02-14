@@ -73,7 +73,7 @@ export const createUser = async (req: Req, res: Response) => {
 			StatusCodes.UNAUTHORIZED
 		);
 
-	const newUser = CreateUserService({ body: req.body });
+	const newUser = await CreateUserService({ body: req.body });
 	return res
 		.status(StatusCodes.CREATED)
 		.json({ success: true, data: newUser });
@@ -91,7 +91,7 @@ export const editUser = async (req: Req, res: Response) => {
 			StatusCodes.UNAUTHORIZED
 		);
 
-	const user = EditUserService({ user: req.user, id, body: req.body });
+	const user = await EditUserService({ user: req.user, id, body: req.body });
 	return res.status(StatusCodes.OK).json({ success: true, data: user });
 };
 

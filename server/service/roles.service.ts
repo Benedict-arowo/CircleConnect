@@ -122,7 +122,9 @@ export const DeleteRoleService = async (id: string) => {
 				"To delete this role, you must remove all the users attached to this role.",
 				StatusCodes.UNPROCESSABLE_ENTITY
 			);
-		} else
+		} else if (error.code === "P2025")
+			throw new CustomError("Role not found.", StatusCodes.NOT_FOUND);
+		else
 			throw new CustomError(
 				ReasonPhrases.INTERNAL_SERVER_ERROR,
 				StatusCodes.INTERNAL_SERVER_ERROR

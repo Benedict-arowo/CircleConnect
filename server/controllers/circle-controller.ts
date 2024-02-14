@@ -2,7 +2,6 @@ import { Response } from "express";
 import { Req } from "../types";
 import { StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
-import { sendNotification } from "./notifications-controller";
 import {
 	CirclesService,
 	CreateCircleService,
@@ -13,6 +12,7 @@ import {
 	RemoveCircleRequestService,
 	RequestToJoinCircleService,
 } from "../service/circle.service";
+import { sendNotification } from "../service/notification.service";
 
 export const getCircles = async (req: Req, res: Response) => {
 	const Circles = await CirclesService({ query: req.query });

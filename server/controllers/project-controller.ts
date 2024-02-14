@@ -99,7 +99,7 @@ export const deleteProject = async (req: Req, res: Response) => {
 			StatusCodes.UNAUTHORIZED
 		);
 
-	DeleteProjectService({ user: req.user, id, body: {} });
+	await DeleteProjectService({ user: req.user, id, body: {} });
 	return res.status(StatusCodes.OK).json({ success: true });
 };
 
