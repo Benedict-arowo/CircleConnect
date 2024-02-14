@@ -3,6 +3,11 @@ import prisma from "../model/db";
 import { Req } from "../types";
 import { Response } from "express";
 import CustomError from "../middlewear/CustomError";
+import {
+	CreateRoleService,
+	DeleteRoleService,
+	EditRoleService,
+} from "../service/roles.service";
 
 type Permission =
 	| "canCreateCircle"
@@ -56,12 +61,6 @@ export const createRole = async (req: Req, res: Response) => {
 		body: { name: roleName, permissions },
 	} = req;
 
-	if (!roleName)
-		throw new CustomError(
-			"Role name must be provided.",
-			StatusCodes.BAD_REQUEST
-		);
-
 	// Validates the permissions given by the user
 	if (permissions)
 		if (validatePermission(permissions) instanceof Error) {
@@ -78,28 +77,12 @@ export const createRole = async (req: Req, res: Response) => {
 			StatusCodes.UNAUTHORIZED
 		);
 
-	try {
-		const newRole = await prisma.role.create({
-			data: {
-				name: roleName,
-				...permissions,
-			},
-		});
-		return res
-			.status(StatusCodes.CREATED)
-			.json({ success: true, data: newRole });
-	} catch (error: any) {
-		if (error.code === "P2002")
-			throw new CustomError(
-				"Role with name already exists.",
-				StatusCodes.BAD_REQUEST
-			);
-		else
-			throw new CustomError(
-				ReasonPhrases.INTERNAL_SERVER_ERROR,
-				StatusCodes.INTERNAL_SERVER_ERROR
-			);
-	}
+	const newRole = await CreateRoleService({
+		body: { name: roleName, permissions },
+	});
+	return res
+		.status(StatusCodes.CREATED)
+		.json({ success: true, data: newRole });
 };
 
 export const getRoles = async (req: Req, res: Response) => {
@@ -161,25 +144,14 @@ export const editRole = async (req: Req, res: Response) => {
 			);
 		}
 
-	try {
-		const role = await prisma.role.update({
-			where: { id: roleId },
-			data: {
-				name: roleName && roleName,
-				...permissions,
-			},
-		});
-
-		return res.status(StatusCodes.OK).json({ success: true, data: role });
-	} catch (error: any) {
-		if (error.code === "P2025")
-			throw new CustomError("Role not found.", StatusCodes.NOT_FOUND);
-		else
-			throw new CustomError(
-				ReasonPhrases.INTERNAL_SERVER_ERROR,
-				StatusCodes.INTERNAL_SERVER_ERROR
-			);
-	}
+	const role = await EditRoleService({
+		roleId,
+		body: {
+			name: roleName,
+			permissions,
+		},
+	});
+	return res.status(StatusCodes.OK).json({ success: true, data: role });
 };
 
 export const deleteRole = async (req: Req, res: Response) => {
@@ -195,21 +167,6 @@ export const deleteRole = async (req: Req, res: Response) => {
 			StatusCodes.UNAUTHORIZED
 		);
 
-	try {
-		await prisma.role.delete({
-			where: { id },
-		});
-		return res.status(StatusCodes.NO_CONTENT).json({ success: true });
-	} catch (error: any) {
-		if (error.code === "P2003") {
-			throw new CustomError(
-				"To delete this role, you must remove all the users attached to this role.",
-				StatusCodes.UNPROCESSABLE_ENTITY
-			);
-		} else
-			throw new CustomError(
-				ReasonPhrases.INTERNAL_SERVER_ERROR,
-				StatusCodes.INTERNAL_SERVER_ERROR
-			);
-	}
+	await DeleteRoleService(id);
+	return res.status(StatusCodes.NO_CONTENT).json({ success: true });
 };
