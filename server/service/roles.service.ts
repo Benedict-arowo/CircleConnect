@@ -38,6 +38,15 @@ export const permissionList = [
 	"isAdmin",
 ];
 
+export const validatePermission = (permsObj: PermsObj) => {
+	for (const permission in permsObj) {
+		if (!permissionList.includes(permission)) {
+			console.log("error");
+			return new Error("Not a valid permission");
+		}
+	}
+};
+
 type RoleServiceArgs = {
 	roleId?: string;
 	body: {

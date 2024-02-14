@@ -9,16 +9,8 @@ import {
 	EditRoleService,
 	PermsObj,
 	permissionList,
+	validatePermission,
 } from "../service/roles.service";
-
-const validatePermission = (permsObj: PermsObj) => {
-	for (const permission in permsObj) {
-		if (!permissionList.includes(permission)) {
-			console.log("error");
-			return new Error("Not a valid permission");
-		}
-	}
-};
 
 export const createRole = async (req: Req, res: Response) => {
 	const {
