@@ -3,6 +3,7 @@ import { User } from "./types";
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 
+export const PrismaNotFoundErrorCode = "P2025";
 export const verifyHash = async (
 	hashedValue: string,
 	unhashedValue: string

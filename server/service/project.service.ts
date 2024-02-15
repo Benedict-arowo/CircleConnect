@@ -29,7 +29,7 @@ export type BodyUserArgs = {
 		name?: string;
 		description?: string;
 		circleId?: string;
-		techUsed?: string;
+		tags?: string;
 		github?: string;
 		liveLink?: string;
 		pictures?: string;
@@ -135,7 +135,7 @@ export const GetProjectsService = async ({ query }: GetProjectsService) => {
 			rating: true,
 			liveLink: true,
 			github: true,
-			techUsed: true,
+			tags: true,
 		},
 		take: limit ? parseInt(limit) : undefined,
 	});
@@ -160,7 +160,7 @@ export const GetProjectService = async (id: string) => {
 			liveLink: true,
 			github: true,
 			id: true,
-			techUsed: true,
+			tags: true,
 		},
 	});
 
@@ -171,7 +171,7 @@ export const GetProjectService = async (id: string) => {
 };
 
 export const CreateProjectService = async ({ body, user }: BodyUserArgs) => {
-	const { name, description, techUsed, github, liveLink, pictures } = body;
+	const { name, description, tags, github, liveLink, pictures } = body;
 
 	if (!name || !description)
 		throw new CustomError(
@@ -215,7 +215,7 @@ export const CreateProjectService = async ({ body, user }: BodyUserArgs) => {
 		data: {
 			name,
 			description,
-			techUsed: techUsed ? techUsed.split("|") : undefined,
+			tags: tags ? tags.split("|") : undefined,
 			// circleId: circleId ? Number(circleId) : undefined,
 			createdById: user.id,
 			github: github ? github : undefined,
@@ -232,7 +232,7 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 		name,
 		description,
 		github,
-		techUsed,
+		tags,
 		liveLink,
 		visibility,
 		pictures,
@@ -311,13 +311,13 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 			);
 	}
 
-	// if (techUsed) {
-	// 	if (!Array.isArray(techUsed))
+	// if (tags) {
+	// 	if (!Array.isArray(tags))
 	// 		throw new CustomError(
-	// 			"techUsed must be an array.",
+	// 			"tags must be an array.",
 	// 			StatusCodes.BAD_REQUEST
 	// 		);
-	// 	techUsed.forEach((tech) => {
+	// 	tags.forEach((tech) => {
 	// 		if (typeof tech !== "string")
 	// 			throw new CustomError(
 	// 				"Tech used must be an array of strings.",
@@ -332,7 +332,7 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 			name: name ? name : undefined,
 			description: description ? description : undefined,
 			github: github !== undefined ? github : undefined,
-			techUsed: techUsed ? techUsed.split("|") : undefined,
+			tags: tags ? tags.split("|") : undefined,
 			liveLink: liveLink !== undefined ? liveLink : undefined,
 			circleVisibility: visibility
 				? (visibility as "PUBLIC" | "PRIVATE")

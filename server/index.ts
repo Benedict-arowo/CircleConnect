@@ -16,6 +16,7 @@ import socketMiddleware from "./middlewear/Socket";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import roleRouter from "./routes/roles-route";
 import userRouter from "./routes/user-route";
+import projectReviewsRouter from "./routes/project-reviews";
 const http = require("http");
 const cors = require("cors");
 const passport = require("passport");
@@ -134,6 +135,7 @@ const makeApp = (
 	app.use("/user", userRouter);
 	app.use("/circle", circleRouter);
 	app.use("/project", projectRouter);
+	app.use("/reviews", projectReviewsRouter);
 	app.use("/notification", notificationRouter);
 
 	app.use(ErrorHandler);
