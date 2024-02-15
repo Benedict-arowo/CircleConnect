@@ -1,0 +1,509 @@
+tags:
+    - name: Circle
+      description: Operations related to Circles
+paths:
+    /circles:
+        get:
+            tags: [Circle]
+            summary: Get Circles
+            description: Retrieve a list of circles with optional sorting and limiting.
+            parameters:
+                - name: limit
+                  in: query
+                  description: The maximum number of circles to retrieve (default is 10).
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 25
+                - name: sortedBy
+                  in: query
+                  description: Sort the circles by specified criteria.
+                  schema:
+                      type: string
+                      enum:
+                          - num-asc
+                          - num-desc
+                          - rating-asc
+                          - rating-desc
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            example:
+                                success: true
+                                data:
+                                    - id: 1
+                                      description: Circle 1
+                                      rating: 4.5
+                                      members: [...]
+                                      lead: { ... }
+                                      colead: { ... }
+                                      projects: [...]
+                                      _count: 10
+                                      createdAt: "2022-01-01T12:00:00Z"
+                                    - id: 2
+                                      description: Circle 2
+                                      rating: 3.8
+                                      members: [...]
+                                      lead: { ... }
+                                      colead: { ... }
+                                      projects: [...]
+                                      _count: 5
+                                      createdAt: "2022-02-01T12:00:00Z"
+                "400":
+                    description: Bad request
+                    content:
+                        application/json:
+                            examples:
+                                invalidLimit:
+                                    value:
+                                        success: false
+                                        error: "Invalid limit provided"
+                                invalidSorting:
+                                    value:
+                                        success: false
+                                        error: "Invalid sorting parameters"
+                                invalidLimitRange:
+                                    value:
+                                        success: false
+                                        error: "Invalid limit, must be between 1 and 25"
+        post:
+            tags: [Circle]
+            summary: Create Circle
+            description: Create a new circle with the provided information.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        example:
+                            circle_num: 1
+                            description: "Example Circle"
+            responses:
+                "201":
+                    description: Created
+                    content:
+                        application/json:
+                            example:
+                                success: true
+                                data:
+                                    id: 1
+                                    description: Example Circle
+                                    createdAt: "2022-01-01T12:00:00Z"
+                "400":
+                    description: Bad request
+                    content:
+                        application/json:
+                            examples:
+                                noPermission:
+                                    value:
+                                        success: false
+                                        error: "You do not have permission to create circles."
+                                missingDescription:
+                                    value:
+                                        success: false
+                                        error: "Circle description must be provided."
+                                shortDescription:
+                                    value:
+                                        success: false
+                                        error: "Description is too short, it must be at least 10 characters"
+                                missingCircleNum:
+                                    value:
+                                        success: false
+                                        error: "Circle number must be provided."
+                                invalidCircleNum:
+                                    value:
+                                        success: false
+                                        error: "Circle number must be greater than zero."
+                "401":
+                    description: Unauthorized
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Unauthorized access"
+                "409":
+                    description: Conflict
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "A circle with this number already exists."
+                "500":
+                    description: Internal Server Error
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Internal Server Error"
+    /circles/{id}:
+        get:
+            tags: [Circle]
+            summary: Get Circle by ID
+            description: Retrieve detailed information about a specific circle.
+            parameters:
+                - name: id
+                  in: path
+                  description: The ID of the circle to retrieve.
+                  required: true
+                  schema:
+                      type: integer
+                      minimum: 1
+            responses:
+                "200":
+                    description: Successful response
+                    content:
+                        application/json:
+                            example:
+                                success: true
+                                data:
+                                    id: 1
+                                    description: Circle 1
+                                    members:
+                                        - id: 101
+                                          first_name: John
+                                          last_name: Doe
+                                          email: john.doe@example.com
+                                          profile_picture: "https://example.com/john.jpg"
+                                    lead:
+                                        id: 201
+                                        first_name: Jane
+                                        last_name: Doe
+                                        email: jane.doe@example.com
+                                        profile_picture: "https://example.com/jane.jpg"
+                                    colead:
+                                        id: 202
+                                        first_name: Bob
+                                        last_name: Smith
+                                        email: bob.smith@example.com
+                                        profile_picture: "https://example.com/bob.jpg"
+                                    requests:
+                                        - id: 301
+                                          first_name: Alice
+                                          last_name: Johnson
+                                          email: alice.johnson@example.com
+                                          profile_picture: "https://example.com/alice.jpg"
+                                    rating: 4.5
+                                    projects:
+                                        - id: 401
+                                          name: Project A
+                                          description: Project A description
+                                    createdAt: "2022-01-01T12:00:00Z"
+                "400":
+                    description: Bad request
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "An ID must be provided."
+                "404":
+                    description: Not Found
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Circle not found."
+        patch:
+            tags: [Circle]
+            summary: Update Circle
+            description: Update circle details, members, and requests.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  description: ID of the circle to update.
+                  schema:
+                      type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                description:
+                                    type: string
+                                    description: New description for the circle.
+                                request:
+                                    type: object
+                                    description: Request details for joining or declining the circle.
+                                    properties:
+                                        userId:
+                                            type: string
+                                            description: ID of the user for the request.
+                                        type:
+                                            type: string
+                                            enum: ["ACCEPT", "DECLINE"]
+                                            description: Type of request action.
+                                removeUser:
+                                    type: object
+                                    description: User details to remove from the circle.
+                                    properties:
+                                        userId:
+                                            type: string
+                                            description: ID of the user to remove.
+                                manageUser:
+                                    type: object
+                                    description: User management details (promote/demote).
+                                    properties:
+                                        userId:
+                                            type: string
+                                            description: ID of the user to manage.
+                                        action:
+                                            type: string
+                                            enum: ["PROMOTE", "DEMOTE"]
+                                            description: Action to perform on the user.
+            responses:
+                "200":
+                    description: Successful update.
+                    content:
+                        application/json:
+                            example:
+                                success: true
+                                data:
+                                    id: 123
+                                    description: Updated circle description
+                                    members:
+                                        - id: "user1"
+                                          first_name: "John"
+                                          last_name: "Doe"
+                                    projects:
+                                        - id: "project1"
+                                          name: "Project ABC"
+                                    createdAt: "2024-02-04T12:00:00Z"
+                "400":
+                    description: Bad Request.
+                    content:
+                        application/json:
+                            examples:
+                                invalidRequest:
+                                    value:
+                                        success: false
+                                        error: "Invalid request parameters."
+                                insufficientDescription:
+                                    value:
+                                        success: false
+                                        error: "Description is too short, it must be at least 10 characters"
+                                invalidAction:
+                                    value:
+                                        success: false
+                                        error: "Invalid action for user management."
+                "401":
+                    description: Unauthorized.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "You do not have permission to perform this action."
+                "404":
+                    description: Circle not found.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Circle not found."
+                "500":
+                    description: Internal Server Error.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Error while trying to create circle."
+        delete:
+            tags: [Circle]
+            summary: Delete Circle
+            description: Delete a circle by ID.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  description: ID of the circle to delete.
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Successful deletion.
+                    content:
+                        application/json:
+                            example:
+                                success: true
+                "400":
+                    description: Bad Request.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "You are not allowed to delete this circle."
+                "401":
+                    description: Unauthorized.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "You do not have permission to perform this action."
+                "404":
+                    description: Circle not found.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Circle does not exist."
+                "500":
+                    description: Internal Server Error.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Error while trying to delete circle."
+    /circles/{id}/leave:
+        delete:
+            tags: [Circle]
+            summary: Leave Circle
+            description: Leave a circle by ID.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  description: ID of the circle to leave.
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Successful leave.
+                    content:
+                        application/json:
+                            example:
+                                success: true
+                "400":
+                    description: Bad Request.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "You are not a member of this circle."
+                "401":
+                    description: Unauthorized.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "You do not have permission to perform this action."
+                "404":
+                    description: Circle not found.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Circle does not exist."
+                "500":
+                    description: Internal Server Error.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Error while trying to leave circle."
+    /circles/{id}/request-to-join:
+        post:
+            tags: [Circle]
+            summary: Request to Join Circle
+            description: Request to join a circle by ID.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  description: ID of the circle to join.
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Successful request.
+                    content:
+                        application/json:
+                            example:
+                                success: true
+                                data:
+                                    id: 1
+                                    requests:
+                                        - id: 2
+                                          first_name: "John"
+                                          last_name: "Doe"
+                "400":
+                    description: Bad Request.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "You're already a member of this circle."
+                "401":
+                    description: Unauthorized.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "You do not have permission to perform this action."
+                "404":
+                    description: Circle not found.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Circle does not exist."
+                "500":
+                    description: Internal Server Error.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Error while trying to request to join circle."
+    /circles/{id}/remove-request:
+        delete:
+            tags: [Circle]
+            summary: Remove Circle Request
+            description: Remove a request to join a circle by ID.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  description: ID of the circle to remove the request from.
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Successful removal.
+                    content:
+                        application/json:
+                            example:
+                                success: true
+                                data:
+                                    id: 1
+                                    requests:
+                                        - id: 2
+                                          first_name: "John"
+                                          last_name: "Doe"
+                "400":
+                    description: Bad Request.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "You're already a member of this circle."
+                "401":
+                    description: Unauthorized.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "You do not have permission to perform this action."
+                "404":
+                    description: Circle not found.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Circle does not exist."
+                "500":
+                    description: Internal Server Error.
+                    content:
+                        application/json:
+                            example:
+                                success: false
+                                error: "Error while trying to remove circle request."
