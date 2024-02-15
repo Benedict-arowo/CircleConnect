@@ -29,7 +29,7 @@ const Login = () => {
 
 	const fetchUser = async () => {
 		const { data, response } = await UseFetch({
-			url: "user",
+			url: "activeUser",
 			options: {
 				useServerUrl: true,
 				returnResponse: true,
