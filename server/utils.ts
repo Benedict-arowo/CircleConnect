@@ -3,6 +3,7 @@ import { User } from "./types";
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
 
+export const PrismaNotFoundErrorCode = "P2025";
 export const verifyHash = async (
 	hashedValue: string,
 	unhashedValue: string
@@ -71,11 +72,6 @@ export const UserSelectFull = {
 
 export const minimumCircleDescriptionLength = 60;
 export const MAX_RATING_VALUE = 5;
-export const DEFAULT_MEMBER_ROLE_ID = "c53fc77e-cb8b-4c05-ae3f-3cdb0bd7fc60";
-export const DEFAULT_ADMIN_ROLE_ID = "9fadb132-f4c5-478e-8b35-bdff9c2342d6";
-export const ADMIN_USER_PASSWORD = "adminuser";
-export const DEFAULT_USER_PASSWORD = "user1234";
-export const MIN_PASSWORD_LENGTH = 8;
 export const SCHOOL_LIST = ["ENGINEERING"];
 export const TRACK_LIST = {
 	engineering: ["FRONTEND", "BACKEND", "CLOUD"],
@@ -83,3 +79,11 @@ export const TRACK_LIST = {
 };
 export type TrackType = "CLOUD" | "FRONTEND" | "BACKEND";
 export const ACCESS_TOKEN_VALIDITY_TIME = "1h";
+
+export const DEFAULT_ADMIN_USER_EMAIL = "admin@circleconnect.com";
+export const DEFAULT_USER_EMAIL = "member@circleconnect.com";
+export const DEFAULT_MEMBER_ROLE_ID = "c53fc77e-cb8b-4c05-ae3f-3cdb0bd7fc60";
+export const DEFAULT_ADMIN_ROLE_ID = "9fadb132-f4c5-478e-8b35-bdff9c2342d6";
+export const ADMIN_USER_PASSWORD = "adminuser";
+export const DEFAULT_USER_PASSWORD = "user1234";
+export const MIN_PASSWORD_LENGTH = 8;

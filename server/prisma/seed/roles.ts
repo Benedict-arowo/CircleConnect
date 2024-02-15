@@ -1,8 +1,9 @@
-import prisma from "../model/db";
-import { DEFAULT_ADMIN_ROLE_ID, DEFAULT_MEMBER_ROLE_ID } from "../utils";
+import prisma from "../../model/db";
+import { DEFAULT_ADMIN_ROLE_ID, DEFAULT_MEMBER_ROLE_ID } from "../../utils";
 
 const CreateDefaultRoles = async () => {
-	const adminRole = await prisma.role.upsert({
+	// Admin role
+	await prisma.role.upsert({
 		where: { id: DEFAULT_ADMIN_ROLE_ID },
 		update: {},
 		create: {
@@ -12,7 +13,8 @@ const CreateDefaultRoles = async () => {
 		},
 	});
 
-	const memberRole = await prisma.role.upsert({
+	// Member role
+	await prisma.role.upsert({
 		where: { id: DEFAULT_MEMBER_ROLE_ID },
 		update: {},
 		create: {
@@ -25,7 +27,7 @@ const CreateDefaultRoles = async () => {
 		},
 	});
 
-	return { memberRole, adminRole };
+	return 0;
 };
 
 export default CreateDefaultRoles;

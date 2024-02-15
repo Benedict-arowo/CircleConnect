@@ -74,7 +74,7 @@ export interface Req extends Request {
 		pinned?: boolean;
 		github?: string;
 		liveLink?: string;
-		techUsed?: string[];
+		tags?: string[];
 		roleId?: string;
 		school?: string;
 		profile_picture?: string;
@@ -108,6 +108,7 @@ export interface Req extends Request {
 			action: "PROMOTE" | "DEMOTE";
 			userId: string;
 		};
+		content?: string;
 	};
 	user: User;
 	logout: Function;
