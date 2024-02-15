@@ -20,6 +20,27 @@ export type User = {
 	google_id: string;
 	github_id: string;
 	emails: [{ value: string }];
+	role: {
+		id: string;
+		name: string;
+		canCreateCircle: boolean;
+		canModifyOwnCircle: boolean;
+		canModifyOtherCircle: boolean;
+		canDeleteOwnCircle: boolean;
+		canDeleteOtherCircles: boolean;
+		canLeaveCircle: boolean;
+		canJoinCircle: boolean;
+		canCreateProject: boolean;
+		canModifyOwnProject: boolean;
+		canModifyOtherProject: boolean;
+		canDeleteOwnProject: boolean;
+		canDeleteOtherProject: boolean;
+		canAddProjectToCircle: boolean;
+		canRemoveProjectFromCircle: boolean;
+		canManageRoles: boolean;
+		canManageUsers: boolean;
+		isAdmin: boolean;
+	};
 };
 
 export interface Req extends Request {
@@ -34,6 +55,9 @@ export interface Req extends Request {
 		pinned?: string;
 		userId?: string;
 		status?: string;
+		first_name?: string;
+		last_name?: string;
+		roleId?: string;
 	};
 	body: {
 		description?: string;
@@ -51,7 +75,28 @@ export interface Req extends Request {
 		github?: string;
 		liveLink?: string;
 		tags?: string[];
+		roleId?: string;
+		school?: string;
+		profile_picture?: string;
+		track?: string;
 		visibility?: "PUBLIC" | "PRIVATE";
+		permissions?: {
+			canCreateCircle: boolean;
+			canModifyOwnCircle: boolean;
+			canModifyOtherCircle: boolean;
+			canDeleteOwnCircle: boolean;
+			canDeleteOtherCircles: boolean;
+			canLeaveCircle: boolean;
+			canJoinCircle: boolean;
+			canCreateProject: boolean;
+			canModifyOwnProject: boolean;
+			canModifyOtherProject: boolean;
+			canDeleteOwnProject: boolean;
+			canDeleteOtherProject: boolean;
+			canAddProjectToCircle: boolean;
+			canRemoveProjectFromCircle: boolean;
+			isAdmin: boolean;
+		};
 		request?: {
 			type: "ACCEPT" | "DECLINE";
 			userId: string;

@@ -20,7 +20,7 @@ const express = require("express");
 const router = express.Router();
 
 router.get(
-	"/user",
+	"/activeUser",
 	isLoggedIn,
 	wrapper(async (req: Req, res: Response) => {
 		// TODO: This route is currently just for testing purposes.

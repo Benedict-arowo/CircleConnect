@@ -7,6 +7,45 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Role {
+  id String @id @default(uuid())
+  name String @unique
+
+  canCreateCircle Boolean @default(false) 
+  canModifyOwnCircle Boolean @default(false)
+  canModifyOtherCircle Boolean @default(false)
+  canDeleteOwnCircle Boolean @default(false)
+  canDeleteOtherCircles Boolean @default(false)
+  canLeaveCircle Boolean @default(false)
+  canJoinCircle Boolean @default(false)
+
+  canCreateProject Boolean @default(false)
+  canModifyOwnProject Boolean @default(false)
+  canModifyOtherProject Boolean @default(false)
+  canDeleteOwnProject Boolean @default(false)
+  canDeleteOtherProject Boolean @default(false)
+  canAddProjectToCircle Boolean @default(false)
+  canRemoveProjectFromCircle Boolean @default(false)
+
+  canManageRoles Boolean @default(false)
+  canManageUsers Boolean @default(false)
+
+  isAdmin Boolean @default(false)
+  
+  users User[] 
+}
+
+
+enum School {
+  ENGINEERING
+}
+
+enum Track {
+  FRONTEND
+  BACKEND
+  CLOUD
+}
+
 model User {
   id               String          @id @default(uuid())
   google_id        String?         @unique
@@ -18,6 +57,10 @@ model User {
   profile_picture  String?
   joined           DateTime        @updatedAt()
   last_login       DateTime?
+  role  Role @relation(fields: [roleId], references: [id])
+  roleId String
+  track Track?
+  school School @default(ENGINEERING)
   leadOf           Circle?         @relation(fields: [leadOfId], references: [id], name: "leader of")
   leadOfId         Int?            @unique
   coleadOf         Circle?         @relation(fields: [coleadOfId], references: [id], name: "coleader of")
@@ -89,7 +132,7 @@ model Circle {
   lead              User?          @relation(name: "leader of")
   colead            User?          @relation(name: "coleader of")
   projects          Project[]
-  description       String         @db.VarChar(300)
+  description       String         
   rating            Float          @default(0.0)
   requests          User[]         @relation(name: "Pending circle requests")
   createdAt         DateTime       @default(now())
