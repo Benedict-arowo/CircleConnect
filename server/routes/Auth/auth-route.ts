@@ -1,6 +1,11 @@
 import wrapper from "../../middlewear/wrapper";
 import isLoggedIn from "../../middlewear/isLoggedIn";
 import logout from "../../controllers/Auth/logout";
+import { Req } from "../../types";
+import { UserSelectFull } from "../../utils";
+import { Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import prisma from "../../model/db";
 
 require("dotenv").config();
 

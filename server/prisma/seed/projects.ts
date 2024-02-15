@@ -18,7 +18,7 @@ const CreateDefaultProjects = async () => {
 				},
 			},
 			github: "https://github.com/Benedict-arowo/CircleConnect",
-			techUsed: [
+			tags: [
 				"Open Source",
 				"MIT License",
 				"TypeScript",
@@ -60,7 +60,7 @@ const CreateDefaultProjects = async () => {
 				},
 			},
 			github: "https://github.com/Benedict-arowo/CircleConnect",
-			techUsed: ["HTML", "CSS", "TAILWIND", "SASS"],
+			tags: ["HTML", "CSS", "TAILWIND", "SASS"],
 		},
 		update: {},
 	});
@@ -96,7 +96,7 @@ const CreateDefaultProjects = async () => {
 				},
 			},
 			github: "https://github.com/Benedict-arowo/CircleConnect",
-			techUsed: ["HTML", "Python", "NodeJS", "Cloudinary"],
+			tags: ["HTML", "Python", "NodeJS", "Cloudinary"],
 		},
 		update: {},
 	});
