@@ -6,6 +6,8 @@ import Login from "./pages/Auth/Login";
 import Test from "./pages/Test";
 import Circle from "./pages/Circle";
 import Discover from "./pages/Discover";
+import Dashboard from "./pages/Dashboard-Circles";
+import Users from "./pages/Users";
 import Project from "./pages/Project";
 
 // TODO: Implement Lazy loading
@@ -21,9 +23,11 @@ const App = () => {
 				<Route path="/login" element={<Login />} />
 				<Route path="/register" element={<Register />} />
 				<Route path="/auth/success" element={<Success />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/users" element={<Users />} />
 			</Routes>
 		</div>
 	);
-};
+
 
 export default App;
