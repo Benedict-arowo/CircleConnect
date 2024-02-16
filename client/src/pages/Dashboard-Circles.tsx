@@ -59,7 +59,7 @@ export default function Dashboard() {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/circle${selectedItem.id}`,
+        `http://localhost:8000/circle/${selectedItem.id}`,
         {
           method: "DELETE",
         }
