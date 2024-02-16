@@ -168,7 +168,7 @@ export default function Dashboard() {
               <div className="flex justify-center mt-5 items-center ">
                 <button
                   onClick={handleClose}
-                  title="Add New"
+                  title="close"
                   className="group cursor-pointer outline-none hover:rotate-90 duration-300"
                 >
                   <svg
