@@ -369,6 +369,11 @@ const Nav = (props: Props) => {
 									<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
 										Circle
 									</button>
+									 <Link to={"/dashboard"}>
+								  <button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
+									Dashboard
+								  </button>
+							       </Link>
 								</section>
 								<div className="w-full h-[1px] rounded-md bg-gray-200 my-1"></div>
 
