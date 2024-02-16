@@ -22,7 +22,7 @@ const UseFetch = async ({ url, options }: FetchParams) => {
 					"Content-Type": "application/json",
 				},
 				body: options?.body ? JSON.stringify(options.body) : null,
-			}
+			},
 		);
 
 		const data = await response.json();
@@ -31,7 +31,7 @@ const UseFetch = async ({ url, options }: FetchParams) => {
 			if (data.message) throw new Error(data.message);
 			else
 				throw new Error(
-					"Internal Server Error.... Try contacting an administrator."
+					"Internal Server Error.... Try contacting an administrator.",
 				);
 		}
 

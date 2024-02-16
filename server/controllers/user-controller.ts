@@ -70,7 +70,7 @@ export const createUser = async (req: Req, res: Response) => {
 	if (!(userRole.isAdmin || userRole.canManageUsers))
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	const newUser = await CreateUserService({ body: req.body });
@@ -88,7 +88,7 @@ export const editUser = async (req: Req, res: Response) => {
 	if (!(userRole.isAdmin || userRole.canManageUsers || id === userId))
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	const user = await EditUserService({ user: req.user, id, body: req.body });
@@ -105,7 +105,7 @@ export const deleteUser = async (req: Req, res: Response) => {
 	if (!(userRole.isAdmin || userRole.canManageUsers || req.user.id === id))
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	await DeleteUserService(id);

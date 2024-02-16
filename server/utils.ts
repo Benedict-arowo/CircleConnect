@@ -6,14 +6,14 @@ const jwt = require("jsonwebtoken");
 export const PrismaNotFoundErrorCode = "P2025";
 export const verifyHash = async (
 	hashedValue: string,
-	unhashedValue: string
+	unhashedValue: string,
 ) => {
 	return await argon.verify(hashedValue, unhashedValue);
 };
 
 export const tokenGenerator = async (
 	payload: any,
-	expiresIn: string | number
+	expiresIn: string | number,
 ) => {
 	return await jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
 };

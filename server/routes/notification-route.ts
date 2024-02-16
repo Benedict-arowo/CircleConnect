@@ -24,7 +24,7 @@ notificationRouter.patch("/:id/markAsRead", isLoggedIn, wrapper(markAsRead));
 notificationRouter.patch(
 	"/:id/markAsUnread",
 	isLoggedIn,
-	wrapper(markAsUnread)
+	wrapper(markAsUnread),
 );
 
 export default notificationRouter;

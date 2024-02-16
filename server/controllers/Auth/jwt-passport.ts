@@ -42,6 +42,6 @@ passport.use(
 			} catch (error) {
 				return done(error);
 			}
-		}
-	)
+		},
+	),
 );

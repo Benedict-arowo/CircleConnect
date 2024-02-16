@@ -128,7 +128,7 @@ const Index = () => {
 						...prevState,
 						loading: false,
 					};
-				})
+				}),
 			);
 	}, []);
 
@@ -168,7 +168,8 @@ const Index = () => {
 							strokeWidth={1.5}
 							stroke="currentColor"
 							onClick={searchHandler}
-							className="w-6 h-6 cursor-pointer">
+							className="w-6 h-6 cursor-pointer"
+						>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -180,22 +181,26 @@ const Index = () => {
 						<div className="font-light flex flex-row flex-wrap justify-center gap-2">
 							<span
 								className="cursor-pointer hover:underline"
-								onClick={() => setSearch("google clone")}>
+								onClick={() => setSearch("google clone")}
+							>
 								google clone
 							</span>
 							<span
 								className="cursor-pointer hover:underline"
-								onClick={() => setSearch("slack clone")}>
+								onClick={() => setSearch("slack clone")}
+							>
 								slack clone
 							</span>
 							<span
 								className="cursor-pointer hover:underline"
-								onClick={() => setSearch("facebook clone")}>
+								onClick={() => setSearch("facebook clone")}
+							>
 								facebook clone
 							</span>
 							<span
 								className="cursor-pointer hover:underline"
-								onClick={() => setSearch("tiktok clone")}>
+								onClick={() => setSearch("tiktok clone")}
+							>
 								tiktok clone
 							</span>
 						</div>
@@ -300,7 +305,8 @@ const Index = () => {
 						<a
 							className="font-light mb-2 text-3xl text-gray-800"
 							href="#recent_projects"
-							id="recent_projects">
+							id="recent_projects"
+						>
 							Recent Projects
 						</a>
 						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-4 pb-7 px-8">
@@ -318,7 +324,8 @@ const Index = () => {
 						<a
 							className="font-light mb-2 text-3xl text-gray-800"
 							href="#featured_projects"
-							id="featured_projects">
+							id="featured_projects"
+						>
 							Top Projects
 						</a>
 						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-4 pb-7 px-8">
@@ -336,7 +343,8 @@ const Index = () => {
 						<a
 							className="font-light mb-2 text-3xl text-gray-800"
 							href="#circles"
-							id="circles">
+							id="circles"
+						>
 							Top Circles
 						</a>
 						<div className="flex flex-row gap-8 flex-wrap justify-center pt-4">

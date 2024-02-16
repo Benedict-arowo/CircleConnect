@@ -61,7 +61,7 @@ export const CreateRoleService = async ({ body }: RoleServiceArgs) => {
 	if (!roleName)
 		throw new CustomError(
 			"Role name must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	try {
@@ -76,12 +76,12 @@ export const CreateRoleService = async ({ body }: RoleServiceArgs) => {
 		if (error.code === "P2002")
 			throw new CustomError(
 				"Role with name already exists.",
-				StatusCodes.BAD_REQUEST
+				StatusCodes.BAD_REQUEST,
 			);
 		else
 			throw new CustomError(
 				ReasonPhrases.INTERNAL_SERVER_ERROR,
-				StatusCodes.INTERNAL_SERVER_ERROR
+				StatusCodes.INTERNAL_SERVER_ERROR,
 			);
 	}
 };
@@ -105,7 +105,7 @@ export const EditRoleService = async ({ roleId, body }: RoleServiceArgs) => {
 		else
 			throw new CustomError(
 				ReasonPhrases.INTERNAL_SERVER_ERROR,
-				StatusCodes.INTERNAL_SERVER_ERROR
+				StatusCodes.INTERNAL_SERVER_ERROR,
 			);
 	}
 };
@@ -120,14 +120,14 @@ export const DeleteRoleService = async (id: string) => {
 		if (error.code === "P2003") {
 			throw new CustomError(
 				"To delete this role, you must remove all the users attached to this role.",
-				StatusCodes.UNPROCESSABLE_ENTITY
+				StatusCodes.UNPROCESSABLE_ENTITY,
 			);
 		} else if (error.code === "P2025")
 			throw new CustomError("Role not found.", StatusCodes.NOT_FOUND);
 		else
 			throw new CustomError(
 				ReasonPhrases.INTERNAL_SERVER_ERROR,
-				StatusCodes.INTERNAL_SERVER_ERROR
+				StatusCodes.INTERNAL_SERVER_ERROR,
 			);
 	}
 };

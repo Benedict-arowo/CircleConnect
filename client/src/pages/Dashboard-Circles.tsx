@@ -87,13 +87,13 @@ export default function Dashboard() {
 				`http://localhost:8000/circle/${selectedItem.id}`,
 				{
 					method: "DELETE",
-				}
+				},
 			);
 
 			if (res.ok) {
 				console.log("circle deletd successfully");
 				setData((prevData) =>
-					prevData.filter((item) => item.id !== selectedItem.id)
+					prevData.filter((item) => item.id !== selectedItem.id),
 				);
 				setSelectedItem(null);
 			} else {
@@ -122,7 +122,8 @@ export default function Dashboard() {
 				<div className="w-full grid place-content-center mt-5">
 					<input
 						placeholder="Search..."
-						className="border-2 lg:w-[500px] w-[400px] px-2 py-2 outline-[#F1C644] font-light"></input>
+						className="border-2 lg:w-[500px] w-[400px] px-2 py-2 outline-[#F1C644] font-light"
+					></input>
 				</div>
 
 				<div className="flex flex-row text-center mt-10 gap-8 w-full justify-between">
@@ -131,14 +132,16 @@ export default function Dashboard() {
 						<Button
 							colorScheme="yellow"
 							color="white"
-							className="shadow-sm">
+							className="shadow-sm"
+						>
 							Add New
 						</Button>
 					</section>
 					<Button
 						colorScheme="yellow"
 						color="white"
-						className="shadow-sm">
+						className="shadow-sm"
+					>
 						Filter
 					</Button>
 				</div>
@@ -150,7 +153,8 @@ export default function Dashboard() {
 								"& tr > *:not(:first-type-of)": {
 									textAlign: "center",
 								},
-							}}>
+							}}
+						>
 							<TableHead>
 								<TableRow>
 									<TableCell>ID</TableCell>
@@ -182,14 +186,16 @@ export default function Dashboard() {
 													className=" ml-5"
 													onClick={() =>
 														SelectItem(row)
-													}>
+													}
+												>
 													<svg
 														xmlns="http://www.w3.org/2000/svg"
 														fill="none"
 														viewBox="0 0 24 24"
 														stroke-width="1.5"
 														stroke="currentColor"
-														className="w-6 h-6">
+														className="w-6 h-6"
+													>
 														<path
 															stroke-linecap="round"
 															stroke-linejoin="round"
@@ -211,14 +217,16 @@ export default function Dashboard() {
 								<button
 									onClick={handleClose}
 									title="close"
-									className="group cursor-pointer outline-none hover:rotate-90 duration-300">
+									className="group cursor-pointer outline-none hover:rotate-90 duration-300"
+								>
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										fill="none"
 										viewBox="0 0 24 24"
 										stroke-width="1.5"
 										stroke="currentColor"
-										className="w-6 h-6 fill-slate-100">
+										className="w-6 h-6 fill-slate-100"
+									>
 										<path
 											stroke-linecap="round"
 											stroke-linejoin="round"
@@ -252,18 +260,21 @@ export default function Dashboard() {
 								<div>
 									<button
 										onClick={DeleteCircle}
-										className="inline-flex items-center px-4 py-2 bg-red-600 transition ease-in-out delay-75 hover:bg-red-700 text-white text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110">
+										className="inline-flex items-center px-4 py-2 bg-red-600 transition ease-in-out delay-75 hover:bg-red-700 text-white text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110"
+									>
 										<svg
 											stroke="currentColor"
 											viewBox="0 0 24 24"
 											fill="none"
 											className="h-5 w-5 mr-2"
-											xmlns="http://www.w3.org/2000/svg">
+											xmlns="http://www.w3.org/2000/svg"
+										>
 											<path
 												d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
 												stroke-width="2"
 												stroke-linejoin="round"
-												stroke-linecap="round"></path>
+												stroke-linecap="round"
+											></path>
 										</svg>
 										Delete
 									</button>
@@ -272,14 +283,16 @@ export default function Dashboard() {
 								<div>
 									<button
 										onClick={handleEdit}
-										className="inline-flex items-center px-4 py-2 bg-black transition ease-in-out delay-75 hover:bg-yellow-300 text-white text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110">
+										className="inline-flex items-center px-4 py-2 bg-black transition ease-in-out delay-75 hover:bg-yellow-300 text-white text-sm font-medium rounded-md hover:-translate-y-1 hover:scale-110"
+									>
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
 											fill="none"
 											viewBox="0 0 24 24"
 											stroke-width="1.5"
 											stroke="currentColor"
-											className="w-6 h-6">
+											className="w-6 h-6"
+										>
 											<path
 												stroke-linecap="round"
 												stroke-linejoin="round"

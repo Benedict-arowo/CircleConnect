@@ -84,7 +84,7 @@ const ListProjects = ({
 					const totalRating = rating.reduce(
 						(accumulator, currentValue) =>
 							accumulator + currentValue.rating,
-						0
+						0,
 					);
 					averageRating = totalRating / rating.length;
 				} else averageRating = 0;
@@ -94,7 +94,8 @@ const ListProjects = ({
 				<a href={`/project/${id}`} className="cursor-pointer">
 					<article
 						key={id}
-						className="w-[400px] relative h-fit border flex-shrink-0 border-gray-300 pt-4 pb-2 flex flex-col gap-4 px-4 snap-normal snap-center">
+						className="w-[400px] relative h-fit border flex-shrink-0 border-gray-300 pt-4 pb-2 flex flex-col gap-4 px-4 snap-normal snap-center"
+					>
 						<h3 className="text-2xl text-center font-semibold cursor-pointer">
 							<a href={`/project/${id}`}>{name}</a>
 						</h3>
@@ -113,7 +114,8 @@ const ListProjects = ({
 											viewBox="0 0 24 24"
 											strokeWidth={1.5}
 											stroke="currentColor"
-											className="w-6 h-6 absolute top-4 right-2 cursor-pointer">
+											className="w-6 h-6 absolute top-4 right-2 cursor-pointer"
+										>
 											<path
 												strokeLinecap="round"
 												strokeLinejoin="round"
@@ -160,7 +162,8 @@ const ListProjects = ({
 																	successFunc:
 																		fetchCircle,
 																})
-															}>
+															}
+														>
 															Unpin
 														</li>
 													)}
@@ -189,7 +192,8 @@ const ListProjects = ({
 																	successFunc:
 																		fetchCircle,
 																})
-															}>
+															}
+														>
 															Pin
 														</li>
 													)}
@@ -224,7 +228,8 @@ const ListProjects = ({
 														});
 														onOpen();
 													}}
-													className="cursor-pointer">
+													className="cursor-pointer"
+												>
 													Remove
 												</li>
 												{createdBy.id ===
@@ -253,14 +258,15 @@ const ListProjects = ({
 																							"Successfully deleted the project.",
 																						successFunc:
 																							fetchCircle,
-																					}
+																					},
 																				),
 																	};
-																}
+																},
 															);
 															onOpen();
 														}}
-														className="cursor-pointer">
+														className="cursor-pointer"
+													>
 														Delete
 													</li>
 												)}
@@ -280,7 +286,8 @@ const ListProjects = ({
 									return (
 										<span
 											key={tag}
-											className="bg-red-500 uppercase text-white px-2 py-1 text-sm font-light cursor-pointer rounded-sm">
+											className="bg-red-500 uppercase text-white px-2 py-1 text-sm font-light cursor-pointer rounded-sm"
+										>
 											{tag}
 										</span>
 									);
@@ -312,7 +319,7 @@ const ListProjects = ({
 					</article>
 				</a>
 			);
-		}
+		},
 	);
 };
 

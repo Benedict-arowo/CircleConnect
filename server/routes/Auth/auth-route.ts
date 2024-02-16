@@ -23,7 +23,7 @@ router.get(
 		});
 
 		res.status(StatusCodes.OK).json(user);
-	})
+	}),
 );
 
 /**

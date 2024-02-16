@@ -46,7 +46,7 @@ export const createReview = async (req: Req, res: Response) => {
 	if (!content)
 		throw new CustomError(
 			"Content must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	const reviewExists = await prisma.project.findUnique({
@@ -76,7 +76,7 @@ export const editReview = async (req: Req, res: Response) => {
 	if (!content)
 		throw new CustomError(
 			"Content must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	const review = await prisma.projectReview.findUnique({
@@ -89,7 +89,7 @@ export const editReview = async (req: Req, res: Response) => {
 	if (review.userId !== req.user.id)
 		throw new CustomError(
 			"You do not have permission to modify this review.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	const updatedReview = await prisma.projectReview.update({
@@ -126,7 +126,7 @@ export const deleteReview = async (req: Req, res: Response) => {
 	if (review.userId !== req.user.id)
 		throw new CustomError(
 			"You do not have permission to delete this review.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	await prisma.projectReview.delete({

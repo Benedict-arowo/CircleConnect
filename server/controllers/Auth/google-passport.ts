@@ -40,7 +40,7 @@ passport.use(
 			accessToken: string,
 			refreshToken: string,
 			profile: User,
-			done: Function
+			done: Function,
 		) => {
 			// This is where you handle the authenticated user, e.g., store them in your database.
 			// You can customize this part as per your application's requirements.
@@ -85,8 +85,8 @@ passport.use(
 
 			// Log in the new user
 			return done(null, newUser);
-		}
-	)
+		},
+	),
 );
 
 // (async () => {

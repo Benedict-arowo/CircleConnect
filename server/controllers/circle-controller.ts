@@ -25,7 +25,7 @@ export const getCircle = async (req: Req, res: Response) => {
 	if (!id)
 		throw new CustomError(
 			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 	const Circle = await getCircleService(id);
 	res.status(StatusCodes.OK).json({ success: true, data: Circle });
@@ -36,7 +36,7 @@ export const createCircle = async (req: Req, res: Response) => {
 	if (!(req.user.role.canCreateCircle || req.user.role.isAdmin))
 		throw new CustomError(
 			"You do not have permission to create circles.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	const createdCircle = await CreateCircleService({ body: req.body });
@@ -56,13 +56,13 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 	if (!circleId)
 		throw new CustomError(
 			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	if (!(userRole.canJoinCircle || userRole.isAdmin))
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	const { notifications, circle } = await RequestToJoinCircleService({
@@ -89,13 +89,13 @@ export const removeCircleRequest = async (req: Req, res: Response) => {
 	if (!circleId)
 		throw new CustomError(
 			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	if (!userRole.canLeaveCircle)
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	const circle = await RemoveCircleRequestService({
@@ -116,7 +116,7 @@ export const leaveCircle = async (req: Req, res: Response) => {
 	if (!(userRole.canLeaveCircle || userRole.isAdmin))
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	const { notifications } = await LeaveCircleService({
@@ -148,13 +148,13 @@ export const editCircle = async (req: Req, res: Response) => {
 	)
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	if (!id)
 		throw new CustomError(
 			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	const { notifications, circle } = await EditCircleService({
@@ -189,7 +189,7 @@ export const deleteCircle = async (req: Req, res: Response) => {
 	)
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	const { notifications } = await DeleteCircleService({

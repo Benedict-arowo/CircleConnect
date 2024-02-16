@@ -9,7 +9,7 @@ export interface Req extends Request {
 }
 
 const socketMiddleware: (
-	io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+	io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
 ) => RequestHandler<ParamsDictionary, any, Record<string, any>> =
 	(io) => (req, res, next) => {
 		(req as Req).io = io;

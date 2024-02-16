@@ -23,7 +23,7 @@ export const createRole = async (req: Req, res: Response) => {
 		if (validatePermission(permissions) instanceof Error) {
 			throw new CustomError(
 				"Invalid permissions provided.",
-				StatusCodes.BAD_REQUEST
+				StatusCodes.BAD_REQUEST,
 			);
 		}
 
@@ -31,7 +31,7 @@ export const createRole = async (req: Req, res: Response) => {
 	if (!(userRole.isAdmin || userRole.canManageRoles))
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	const newRole = await CreateRoleService({
@@ -48,13 +48,13 @@ export const getRoles = async (req: Req, res: Response) => {
 	if (isNaN(parseInt(limit)))
 		throw new CustomError(
 			"Invalid limit provided",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	if (Number(limit) > 25 || Number(limit) < 1)
 		throw new CustomError(
 			"Invalid limit, must be between 1 and 25",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	const roles = await prisma.role.findMany({
@@ -89,7 +89,7 @@ export const editRole = async (req: Req, res: Response) => {
 	if (!(userRole.isAdmin || userRole.canManageRoles))
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	// Validates the permissions given by the user
@@ -97,7 +97,7 @@ export const editRole = async (req: Req, res: Response) => {
 		if (validatePermission(permissions) instanceof Error) {
 			throw new CustomError(
 				"Invalid permissions provided.",
-				StatusCodes.BAD_REQUEST
+				StatusCodes.BAD_REQUEST,
 			);
 		}
 
@@ -121,7 +121,7 @@ export const deleteRole = async (req: Req, res: Response) => {
 	if (!(userRole.isAdmin || userRole.canManageRoles))
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
+			StatusCodes.UNAUTHORIZED,
 		);
 
 	await DeleteRoleService(id);

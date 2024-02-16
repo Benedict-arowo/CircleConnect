@@ -17,6 +17,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 				</SocketContext>
 			</BrowserRouter>
 		</ChakraProvider>
-	</Provider>
+	</Provider>,
 	// </React.StrictMode>
 );

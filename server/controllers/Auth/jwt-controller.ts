@@ -22,7 +22,7 @@ export const loginJWT = async (req: Req, res: Response) => {
 	if (!email || !password) {
 		throw new CustomError(
 			"Email, and password must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 	}
 	const User = await prisma.user.findUnique({
@@ -36,7 +36,7 @@ export const loginJWT = async (req: Req, res: Response) => {
 	if (!User.password)
 		throw new CustomError(
 			"Try using google or github to sign into this account.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 
 	let passwordIsValid = await verifyHash(User.password, password);
@@ -47,7 +47,7 @@ export const loginJWT = async (req: Req, res: Response) => {
 	if (passwordIsValid) {
 		const token = await tokenGenerator(
 			{ id: User.id },
-			ACCESS_TOKEN_VALIDITY_TIME
+			ACCESS_TOKEN_VALIDITY_TIME,
 		);
 		console.log(`TOKEN: ${token}`);
 		return res
@@ -64,7 +64,7 @@ export const loginJWT = async (req: Req, res: Response) => {
 	} else {
 		throw new CustomError(
 			"Invalid password provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 	}
 };
@@ -74,7 +74,7 @@ export const registerJWT = async (req: Req, res: Response) => {
 	if (!email || !password || !first_name || !last_name) {
 		throw new CustomError(
 			"Email, password, last name, and first name must be provided.",
-			StatusCodes.BAD_REQUEST
+			StatusCodes.BAD_REQUEST,
 		);
 	}
 
@@ -111,7 +111,7 @@ export const registerJWT = async (req: Req, res: Response) => {
 			if (e.code === "P2002") {
 				throw new CustomError(
 					"A user with this email already exists!",
-					StatusCodes.BAD_REQUEST
+					StatusCodes.BAD_REQUEST,
 				);
 			}
 		} else {
