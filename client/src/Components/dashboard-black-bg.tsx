@@ -1,4 +1,4 @@
-import Typography from "@mui/joy/Typography";
+import { Typography } from "@mui/material";
 import Logo from "../Components/Logo";
 import { FaAngleRight } from "react-icons/fa";
 import { GiPlainCircle } from "react-icons/gi";
@@ -139,7 +139,7 @@ const DashboardBlackBg: React.FC<DashboardBlackBgProps> = ({ image }) => {
 
 					<div>
 						<Typography
-							level="h4"
+							variant="h6"
 							component="h2"
 							sx={{ color: "white" }}
 						>
