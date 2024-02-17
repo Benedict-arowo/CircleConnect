@@ -87,13 +87,13 @@ export default function Dashboard() {
 				`http://localhost:8000/circle/${selectedItem.id}`,
 				{
 					method: "DELETE",
-				},
+				}
 			);
 
 			if (res.ok) {
 				console.log("circle deletd successfully");
 				setData((prevData) =>
-					prevData.filter((item) => item.id !== selectedItem.id),
+					prevData.filter((item) => item.id !== selectedItem.id)
 				);
 				setSelectedItem(null);
 			} else {
