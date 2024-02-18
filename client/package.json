@@ -14,10 +14,7 @@
 		"@chakra-ui/react-types": "^2.0.7",
 		"@emotion/react": "^11.11.3",
 		"@emotion/styled": "^11.11.0",
-<<<<<<< HEAD
-=======
 		"@mui/joy": "^5.0.0-beta.28",
->>>>>>> 6411e8687f55f74ef7c744c5021ada8f64dd0748
 		"@mui/material": "^5.15.10",
 		"@reduxjs/toolkit": "^1.9.7",
 		"framer-motion": "^10.16.4",
