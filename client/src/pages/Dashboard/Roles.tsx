@@ -9,8 +9,8 @@ import {
 } from "@mui/material";
 import { Button } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { SERVER_URL } from "../../../config";
 import { UserTypeClean } from "../../types";
+import UseFetch from "../../Components/Fetch";
 
 type Role = {
 	id: string;
@@ -38,14 +38,28 @@ type Role = {
 const Roles = () => {
 	const [data, setData] = useState<Role[]>([]);
 
+	const fetchRoles = async () => {
+		const { data, response } = await UseFetch({
+			url: "role",
+			options: {
+				method: "GET",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok)
+			throw new Error(
+				data ? data.message : "Error trying to communicate with server."
+			);
+
+		setData(data.data);
+	};
+
 	useEffect(() => {
-		fetch(`${SERVER_URL}/role`)
-			.then((res) => res.json())
-			.then((data) => setData(data.data))
-			.catch((err) => console.log(err));
+		fetchRoles();
 	}, []);
 
-	console.log(data);
 	return (
 		<div className="flex-1 w-full px-6 bg-gray-100">
 			<div className="w-full grid place-content-center mt-5">

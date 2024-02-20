@@ -13,6 +13,7 @@ import {
 import { Button } from "@chakra-ui/react";
 import ChildModal from "../../Components/ChildModal";
 import { useEffect, useState } from "react";
+import UseFetch from "../../Components/Fetch";
 
 type UserType = {
 	id: string;
@@ -47,80 +48,79 @@ export default function Dashboard() {
 		handleOpen();
 	};
 
+	const fetchCircles = async () => {
+		const { data, response } = await UseFetch({
+			url: "circle",
+			options: {
+				method: "GET",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok)
+			throw new Error(
+				data ? data.message : "Error trying to communicate with server."
+			);
+
+		setData(data.data);
+	};
+
 	// Get Cirlce
 	useEffect(() => {
-		const Data = async () => {
-			try {
-				const response = await fetch("http://localhost:8000/circle", {
-					method: "GET",
-				});
-
-				if (!response.ok) {
-					throw new Error("Failed to fetch data");
-				}
-				const apiData = await response.json();
-				console.log(apiData);
-				setData(apiData.data);
-			} catch (error) {
-				console.error("Error fetching data:", error);
-			}
-		};
-
-		Data();
+		(async () => await fetchCircles())();
 	}, []);
 
 	//Delete circle
 	const DeleteCircle = async () => {
 		if (!selectedItem) return;
 
-		try {
-			const res = await fetch(
-				`http://localhost:8000/circle/${selectedItem.id}`,
-				{
-					method: "DELETE",
-				}
+		const { data, response } = await UseFetch({
+			url: `circle/${selectedItem.id}`,
+			options: {
+				method: "DELETE",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok)
+			throw new Error(
+				data ? data.message : "Error trying to communicate with server."
 			);
 
-			if (res.ok) {
-				console.log("circle deletd successfully");
-				setData((prevData) =>
-					prevData.filter((item) => item.id !== selectedItem.id)
-				);
-				setSelectedItem(null);
-			} else {
-				console.error("Failed to delete item");
-			}
-		} catch (error) {
-			console.error(error);
-		}
+		console.log("circle deleted successfully");
+		// Removes the deleted item from the list of items stored locally
+		setData((prevData) =>
+			prevData.filter((item) => item.id !== selectedItem.id)
+		);
+		setSelectedItem(null);
 	};
 
-	//Add cirlce
-
 	const addCircle = async () => {
-		try {
-			const response = await fetch("http://localhost:8000/circle", {
+		const { data, response } = await UseFetch({
+			url: "circle",
+			options: {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
+				// TODO: body information needs to be set properly, this setup is just a demo.
+				body: {
 					name: "New circle",
 					id: Number,
 					description: "Description",
-				}),
-			});
+				},
+				returnResponse: true,
+				useServerUrl: true,
+			},
+		});
 
-			if (response.ok) {
-				const newCircle = await response.json();
-				setData((prevData) => [...prevData, newCircle]);
-				console.log("New circle added successfully");
-			} else {
-				console.error("Failed to add new circle");
-			}
-		} catch (error) {
-			console.error("Error adding new circle:", error);
-		}
+		if (!response.ok)
+			throw new Error(
+				data ? data.message : "Error trying to communicate with server."
+			);
+
+		console.log("New circle added successfully");
+		// Adds the new circle to the list of circles.
+		setData((prevData) => [...prevData, data.data]);
 	};
 
 	// Update circle
@@ -139,33 +139,28 @@ export default function Dashboard() {
 			_count: selectedItem._count,
 		};
 
-		try {
-			const res = await fetch(
-				`http://localhost:8000/circle/${selectedItem.id}`,
-				{
-					method: "PATCH", // or "PATCH" depending on your backend API
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(updatedData), // Send the updated data in the body
-				}
+		const { data, response } = await UseFetch({
+			url: `circle/${selectedItem.id}`,
+			options: {
+				method: "PATCH",
+				body: updatedData,
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok)
+			throw new Error(
+				data ? data.message : "Error trying to communicate with server."
 			);
 
-			if (res.ok) {
-				console.log("Circle updated successfully");
-				// Update the data state with the updated item
-				setData((prevData) =>
-					prevData.map((item) =>
-						item.id === selectedItem.id ? updatedData : item
-					)
-				);
-				setSelectedItem(null);
-			} else {
-				console.error("Failed to update item");
-			}
-		} catch (error) {
-			console.error(error);
-		}
+		console.log("Circle updated successfully");
+		// Update the data state with the updated item
+		setData((prevData) =>
+			prevData.map((item) =>
+				item.id === selectedItem.id ? updatedData : item
+			)
+		);
 	};
 
 	const handleOpen = () => {

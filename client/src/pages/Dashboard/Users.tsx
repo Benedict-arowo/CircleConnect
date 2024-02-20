@@ -14,6 +14,7 @@ import { Button } from "@chakra-ui/react";
 // import { TfiLocationArrow } from "react-icons/tfi";
 // import { AiOutlineProject } from "react-icons/ai";
 import { useEffect, useState } from "react";
+import UseFetch from "../../Components/Fetch";
 // import { Link } from "react-router-dom";
 
 interface createData {
@@ -26,26 +27,28 @@ interface createData {
 export default function Users() {
 	const [data, setData] = useState<createData[]>([]);
 
+	const fetchUsers = async () => {
+		const { data, response } = await UseFetch({
+			url: "users",
+			options: {
+				method: "GET",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok)
+			throw new Error(
+				data ? data.message : "Error trying to communicate with server."
+			);
+
+		setData(data.data);
+	};
+
 	useEffect(() => {
-		const Data = async () => {
-			try {
-				const response = await fetch("http://localhost:8000/circle", {
-					method: "GET",
-				});
-
-				if (!response.ok) {
-					throw new Error("Failed to fetch data");
-				}
-				const apiData = await response.json();
-				console.log(apiData);
-				setData(apiData.data);
-			} catch (error) {
-				console.error("Error fetching data:", error);
-			}
-		};
-
-		Data();
+		(async () => fetchUsers())();
 	}, []);
+
 	return (
 		<div className="flex-1 w-full px-6 bg-gray-100">
 			<div className="w-full grid place-content-center mt-5">
