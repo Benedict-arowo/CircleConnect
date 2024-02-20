@@ -9,7 +9,7 @@ import profilePicture from "../assets/Image-32.png";
 const DashboardSidebar = () => {
 	const baseStyle =
 		"flex flex-row gap-4 w-full py-1 px-2 h-fit items-center text-white cursor-pointer";
-	const activeStyle = "bg-[#252525]";
+	const activeStyle = "bg-[#252525] text-[#F1C644]";
 
 	const getStyle = (isActive: boolean) =>
 		isActive ? `${baseStyle} ${activeStyle}` : baseStyle;
@@ -36,7 +36,7 @@ const DashboardSidebar = () => {
 							viewBox="0 0 24 24"
 							strokeWidth={1.5}
 							stroke="currentColor"
-							className="w-8 h-8"
+							className="w-8 h-8 text-inherit"
 						>
 							<path
 								strokeLinecap="round"
@@ -59,7 +59,7 @@ const DashboardSidebar = () => {
 							viewBox="0 0 24 24"
 							strokeWidth={1.5}
 							stroke="currentColor"
-							className="w-8 h-8 text-[#F1C644]"
+							className="w-8 h-8"
 						>
 							<path
 								strokeLinecap="round"
@@ -73,9 +73,7 @@ const DashboardSidebar = () => {
 							/>
 						</svg>
 
-						<p className="font-light text-[#F1C644] text-xl">
-							Circle
-						</p>
+						<p className="font-light text-xl">Circle</p>
 					</NavLink>
 
 					<NavLink
