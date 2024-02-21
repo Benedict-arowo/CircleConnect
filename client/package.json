@@ -18,6 +18,8 @@
 		"@mui/material": "^5.15.10",
 		"@reduxjs/toolkit": "^1.9.7",
 		"framer-motion": "^10.16.4",
+		"primeicons": "^6.0.1",
+		"primereact": "^10.5.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-github-login-button": "^1.0.1",
