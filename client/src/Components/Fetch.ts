@@ -22,16 +22,21 @@ const UseFetch = async ({ url, options }: FetchParams) => {
 					"Content-Type": "application/json",
 				},
 				body: options?.body ? JSON.stringify(options.body) : null,
-			},
+			}
 		);
 
+		if (response.status === 204) {
+			if (options.returnResponse) return { data: {}, response };
+			else return {};
+		}
+		// If the response is not 204, parse the response body as JSON
 		const data = await response.json();
 
 		if (!response.ok && options.handleError) {
 			if (data.message) throw new Error(data.message);
 			else
 				throw new Error(
-					"Internal Server Error.... Try contacting an administrator.",
+					"Internal Server Error.... Try contacting an administrator."
 				);
 		}
 
