@@ -174,7 +174,7 @@ const Roles = () => {
 		return (
 			<div className="flex flex-col gap-1">
 				{permList.map((perm) => {
-					function convertPascalToNormal(pascalCase) {
+					function convertPascalToNormal(pascalCase: string) {
 						// Add a space before each capital letter, except for the first one
 						const normalCase = pascalCase.replace(
 							/([A-Z])/g,
@@ -569,9 +569,13 @@ const Roles = () => {
 									}`}
 								>
 									{<DisplayUsers users={editData.users} />}
-									<p className="text-xs text-center hover:underline font-light mt-3">
+									<a
+										href="/"
+										className="text-xs text-center hover:underline font-light mt-3"
+									>
+										{/* TODO: User page that would have a Role Filter to the selected role. */}
 										View more..
-									</p>
+									</a>
 								</div>
 							</section>
 						)}
