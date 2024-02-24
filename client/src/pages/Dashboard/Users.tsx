@@ -7,22 +7,21 @@ import {
 	TableRow,
 	Paper,
 } from "@mui/material";
-import { Button } from "@chakra-ui/react";
-// import { AiOutlineHome } from "react-icons/ai";
-// import { TbCircleRectangle } from "react-icons/tb";
-// import { FaRegCircleUser } from "react-icons/fa6";
-// import { TfiLocationArrow } from "react-icons/tfi";
-// import { AiOutlineProject } from "react-icons/ai";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import UseFetch from "../../Components/Fetch";
 import { UserTypeClean } from "../../types";
 import { Avatar } from "primereact/avatar";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { Calendar } from "primereact/calendar";
-// import { Link } from "react-router-dom";
+import { Toast } from "primereact/toast";
+import { Dropdown } from "primereact/dropdown";
+import { FileUpload } from "primereact/fileupload";
+import { Password } from "primereact/password";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Role } from "./Roles";
+import { CascadeSelect } from "primereact/cascadeselect";
 
-interface createData {
+interface userData {
 	id: string;
 	email: string;
 	profile_picture: null;
@@ -46,10 +45,111 @@ interface createData {
 	joined: Date;
 	createdAt: Date;
 }
+
+interface editUserData {
+	id: string;
+	email: string;
+	profile_picture: null;
+	first_name: string;
+	password?: string;
+	projects: [
+		{
+			id: string;
+			circleId: number;
+			name: string;
+		}[]
+	];
+	role: {
+		id: string;
+		name: {
+			role: string;
+			code: string;
+		};
+	};
+	track: {
+		name: string;
+		code: string;
+	};
+	school: {
+		name: string;
+		code: string;
+	};
+	coleadOf: null | UserTypeClean;
+	leadOf: null | UserTypeClean;
+	memberOf: null | UserTypeClean;
+	joined: Date;
+	createdAt: Date;
+}
+
+const trackList = [
+	{ name: "Frontend", code: "FRONTEND" },
+	{ name: "Backend", code: "BACKEND" },
+	{ name: "Cloud", code: "CLOUD" },
+];
+
+type searchType = {
+	content?: string;
+	mode?: {
+		name: "Role" | "School" | "Track";
+		code: "ROLE" | "SCHOOL" | "TRACK";
+	};
+};
+
+const SchoolList = [{ name: "ENGINEERING", code: "ENGINEERING" }];
+const ModeList = [
+	{ name: "None", code: undefined },
+	{ name: "Role", code: "ROLE" },
+	{ name: "School", code: "SCHOOL" },
+	{ name: "Track", code: "TRACK" },
+];
+const SortOptions = [
+	{
+		name: "Roles",
+		code: "ROLE",
+		options: [
+			{
+				cname: "R-Ascending",
+				code: "ascending-role",
+			},
+			{
+				cname: "R-Decending",
+				code: "decending-role",
+			},
+		],
+	},
+	{
+		name: "Created at",
+		code: "CREATED_AT",
+		options: [
+			{
+				cname: "CT-Ascending",
+				code: "ascending-created_at",
+			},
+			{
+				cname: "CT-Decending",
+				code: "aecending-created_at",
+			},
+		],
+	},
+];
+
+type sortedMethod = {
+	cname: string;
+	code: string;
+};
+
 export default function Users() {
-	const [data, setData] = useState<createData[]>([]);
+	const [data, setData] = useState<userData[]>([]);
 	const [editUserDialog, setEditUserDialog] = useState(false);
-	const [editUserData, setEditUserData] = useState<createData>({});
+	const [editUserData, setEditUserData] = useState<editUserData | null>(null);
+	const [userRolesData, setUserRolesData] = useState<Role[]>([]);
+	const [search, setSearch] = useState<searchType>({
+		content: undefined,
+		mode: undefined,
+	});
+	const toast = useRef<Toast | null>(null);
+	const [sortedMethod, setSortedMethod] = useState<sortedMethod>(undefined);
+	const [displayedData, setDisplayedData] = useState<userData[]>([]);
 
 	const fetchUsers = async () => {
 		const { data, response } = await UseFetch({
@@ -66,50 +166,273 @@ export default function Users() {
 				data ? data.message : "Error trying to communicate with server."
 			);
 
-		console.log(data.data);
 		setData(data.data);
 	};
 
+	const fetchRoles = async () => {
+		const { data, response } = await UseFetch({
+			url: "role",
+			options: {
+				method: "GET",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok)
+			throw new Error(
+				data ? data.message : "Error trying to communicate with server."
+			);
+
+		setUserRolesData(data.data);
+	};
+
+	const getUserData = () => {
+		let newData: userData[];
+		if (sortedMethod) {
+			const method = sortedMethod.code.split("-")[0];
+			const item = sortedMethod.code.split("-")[1];
+			newData = data.sort((a, b) => {
+				if (method === "ascending") {
+					if (item === "role")
+						return a.role.name.localeCompare(b.role.name);
+					else if (item === "created_at") {
+						return (
+							new Date(a.createdAt).getTime() -
+							new Date(b.createdAt).getTime()
+						);
+					}
+				} else {
+					if (item === "role")
+						return b.role.name.localeCompare(a.role.name);
+					else if (item === "created_at")
+						return (
+							new Date(b.createdAt).getTime() -
+							new Date(a.createdAt).getTime()
+						);
+				}
+				return 0; // Add a default return value
+			});
+		} else newData = data;
+
+		if (search.content) {
+			newData = data.filter((user) => {
+				if (search.mode && search.mode.code === "ROLE")
+					return user.role.name
+						.toLowerCase()
+						.includes((search.content || "").toLowerCase());
+				else if (search.mode && search.mode.code === "SCHOOL")
+					return user.school
+						.toLowerCase()
+						.includes((search.content || "").toLowerCase());
+				else if (search.mode && search.mode.code === "TRACK")
+					return user.track
+						.toLowerCase()
+						.includes((search.content || "").toLowerCase());
+				else
+					return (
+						user.email
+							.toLowerCase()
+							.includes((search.content || "").toLowerCase()) ||
+						user.first_name
+							.toLowerCase()
+							.includes((search.content || "").toLowerCase()) ||
+						user.id
+							.toLowerCase()
+							.includes((search.content || "").toLowerCase())
+					);
+			});
+		}
+
+		return newData;
+	};
+
 	useEffect(() => {
-		(async () => fetchUsers())();
+		(async () => {
+			await fetchUsers();
+			await fetchRoles();
+		})();
 	}, []);
 
 	const manageUser = (userId: string) => {
 		const user = data.find((user) => user.id === userId);
 		if (!user) throw new Error("User not found.");
+		console.log(user);
+		setEditUserData(() => ({
+			...user,
+			track: trackList.find(
+				(track) => track.code === user.track.toUpperCase()
+			) || { name: "", code: "" }, // Assign a default value if track is not found
+			role: {
+				...user.role,
+				name: {
+					role: user.role.name,
+					code: user.role.name.toUpperCase(),
+				},
+			},
+			school: { name: user.school, code: user.school.toUpperCase() },
+		}));
 
-		setEditUserData(user);
 		setEditUserDialog(true);
-		console.log(userId);
 	};
+
+	const EditUser = async (userDetails: editUserData) => {
+		if (!userDetails) throw new Error("User not found.");
+		toast.current?.show({
+			severity: "info",
+			summary: "Loading...",
+			detail: "Saving changes...",
+			life: 3000,
+		});
+		const { data, response } = await UseFetch({
+			url: `user/${userDetails.id}`,
+			options: {
+				method: "PATCH",
+				useServerUrl: true,
+				returnResponse: true,
+				body: userDetails,
+			},
+		});
+
+		if (!response.ok) {
+			return toast.current?.show({
+				severity: "error",
+				summary: "Oops...",
+				detail: data
+					? data.message
+					: "Error trying to communicate with server.",
+				life: 3000,
+			});
+		}
+
+		toast.current?.show({
+			severity: "success",
+			summary: "Success!!!",
+			detail: "Successfully saved changes...",
+			life: 3000,
+		});
+
+		setEditUserDialog(false);
+		fetchUsers();
+	};
+
+	const DeleteUser = async (userId: string) => {
+		if (!userId) throw new Error("User not found.");
+
+		toast.current?.show({
+			severity: "info",
+			summary: "Loading...",
+			detail: "Saving changes...",
+			life: 3000,
+		});
+
+		const { data, response } = await UseFetch({
+			url: `user/${userId}`,
+			options: {
+				method: "DELETE",
+				useServerUrl: true,
+				returnResponse: true,
+			},
+		});
+
+		if (!response.ok) {
+			return toast.current?.show({
+				severity: "error",
+				summary: "Oops...",
+				detail: data
+					? data.message
+					: "Error trying to communicate with server.",
+				life: 3000,
+			});
+		}
+
+		toast.current?.show({
+			severity: "success",
+			summary: "Success!!!",
+			detail: "Successfully deleted user...",
+			life: 3000,
+		});
+
+		setEditUserDialog(false);
+		fetchUsers();
+	};
+
+	// useEffect(() => {
+	// 	getUserData();
+	// }, [search, sortedMethod]);
 
 	return (
 		<div className="flex-1 w-full px-6 bg-gray-100">
-			<div className="w-full grid place-content-center mt-5">
-				<input
-					placeholder="Search..."
-					className="border-2 lg:w-[500px] w-[400px] px-2 py-2 outline-[#F1C644] font-light"
-				></input>
+			<Toast ref={toast} />
+			<ConfirmDialog />
+
+			<div className="w-full flex justify-center gap-2 mt-5">
+				<span className="p-input-icon-left max-w-[400px] w-full">
+					<i className="pi pi-search" />
+					<InputText
+						placeholder="Search"
+						value={search.content}
+						onChange={(e) =>
+							setSearch((prev) => ({
+								...prev,
+								content: e.target.value,
+							}))
+						}
+						className="w-full h-full"
+					/>
+				</span>
+				<Dropdown
+					value={search.mode}
+					style={{ width: "150px" }}
+					onChange={(e) =>
+						setSearch((prev) => {
+							return {
+								...prev,
+								mode: e.target.value,
+							};
+						})
+					}
+					options={ModeList}
+					optionLabel="name"
+					placeholder="Select a Search Mode"
+					className="w-full md:w-14rem"
+					id="user-track"
+				/>
 			</div>
 
 			<div className="flex flex-row text-center mt-10 gap-8 w-full justify-between">
 				<section className="flex flex-row items-center gap-8">
-					<h1 className="text-4xl font-bold">Members</h1>
-					<Button
-						colorScheme="yellow"
-						color="white"
-						className="shadow-sm"
-					>
-						Add New
-					</Button>
+					<h1 className="text-4xl font-bold">
+						Members ({data.length})
+					</h1>
+					<i
+						// onClick={() => setNewRoleDialog(true)}
+						title="Create a new role."
+						className="pi pi-plus cursor-pointer shadow-lg hover:scale-105 duration-200 bg-yellow-400 text-white px-2 py-2 rounded-full"
+					></i>
 				</section>
-				<Button
-					colorScheme="yellow"
-					color="white"
-					className="shadow-sm"
-				>
-					Filter
-				</Button>
+				<section>
+					<CascadeSelect
+						value={sortedMethod}
+						onChange={(e) => setSortedMethod(e.value)}
+						options={SortOptions}
+						optionLabel="cname"
+						optionGroupLabel="name"
+						optionGroupChildren={["options"]}
+						className="w-full md:w-14rem"
+						breakpoint="767px"
+						placeholder="Select a Sort method"
+						style={{ width: "fit-content" }}
+					/>
+					{sortedMethod && (
+						<p
+							className="text-xs text-neutral-400 text-right mt-1 cursor-pointer"
+							onClick={() => setSortedMethod(() => null)}
+						>
+							clear sort filtering
+						</p>
+					)}
+				</section>
 			</div>
 
 			<div className="mt-4 border-t-2 w-full">
@@ -125,31 +448,63 @@ export default function Users() {
 							<TableRow>
 								<TableCell>#</TableCell>
 								<TableCell>Name</TableCell>
-								<TableCell>Role</TableCell>
-								<TableCell>School</TableCell>
-								<TableCell>Track</TableCell>
+								<TableCell
+									style={{
+										color:
+											search.mode &&
+											search.mode.code === "ROLE"
+												? "blue"
+												: "",
+									}}
+								>
+									Role
+								</TableCell>
+								<TableCell
+									style={{
+										color:
+											search.mode &&
+											search.mode.code === "SCHOOL"
+												? "blue"
+												: "",
+									}}
+								>
+									School
+								</TableCell>
+								<TableCell
+									style={{
+										color:
+											search.mode &&
+											search.mode.code === "TRACK"
+												? "blue"
+												: "",
+									}}
+								>
+									Track
+								</TableCell>
 								<TableCell>Project(s)</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{data.map((row) => (
+							{getUserData().map((row) => (
 								<TableRow key={row.id}>
-									<TableCell className="w-[64px]">
-										<Avatar
-											label={row.first_name[0]}
-											size="normal"
-											style={{
-												backgroundColor: "#2196F3",
-												color: "#ffffff",
-											}}
-											image={
-												row.profile_picture
-													? row.profile_picture
-													: ""
-											}
-											imageAlt="Profile picture"
-											shape="circle"
-										/>
+									<TableCell className="">
+										{row.profile_picture && (
+											<Avatar
+												image={row.profile_picture}
+												shape="square"
+												style={{ objectFit: "cover" }}
+											/>
+										)}
+										{!row.profile_picture && (
+											<Avatar
+												label={row.first_name[0]}
+												style={{
+													backgroundColor: "#9c27b0",
+													color: "#ffffff",
+												}}
+												shape="circle"
+											/>
+										)}
 									</TableCell>
 									<TableCell>{row.first_name}</TableCell>
 									<TableCell>{row.role.name}</TableCell>
@@ -191,7 +546,9 @@ export default function Users() {
 			</div>
 
 			<Dialog
-				header="Header"
+				header={`Editing User - ${
+					editUserData && editUserData.first_name
+				}`}
 				visible={editUserDialog}
 				style={{ width: "50vw" }}
 				onHide={() => setEditUserDialog(false)}
@@ -200,47 +557,275 @@ export default function Users() {
 			>
 				{editUserData && (
 					<div>
-						<InputText value={editUserData.id} disabled />
-						<InputText
-							placeholder="First Name"
-							value={editUserData.first_name}
-							disabled
-						/>
-						<InputText
-							placeholder="Role"
-							value={editUserData.role && editUserData.role.name}
-							disabled
-						/>
-						<InputText
-							placeholder="School"
-							value={editUserData.school}
-							disabled
-						/>
-						<InputText
-							placeholder="Track"
-							value={editUserData.track}
-							disabled
-						/>
-						<InputText
-							placeholder="Email"
-							value={editUserData.email}
-							disabled
-						/>
-						<InputText
-							placeholder="Joined"
-							value={editUserData.joined}
-							disabled
-						/>
-						<Calendar value={editUserData.joined} />
-						<InputText
-							placeholder="Profile Picture"
-							value={
-								editUserData.profile_picture
-									? editUserData.profile_picture
-									: ""
-							}
-							disabled
-						/>
+						<section>
+							<h3 className="font-bold text-sm">Info</h3>
+							<div className="px-2 flex flex-col gap-2 mt-2">
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="user_id"
+										className="font-bold text-sm text-center"
+									>
+										ID:
+									</label>
+
+									<InputText
+										value={editUserData.id}
+										disabled
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="user_first_name"
+										className="font-bold text-sm text-center border-1 border-zinc-300"
+									>
+										Name:
+									</label>
+									<InputText
+										placeholder="First Name"
+										value={editUserData.first_name}
+										onChange={(e) => {
+											setEditUserData((prev) => {
+												return {
+													...prev,
+													first_name: e.target.value,
+												};
+											});
+										}}
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="user_email"
+										className="font-bold text-sm text-center border-1 border-zinc-300"
+									>
+										Email:
+									</label>
+									<InputText
+										placeholder="Email"
+										value={editUserData.email}
+										onChange={(e) => {
+											setEditUserData((prev) => {
+												return {
+													...prev,
+													email: e.target.value,
+												};
+											});
+										}}
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="user_password"
+										className="font-bold text-sm text-center border-1 border-zinc-300"
+									>
+										Password:
+									</label>
+									<Password
+										placeholder="Password"
+										value={editUserData.password}
+										toggleMask
+										onChange={(e) => {
+											setEditUserData((prev) => {
+												return {
+													...prev,
+													password: e.target.value,
+												};
+											});
+										}}
+									/>
+								</span>
+							</div>
+						</section>
+
+						<section className="mt-3">
+							<div className="flex flex-row justify-between items-center">
+								<h3 className="font-bold text-sm">
+									User Details
+								</h3>
+							</div>
+							<div className="px-2 flex flex-col gap-2 mt-2">
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="user_role"
+										className="font-bold text-sm text-center border-1 border-zinc-300"
+									>
+										Role:
+									</label>
+									<Dropdown
+										value={
+											editUserData.role &&
+											editUserData.role.name
+										}
+										onChange={(e) =>
+											setEditUserData((prev) => {
+												if (!prev) return;
+												return {
+													...prev,
+													role: {
+														...prev.role,
+														name: e.target.value,
+													},
+												};
+											})
+										}
+										options={userRolesData.map((role) => {
+											return {
+												role: role.name,
+												code: role.name.toUpperCase(),
+											};
+										})}
+										optionLabel="role"
+										placeholder="Select a Role"
+										className="w-full md:w-14rem"
+										id="user-role"
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="user_track"
+										className="font-bold text-sm text-center border-1 border-zinc-300"
+									>
+										Track:
+									</label>
+									<Dropdown
+										value={editUserData.track}
+										onChange={(e) =>
+											setEditUserData((prev) => {
+												return {
+													...prev,
+													track: e.target.value,
+												};
+											})
+										}
+										options={trackList}
+										optionLabel="name"
+										placeholder="Select a Track"
+										className="w-full md:w-14rem"
+										id="user-track"
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="user_school"
+										className="font-bold text-sm text-center border-1 border-zinc-300"
+									>
+										School:
+									</label>
+									<Dropdown
+										value={
+											editUserData.school &&
+											editUserData.school
+										}
+										onChange={(e) =>
+											setEditUserData((prev) => {
+												return {
+													...prev,
+													school: e.target.value,
+												};
+											})
+										}
+										options={SchoolList}
+										optionLabel="name"
+										placeholder="Select a School"
+										className="w-full md:w-14rem"
+										id="user-school"
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="user_profile_picture"
+										className="font-bold text-sm text-center border-1 border-zinc-300"
+									>
+										Profile picture:
+									</label>
+									<FileUpload
+										mode="basic"
+										name="user-profile-picture"
+										url="/api/upload"
+										accept="image/*"
+										maxFileSize={1000000}
+										// onUpload={onUpload}
+										auto
+										chooseLabel="Browse"
+									/>
+									<InputText
+										placeholder="Profile Picture"
+										value={
+											editUserData &&
+											editUserData.profile_picture
+										}
+										onChange={(e) => {
+											setEditUserData((prev) => {
+												return {
+													...prev,
+													profile_picture:
+														e.target.value,
+												};
+											});
+										}}
+									/>
+								</span>
+							</div>
+						</section>
+
+						<footer className="flex flex-row gap-6 justify-center mt-4">
+							<button
+								onClick={() =>
+									confirmDialog({
+										message:
+											"Are you sure you want to proceed?",
+										header: "Confirmation",
+										icon: "pi pi-exclamation-triangle",
+										defaultFocus: "accept",
+										accept: () => EditUser(editUserData),
+									})
+								}
+								className="w-fit h-fit bg-green-600 px-4 py-1 text-white rounded-md font-normal"
+							>
+								Save Changes
+							</button>
+							<button
+								onClick={() => {
+									confirmDialog({
+										message:
+											"Do you want to delete this user?",
+										header: "Delete Confirmation",
+										icon: "pi pi-info-circle",
+										defaultFocus: "reject",
+										acceptClassName: "p-button-danger",
+										accept: () =>
+											DeleteUser(editUserData.id),
+									});
+								}}
+								className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
+							>
+								Delete User
+							</button>
+
+							<button
+								onClick={() => {
+									confirmDialog({
+										message:
+											"Do you want to delete this user?",
+										header: "Delete Confirmation",
+										icon: "pi pi-info-circle",
+										defaultFocus: "reject",
+										acceptClassName: "p-button-danger",
+										// accept: () =>
+										// DeleteUser(editUserData.id),
+									});
+								}}
+								className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
+							>
+								Disable User
+							</button>
+						</footer>
 					</div>
 				)}
 			</Dialog>
