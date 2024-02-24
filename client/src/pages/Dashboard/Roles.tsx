@@ -19,7 +19,7 @@ import { Toast } from "primereact/toast";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { confirmDialog } from "primereact/confirmdialog";
 
-type Role = {
+export type Role = {
 	id: string;
 	name: string;
 	canCreateCircle: boolean;
