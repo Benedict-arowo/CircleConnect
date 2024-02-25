@@ -81,6 +81,23 @@ interface editUserData {
 	createdAt: Date;
 }
 
+interface createUserData {
+	email: string;
+	profile_picture: string;
+	first_name: string;
+	last_name: string;
+	password: string;
+	role: { role: string; code: string };
+	track: {
+		name: string;
+		code: string;
+	};
+	school: {
+		name: string;
+		code: string;
+	};
+}
+
 const trackList = [
 	{ name: "Frontend", code: "FRONTEND" },
 	{ name: "Backend", code: "BACKEND" },
@@ -141,15 +158,36 @@ type sortedMethod = {
 export default function Users() {
 	const [data, setData] = useState<userData[]>([]);
 	const [editUserDialog, setEditUserDialog] = useState(false);
+	const [createUserDialog, setCreateUserDialog] = useState(false);
 	const [editUserData, setEditUserData] = useState<editUserData | null>(null);
+	const [createUserData, setCreateUserData] = useState<createUserData>({
+		email: "",
+		profile_picture: "",
+		first_name: "",
+		last_name: "",
+		password: "",
+		role: {
+			role: "",
+			code: "",
+		},
+		track: {
+			name: "",
+			code: "",
+		},
+		school: {
+			name: "",
+			code: "",
+		},
+	});
 	const [userRolesData, setUserRolesData] = useState<Role[]>([]);
 	const [search, setSearch] = useState<searchType>({
 		content: undefined,
 		mode: undefined,
 	});
 	const toast = useRef<Toast | null>(null);
-	const [sortedMethod, setSortedMethod] = useState<sortedMethod>(undefined);
-	const [displayedData, setDisplayedData] = useState<userData[]>([]);
+	const [sortedMethod, setSortedMethod] = useState<sortedMethod | undefined>(
+		undefined
+	);
 
 	const fetchUsers = async () => {
 		const { data, response } = await UseFetch({
@@ -188,11 +226,14 @@ export default function Users() {
 	};
 
 	const getUserData = () => {
-		let newData: userData[];
+		let newData: userData[] = data;
+
 		if (sortedMethod) {
 			const method = sortedMethod.code.split("-")[0];
 			const item = sortedMethod.code.split("-")[1];
-			newData = data.sort((a, b) => {
+			// sort method modifies original array, which messes with the sorting (ie: when removing the sorting, the original order is lost.)
+			// can replace with .toSorted method, but that's for Node 20+
+			newData = [...newData].sort((a, b) => {
 				if (method === "ascending") {
 					if (item === "role")
 						return a.role.name.localeCompare(b.role.name);
@@ -216,7 +257,7 @@ export default function Users() {
 		} else newData = data;
 
 		if (search.content) {
-			newData = data.filter((user) => {
+			newData = newData.filter((user) => {
 				if (search.mode && search.mode.code === "ROLE")
 					return user.role.name
 						.toLowerCase()
@@ -316,6 +357,46 @@ export default function Users() {
 		fetchUsers();
 	};
 
+	const CreateUser = async (userDetails: createUserData) => {
+		if (!userDetails) throw new Error("User not found.");
+		toast.current?.show({
+			severity: "info",
+			summary: "Loading...",
+			detail: "Creating user...",
+			life: 3000,
+		});
+		const { data, response } = await UseFetch({
+			url: `user`,
+			options: {
+				method: "POST",
+				useServerUrl: true,
+				returnResponse: true,
+				body: userDetails,
+			},
+		});
+
+		if (!response.ok) {
+			return toast.current?.show({
+				severity: "error",
+				summary: "Oops...",
+				detail: data
+					? data.message
+					: "Error trying to communicate with server.",
+				life: 3000,
+			});
+		}
+
+		toast.current?.show({
+			severity: "success",
+			summary: "Success!!!",
+			detail: "Successfully created user...",
+			life: 3000,
+		});
+
+		setCreateUserDialog(false);
+		fetchUsers();
+	};
+
 	const DeleteUser = async (userId: string) => {
 		if (!userId) throw new Error("User not found.");
 
@@ -406,7 +487,7 @@ export default function Users() {
 						Members ({data.length})
 					</h1>
 					<i
-						// onClick={() => setNewRoleDialog(true)}
+						onClick={() => setCreateUserDialog(true)}
 						title="Create a new role."
 						className="pi pi-plus cursor-pointer shadow-lg hover:scale-105 duration-200 bg-yellow-400 text-white px-2 py-2 rounded-full"
 					></i>
@@ -427,7 +508,7 @@ export default function Users() {
 					{sortedMethod && (
 						<p
 							className="text-xs text-neutral-400 text-right mt-1 cursor-pointer"
-							onClick={() => setSortedMethod(() => null)}
+							onClick={() => setSortedMethod(() => undefined)}
 						>
 							clear sort filtering
 						</p>
@@ -545,6 +626,244 @@ export default function Users() {
 				</TableContainer>
 			</div>
 
+			<Dialog
+				header={`Creating a new user - ${createUserData.first_name}`}
+				visible={createUserDialog}
+				style={{ width: "50vw" }}
+				onHide={() => setCreateUserDialog(false)}
+				dismissableMask={true}
+				draggable={false}
+			>
+				<div>
+					<section>
+						<h3 className="font-bold text-sm">Info</h3>
+						<div className="px-2 flex flex-col gap-2 mt-2">
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_first_name"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									First Name:
+								</label>
+								<InputText
+									placeholder="First Name"
+									value={createUserData.first_name}
+									onChange={(e) => {
+										setCreateUserData((prev) => {
+											return {
+												...prev,
+												first_name: e.target.value,
+											};
+										});
+									}}
+								/>
+							</span>
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_first_name"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Last Name:
+								</label>
+								<InputText
+									placeholder="Last Name"
+									value={createUserData.last_name}
+									onChange={(e) => {
+										setCreateUserData((prev) => {
+											return {
+												...prev,
+												last_name: e.target.value,
+											};
+										});
+									}}
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_email"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Email:
+								</label>
+								<InputText
+									placeholder="Email"
+									value={createUserData.email}
+									onChange={(e) => {
+										setCreateUserData((prev) => {
+											return {
+												...prev,
+												email: e.target.value,
+											};
+										});
+									}}
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_password"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Password:
+								</label>
+								<Password
+									placeholder="Password"
+									value={createUserData.password}
+									toggleMask
+									onChange={(e) => {
+										setCreateUserData((prev) => {
+											return {
+												...prev,
+												password: e.target.value,
+											};
+										});
+									}}
+								/>
+							</span>
+						</div>
+					</section>
+
+					<section className="mt-3">
+						<div className="flex flex-row justify-between items-center">
+							<h3 className="font-bold text-sm">User Details</h3>
+						</div>
+						<div className="px-2 flex flex-col gap-2 mt-2">
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_role"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Role:
+								</label>
+								<Dropdown
+									value={createUserData.role}
+									onChange={(e) =>
+										setCreateUserData((prev) => {
+											return {
+												...prev,
+												role: e.target.value,
+											};
+										})
+									}
+									options={userRolesData.map((role) => {
+										return {
+											role: role.name,
+											code: role.name.toUpperCase(),
+										};
+									})}
+									optionLabel="role"
+									placeholder="Select a Role"
+									className="w-full md:w-14rem"
+									id="user-role"
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_track"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Track:
+								</label>
+								<Dropdown
+									value={createUserData.track}
+									onChange={(e) =>
+										setCreateUserData((prev) => {
+											console.log(e.target.value);
+											return {
+												...prev,
+												track: e.target.value,
+											};
+										})
+									}
+									options={trackList}
+									optionLabel="name"
+									placeholder="Select a Track"
+									className="w-full md:w-14rem"
+									id="user-track"
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_school"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									School:
+								</label>
+								<Dropdown
+									value={createUserData.school}
+									onChange={(e) =>
+										setCreateUserData((prev) => {
+											return {
+												...prev,
+												school: e.target.value,
+											};
+										})
+									}
+									options={SchoolList}
+									optionLabel="name"
+									placeholder="Select a School"
+									className="w-full md:w-14rem"
+									id="user-school"
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_profile_picture"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Profile picture:
+								</label>
+								<FileUpload
+									mode="basic"
+									name="user-profile-picture"
+									url="/api/upload"
+									accept="image/*"
+									maxFileSize={1000000}
+									// onUpload={onUpload}
+									auto
+									chooseLabel="Browse"
+								/>
+								<InputText
+									placeholder="Profile Picture"
+									value={createUserData.profile_picture}
+									onChange={(e) => {
+										setCreateUserData((prev) => {
+											return {
+												...prev,
+												profile_picture: e.target.value,
+											};
+										});
+									}}
+								/>
+							</span>
+						</div>
+					</section>
+
+					<footer className="flex flex-row gap-6 justify-center mt-4">
+						<button
+							onClick={() =>
+								confirmDialog({
+									message:
+										"Are you sure you want to proceed?",
+									header: "Confirmation",
+									icon: "pi pi-exclamation-triangle",
+									defaultFocus: "accept",
+									accept: () => CreateUser(createUserData),
+								})
+							}
+							className="w-fit h-fit bg-green-600 px-4 py-1 text-white rounded-md font-normal"
+						>
+							Create User
+						</button>
+					</footer>
+				</div>
+			</Dialog>
+
+			{/* EDIT USER DIALOG */}
 			<Dialog
 				header={`Editing User - ${
 					editUserData && editUserData.first_name
