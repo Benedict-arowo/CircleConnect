@@ -42,3 +42,7 @@ body {
 	background: linear-gradient(180deg, #f2f2f2 0%, #feffe4 90%, #eaeaea 100%),
 		#fff;
 }
+
+.inputShadow {
+	box-shadow: 0 0 0 0.2rem #c0d0e0;
+}

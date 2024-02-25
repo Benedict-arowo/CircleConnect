@@ -45,27 +45,27 @@ export const CreateUserService = async ({ body }: UserArgs) => {
 	if (!first_name || !last_name)
 		throw new CustomError(
 			"First and last names must be provided.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	if (!email || !password)
 		throw new CustomError(
 			"Email and password must be provided.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	if (password.length < MIN_PASSWORD_LENGTH)
 		throw new CustomError(
 			"Password must be at least " + MIN_PASSWORD_LENGTH,
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	if (!school)
 		throw new CustomError(
 			"School must be provided.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	if (!track)
 		throw new CustomError(
 			"Track must be provided.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	if (roleId) {
@@ -80,7 +80,7 @@ export const CreateUserService = async ({ body }: UserArgs) => {
 	if (school && !SCHOOL_LIST.includes(school.toUpperCase()))
 		throw new CustomError(
 			"School provided is not valid.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	// If user has provided a track, it ensures that it's a valid track by comparing it with track list.
@@ -88,7 +88,7 @@ export const CreateUserService = async ({ body }: UserArgs) => {
 	if (track && !allTracks.includes(track.toUpperCase()))
 		throw new CustomError(
 			"Track provided is not valid.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	try {
@@ -105,6 +105,35 @@ export const CreateUserService = async ({ body }: UserArgs) => {
 					: undefined,
 				track: track ? (track.toUpperCase() as TrackType) : undefined,
 			},
+			select: {
+				email: true,
+				id: true,
+				profile_picture: true,
+				first_name: true,
+				last_name: true,
+				projects: {
+					select: {
+						id: true,
+						name: true,
+						circle: true,
+					},
+				},
+				role: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+				track: true,
+				school: true,
+				coleadOf: true,
+				leadOf: true,
+				memberOf: true,
+				joined: true,
+				createdAt: true,
+				pendingRequest: true,
+				projectRatings: true,
+			},
 		});
 
 		return newUser;
@@ -114,12 +143,12 @@ export const CreateUserService = async ({ body }: UserArgs) => {
 		if (error.code === "P2002" && error.meta.target.includes("email")) {
 			throw new CustomError(
 				"User with email already exists.",
-				StatusCodes.BAD_REQUEST,
+				StatusCodes.BAD_REQUEST
 			);
 		}
 		throw new CustomError(
 			ReasonPhrases.INTERNAL_SERVER_ERROR,
-			StatusCodes.INTERNAL_SERVER_ERROR,
+			StatusCodes.INTERNAL_SERVER_ERROR
 		);
 	}
 };
@@ -142,7 +171,7 @@ export const EditUserService = async ({ body, user, id }: EditUserArgs) => {
 		if (password.length < MIN_PASSWORD_LENGTH)
 			throw new CustomError(
 				"Password must be at least " + MIN_PASSWORD_LENGTH,
-				StatusCodes.BAD_REQUEST,
+				StatusCodes.BAD_REQUEST
 			);
 		hashedPassword = await hash(password);
 	}
@@ -162,29 +191,29 @@ export const EditUserService = async ({ body, user, id }: EditUserArgs) => {
 	} else if (roleId && !user.role.isAdmin && !user.role.canManageUsers)
 		throw new CustomError(
 			"YOu do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED,
+			StatusCodes.UNAUTHORIZED
 		);
 
 	// Prevents a non admin user from changing their own role.
 	if (!user.role.isAdmin && user.role.canManageUsers && user.id === id)
 		throw new CustomError(
 			"You are not allowed to perform this action.",
-			StatusCodes.UNAUTHORIZED,
+			StatusCodes.UNAUTHORIZED
 		);
 
 	// If user has provided a school, it ensures that it's a valid school by comparing it with school list.
-	if (school && !SCHOOL_LIST.includes(school.toUpperCase()))
+	if (school && !SCHOOL_LIST.includes(school.toString().toUpperCase()))
 		throw new CustomError(
 			"School provided is not valid.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	// If user has provided a track, it ensures that it's a valid track by comparing it with track list.
 	const allTracks = [...TRACK_LIST.engineering, ...TRACK_LIST.product];
-	if (track && !allTracks.includes(track.toUpperCase()))
+	if (track && !allTracks.includes(track.toString().toUpperCase()))
 		throw new CustomError(
 			"Track provided is not valid.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	const updatedUser = await prisma.user.update({
@@ -200,6 +229,35 @@ export const EditUserService = async ({ body, user, id }: EditUserArgs) => {
 				: undefined,
 			profile_picture: profile_picture ? profile_picture : undefined,
 			track: track ? (track.toUpperCase() as TrackType) : undefined,
+		},
+		select: {
+			email: true,
+			id: true,
+			profile_picture: true,
+			first_name: true,
+			last_name: true,
+			projects: {
+				select: {
+					id: true,
+					name: true,
+					circle: true,
+				},
+			},
+			role: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			track: true,
+			school: true,
+			coleadOf: true,
+			leadOf: true,
+			memberOf: true,
+			joined: true,
+			createdAt: true,
+			pendingRequest: true,
+			projectRatings: true,
 		},
 	});
 
@@ -219,7 +277,7 @@ export const DeleteUserService = async (id: string) => {
 	if (user.role.isAdmin)
 		throw new CustomError(
 			"You cannot perform this action on this user. Remove their administrator role before being able to remove them.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	await prisma.user.delete({

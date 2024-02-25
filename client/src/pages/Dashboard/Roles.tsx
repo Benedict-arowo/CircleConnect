@@ -1,13 +1,6 @@
-import {
-	Paper,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-} from "@mui/material";
-import { Button } from "@chakra-ui/react";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { UserTypeClean } from "../../types";
 import UseFetch from "../../Components/Fetch";
@@ -19,7 +12,7 @@ import { Toast } from "primereact/toast";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { confirmDialog } from "primereact/confirmdialog";
 
-type Role = {
+export type Role = {
 	id: string;
 	name: string;
 	canCreateCircle: boolean;
@@ -99,6 +92,7 @@ const Roles = () => {
 	const [displayMemberMenu, setDisplayMemberMenu] = useState(false);
 	const [createRoleData, setCreateRoleData] = useState(defaultRoleData);
 	const [newRoleDialog, setNewRoleDialog] = useState(false);
+	const [search, setSearch] = useState("");
 
 	const toast = useRef<Toast | null>(null);
 
@@ -156,6 +150,16 @@ const Roles = () => {
 				users: role.users,
 			};
 		});
+	};
+
+	const getData = () => {
+		if (search) {
+			return data.filter(
+				(role) =>
+					role.name.toLowerCase().includes(search.toLowerCase()) ||
+					role.id.toLowerCase().includes(search.toLowerCase())
+			);
+		} else return data;
 	};
 
 	const DisplayPermissions = ({
@@ -378,9 +382,7 @@ const Roles = () => {
 
 	const closeEditRoleDialog = () => {
 		setEditRoleDialogIsVisible(false);
-		setTimeout(() => {
-			setEditData(null);
-		}, 500);
+		setEditData(null);
 	};
 
 	return (
@@ -388,11 +390,16 @@ const Roles = () => {
 			<Toast ref={toast} />
 			<ConfirmDialog />
 
-			<div className="w-full grid place-content-center mt-5">
-				<input
-					placeholder="Search..."
-					className="border-2 lg:w-[500px] w-[400px] px-2 py-2 outline-[#F1C644] font-light"
-				></input>
+			<div className="w-full flex justify-center gap-2 mt-5">
+				<span className="p-input-icon-left max-w-[400px] w-full">
+					<i className="pi pi-search" />
+					<InputText
+						placeholder="Search"
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						className="w-full h-full p-2"
+					/>
+				</span>
 			</div>
 
 			<div className="flex flex-row text-center mt-10 gap-8 w-full justify-between">
@@ -404,81 +411,56 @@ const Roles = () => {
 						className="pi pi-plus cursor-pointer shadow-lg hover:scale-105 duration-200 bg-yellow-400 text-white px-2 py-2 rounded-full"
 					></i>
 				</section>
-				<Button
-					colorScheme="yellow"
-					color="white"
-					className="shadow-sm"
-				>
-					Filter
-				</Button>
 			</div>
 
 			<div className="mt-4 border-t-2 w-full">
-				<TableContainer component={Paper}>
-					<Table
-						sx={{
-							"& tr > *:not(:first-type-of)": {
-								textAlign: "center",
-							},
-						}}
-					>
-						<TableHead>
-							<TableRow>
-								<TableCell>Name</TableCell>
-								<TableCell>User(s)</TableCell>
-								<TableCell>Is Admin</TableCell>
-								<TableCell>Operation</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{data.map((row) => {
-								return (
-									<TableRow
-										key={row.id}
-										className={
-											row.id === DEFAULT_MEMBER_ROLE_ID
-												? "bg-neutral-200"
-												: ""
-										}
-									>
-										<TableCell>{row.name}</TableCell>
-										<TableCell>
-											{row.users ? row.users.length : 0}
-										</TableCell>
-										<TableCell>
-											{row.isAdmin && (
-												<i className="pi pi-check"></i>
-											)}
-										</TableCell>
-										<TableCell>
-											<button
-												className=" ml-5"
-												onClick={() =>
-													manageRole(row.id)
-												}
-											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke-width="1.5"
-													stroke="currentColor"
-													className="w-6 h-6"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-													/>
-												</svg>
-											</button>
-										</TableCell>
-									</TableRow>
-								);
-							})}
-						</TableBody>
-					</Table>
-				</TableContainer>
+				<DataTable
+					value={getData()}
+					rowClassName={(role: Role) =>
+						role.id === DEFAULT_MEMBER_ROLE_ID ? "bg-zinc-200" : ""
+					}
+					tableStyle={{ minWidth: "50rem" }}
+				>
+					<Column field="name" header="Name"></Column>
+					<Column
+						field="users"
+						body={(role: Role) => (
+							<p>{role.users ? role.users.length : 0}</p>
+						)}
+						header="Users"
+					></Column>
+					<Column
+						body={(role) =>
+							role.isAdmin ? (
+								<i className="pi pi-check"></i>
+							) : null
+						}
+						header="Is Admin"
+					></Column>
+					<Column
+						body={(role: Role) => (
+							<button
+								className=" ml-5"
+								onClick={() => manageRole(role.id)}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									className="w-6 h-6"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+									/>
+								</svg>
+							</button>
+						)}
+					></Column>
+				</DataTable>
 			</div>
 
 			<Dialog
@@ -506,7 +488,7 @@ const Roles = () => {
 										placeholder="Role ID"
 										value={editData.id}
 										disabled
-										className=""
+										className="w-full p-2"
 									/>
 								</span>
 
@@ -521,7 +503,7 @@ const Roles = () => {
 										id="role_name"
 										placeholder="Role Name"
 										value={editData.name}
-										className="w-full"
+										className="w-full border p-2"
 										onChange={(e) =>
 											setEditData((prev) => {
 												if (!prev) return null;
@@ -641,7 +623,7 @@ const Roles = () => {
 									id="role_name"
 									placeholder="Role Name"
 									value={createRoleData.name}
-									className="w-full"
+									className="w-full border p-2"
 									onChange={(e) =>
 										setCreateRoleData((prev) => {
 											return {
