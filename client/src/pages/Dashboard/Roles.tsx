@@ -1,12 +1,6 @@
-import {
-	Paper,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-} from "@mui/material";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { UserTypeClean } from "../../types";
 import UseFetch from "../../Components/Fetch";
@@ -388,9 +382,7 @@ const Roles = () => {
 
 	const closeEditRoleDialog = () => {
 		setEditRoleDialogIsVisible(false);
-		setTimeout(() => {
-			setEditData(null);
-		}, 500);
+		setEditData(null);
 	};
 
 	return (
@@ -419,71 +411,52 @@ const Roles = () => {
 			</div>
 
 			<div className="mt-4 border-t-2 w-full">
-				<TableContainer component={Paper}>
-					<Table
-						sx={{
-							"& tr > *:not(:first-type-of)": {
-								textAlign: "center",
-							},
-						}}
-					>
-						<TableHead>
-							<TableRow>
-								<TableCell>Name</TableCell>
-								<TableCell>User(s)</TableCell>
-								<TableCell>Is Admin</TableCell>
-								<TableCell>Operation</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{getData().map((row) => {
-								return (
-									<TableRow
-										key={row.id}
-										className={
-											row.id === DEFAULT_MEMBER_ROLE_ID
-												? "bg-neutral-200"
-												: ""
-										}
-									>
-										<TableCell>{row.name}</TableCell>
-										<TableCell>
-											{row.users ? row.users.length : 0}
-										</TableCell>
-										<TableCell>
-											{row.isAdmin && (
-												<i className="pi pi-check"></i>
-											)}
-										</TableCell>
-										<TableCell>
-											<button
-												className=" ml-5"
-												onClick={() =>
-													manageRole(row.id)
-												}
-											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke-width="1.5"
-													stroke="currentColor"
-													className="w-6 h-6"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-													/>
-												</svg>
-											</button>
-										</TableCell>
-									</TableRow>
-								);
-							})}
-						</TableBody>
-					</Table>
-				</TableContainer>
+				<DataTable
+					value={getData()}
+					rowClassName={(role: Role) =>
+						role.id === DEFAULT_MEMBER_ROLE_ID ? "bg-zinc-200" : ""
+					}
+					tableStyle={{ minWidth: "50rem" }}
+				>
+					<Column field="name" header="Name"></Column>
+					<Column
+						field="users"
+						body={(role: Role) => <p>{role.users.length}</p>}
+						header="Users"
+					></Column>
+					<Column
+						body={(role) =>
+							role.isAdmin ? (
+								<i className="pi pi-check"></i>
+							) : null
+						}
+						header="Is Admin"
+					></Column>
+					<Column
+						body={(role: Role) => (
+							<button
+								className=" ml-5"
+								onClick={() => manageRole(role.id)}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									className="w-6 h-6"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+									/>
+								</svg>
+							</button>
+						)}
+						header="Operation"
+					></Column>
+				</DataTable>
 			</div>
 
 			<Dialog
