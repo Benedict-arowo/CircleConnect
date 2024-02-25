@@ -105,6 +105,35 @@ export const CreateUserService = async ({ body }: UserArgs) => {
 					: undefined,
 				track: track ? (track.toUpperCase() as TrackType) : undefined,
 			},
+			select: {
+				email: true,
+				id: true,
+				profile_picture: true,
+				first_name: true,
+				last_name: true,
+				projects: {
+					select: {
+						id: true,
+						name: true,
+						circle: true,
+					},
+				},
+				role: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+				track: true,
+				school: true,
+				coleadOf: true,
+				leadOf: true,
+				memberOf: true,
+				joined: true,
+				createdAt: true,
+				pendingRequest: true,
+				projectRatings: true,
+			},
 		});
 
 		return newUser;
@@ -200,6 +229,35 @@ export const EditUserService = async ({ body, user, id }: EditUserArgs) => {
 				: undefined,
 			profile_picture: profile_picture ? profile_picture : undefined,
 			track: track ? (track.toUpperCase() as TrackType) : undefined,
+		},
+		select: {
+			email: true,
+			id: true,
+			profile_picture: true,
+			first_name: true,
+			last_name: true,
+			projects: {
+				select: {
+					id: true,
+					name: true,
+					circle: true,
+				},
+			},
+			role: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			track: true,
+			school: true,
+			coleadOf: true,
+			leadOf: true,
+			memberOf: true,
+			joined: true,
+			createdAt: true,
+			pendingRequest: true,
+			projectRatings: true,
 		},
 	});
 

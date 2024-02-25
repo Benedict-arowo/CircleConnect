@@ -1,12 +1,3 @@
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	Paper,
-} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import UseFetch from "../../Components/Fetch";
 import { UserTypeClean } from "../../types";
@@ -15,7 +6,6 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { Dropdown } from "primereact/dropdown";
-import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
 import { Password } from "primereact/password";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Role } from "./Roles";
@@ -27,15 +17,15 @@ import { Tag } from "primereact/tag";
 interface userData {
 	id: string;
 	email: string;
-	profile_picture: null;
+	profile_picture: string;
 	first_name: string;
-	projects: [
-		{
-			id: string;
-			circleId: number;
-			name: string;
-		}[]
-	];
+	last_name: string;
+	projects: {
+		id: string;
+		circleId: number;
+		name: string;
+	}[];
+
 	role: {
 		id: string;
 		name: string;
@@ -52,36 +42,35 @@ interface userData {
 interface editUserData {
 	id: string;
 	email: string;
-	profile_picture: null;
+	profile_picture: string;
 	first_name: string;
+	last_name: string;
 	password?: string;
-	projects: [
-		{
-			id: string;
-			circleId: number;
-			name: string;
-		}[]
-	];
+	projects: {
+		id: string;
+		circleId: number;
+		name: string;
+	}[];
 	role: {
 		id: string;
 		name: {
-			role: string;
-			code: string;
+			role?: string;
+			code?: string;
 		};
 	};
 	track: {
-		name: string;
-		code: string;
+		name?: string;
+		code?: string;
 	};
 	school: {
-		name: string;
-		code: string;
+		name?: string;
+		code?: string;
 	};
 	coleadOf: null | UserTypeClean;
 	leadOf: null | UserTypeClean;
 	memberOf: null | UserTypeClean;
-	joined: Date;
-	createdAt: Date;
+	joined?: Date;
+	createdAt?: Date;
 }
 
 interface createUserData {
@@ -90,6 +79,7 @@ interface createUserData {
 	first_name: string;
 	last_name: string;
 	password: string;
+	confirm_password: string;
 	role: { role: string; code: string };
 	track: {
 		name: string;
@@ -162,13 +152,43 @@ export default function Users() {
 	const [data, setData] = useState<userData[]>([]);
 	const [editUserDialog, setEditUserDialog] = useState(false);
 	const [createUserDialog, setCreateUserDialog] = useState(false);
-	const [editUserData, setEditUserData] = useState<editUserData | null>(null);
+	const [editUserData, setEditUserData] = useState<editUserData>({
+		id: "",
+		email: "",
+		profile_picture: "",
+		first_name: "",
+		last_name: "",
+		password: "",
+		projects: [],
+		role: {
+			id: "",
+			name: {
+				role: "",
+				code: "",
+			},
+		},
+		track: {
+			name: "",
+			code: "",
+		},
+		school: {
+			name: undefined,
+			code: undefined,
+		},
+		joined: undefined,
+		createdAt: undefined,
+		coleadOf: null,
+		leadOf: null,
+		memberOf: null,
+	});
+
 	const [createUserData, setCreateUserData] = useState<createUserData>({
 		email: "",
 		profile_picture: "",
 		first_name: "",
 		last_name: "",
 		password: "",
+		confirm_password: "",
 		role: {
 			role: "",
 			code: "",
@@ -226,20 +246,6 @@ export default function Users() {
 			);
 
 		setUserRolesData(data.data);
-	};
-
-	const customBase64Uploader = async (event: FileUploadHandlerEvent) => {
-		console.log(event);
-		// convert file to base64 encoded
-		const file = event.files[0];
-		const reader = new FileReader();
-		let blob = await fetch(file.objectURL).then((r) => r.blob()); //blob:url
-
-		reader.readAsDataURL(blob);
-
-		reader.onloadend = function () {
-			const base64data = reader.result;
-		};
 	};
 
 	const getUserData = () => {
@@ -315,7 +321,7 @@ export default function Users() {
 	const manageUser = (userId: string) => {
 		const user = data.find((user) => user.id === userId);
 		if (!user) throw new Error("User not found.");
-		console.log(user);
+
 		setEditUserData(() => ({
 			...user,
 			track: trackList.find(
@@ -325,7 +331,7 @@ export default function Users() {
 				...user.role,
 				name: {
 					role: user.role.name,
-					code: user.role.name.toUpperCase(),
+					code: user.role.id,
 				},
 			},
 			school: { name: user.school, code: user.school.toUpperCase() },
@@ -335,6 +341,7 @@ export default function Users() {
 	};
 
 	const EditUser = async (userDetails: editUserData) => {
+		// TODO: Client side verification
 		if (!userDetails) throw new Error("User not found.");
 		toast.current?.show({
 			severity: "info",
@@ -342,13 +349,26 @@ export default function Users() {
 			detail: "Saving changes...",
 			life: 3000,
 		});
+		// TODO: Only send data that changes, and not everything everytime.
 		const { data, response } = await UseFetch({
 			url: `user/${userDetails.id}`,
 			options: {
 				method: "PATCH",
 				useServerUrl: true,
 				returnResponse: true,
-				body: userDetails,
+				body: {
+					email: userDetails.email && userDetails.email,
+					profile_picture:
+						userDetails.profile_picture &&
+						userDetails.profile_picture,
+					first_name:
+						userDetails.first_name && userDetails.first_name,
+					last_name: userDetails.last_name && userDetails.last_name,
+					password: userDetails.password && userDetails.password,
+					role: userDetails.role.id && userDetails.role.id,
+					track: userDetails.track.code && userDetails.track.code,
+					school: userDetails.school.code && userDetails.school.code,
+				},
 			},
 		});
 
@@ -371,11 +391,23 @@ export default function Users() {
 		});
 
 		setEditUserDialog(false);
-		fetchUsers();
+		setData((prev) => {
+			const currData = prev;
+			const userIndex = currData.findIndex(
+				(user) => user.id === userDetails.id
+			);
+			currData[userIndex] = data.data;
+			return currData;
+		});
 	};
 
 	const CreateUser = async (userDetails: createUserData) => {
+		// TODO: Client side verification
 		if (!userDetails) throw new Error("User not found.");
+
+		if (userDetails.confirm_password !== userDetails.password)
+			throw new Error("Passwords do not match.");
+
 		toast.current?.show({
 			severity: "info",
 			summary: "Loading...",
@@ -388,7 +420,12 @@ export default function Users() {
 				method: "POST",
 				useServerUrl: true,
 				returnResponse: true,
-				body: userDetails,
+				body: {
+					...userDetails,
+					role: userDetails.role.code,
+					school: userDetails.school.code,
+					track: userDetails.track.code,
+				},
 			},
 		});
 
@@ -411,7 +448,8 @@ export default function Users() {
 		});
 
 		setCreateUserDialog(false);
-		fetchUsers();
+		// Add new user to local data list
+		setData((prev) => [data.data, ...prev]);
 	};
 
 	const DeleteUser = async (userId: string) => {
@@ -452,7 +490,10 @@ export default function Users() {
 		});
 
 		setEditUserDialog(false);
-		fetchUsers();
+		// Removes the user that has been deleted from the local list of users.
+		setData((prev) => {
+			return [...prev].filter((user) => user.id !== userId);
+		});
 	};
 
 	return (
@@ -543,7 +584,7 @@ export default function Users() {
 									{user.profile_picture && (
 										<Avatar
 											image={user.profile_picture}
-											shape="square"
+											shape="circle"
 											style={{ objectFit: "cover" }}
 										/>
 									)}
@@ -613,20 +654,21 @@ export default function Users() {
 				dismissableMask={true}
 				draggable={false}
 			>
-				<div>
+				<form>
 					<section>
 						<h3 className="font-bold text-sm">Info</h3>
 						<div className="px-2 flex flex-col gap-2 mt-2">
 							<span className="flex flex-row gap-2 items-center">
 								<label
 									htmlFor="user_first_name"
-									className="font-bold text-sm text-center border-1 border-zinc-300"
+									className="font-bold text-sm text-center border-1 border-zinc-300 min-w-fit"
 								>
 									First Name:
 								</label>
 								<InputText
 									placeholder="First Name"
 									value={createUserData.first_name}
+									className="border p-2 w-full"
 									onChange={(e) => {
 										setCreateUserData((prev) => {
 											return {
@@ -640,13 +682,14 @@ export default function Users() {
 							<span className="flex flex-row gap-2 items-center">
 								<label
 									htmlFor="user_first_name"
-									className="font-bold text-sm text-center border-1 border-zinc-300"
+									className="font-bold text-sm text-center border-1 border-zinc-300 min-w-fit"
 								>
 									Last Name:
 								</label>
 								<InputText
 									placeholder="Last Name"
 									value={createUserData.last_name}
+									className="border p-2 w-full"
 									onChange={(e) => {
 										setCreateUserData((prev) => {
 											return {
@@ -668,6 +711,7 @@ export default function Users() {
 								<InputText
 									placeholder="Email"
 									value={createUserData.email}
+									className="border p-2 w-full"
 									onChange={(e) => {
 										setCreateUserData((prev) => {
 											return {
@@ -690,11 +734,38 @@ export default function Users() {
 									placeholder="Password"
 									value={createUserData.password}
 									toggleMask
+									className="w-full"
+									inputClassName="w-full border p-2"
 									onChange={(e) => {
 										setCreateUserData((prev) => {
 											return {
 												...prev,
 												password: e.target.value,
+											};
+										});
+									}}
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_confirm_password"
+									className="font-bold text-sm text-center border-1 border-zinc-300 min-w-fit"
+								>
+									Confirm Password:
+								</label>
+								<Password
+									placeholder="Verify Password"
+									value={createUserData.confirm_password}
+									toggleMask
+									className="w-full"
+									inputClassName="w-full border p-2"
+									onChange={(e) => {
+										setCreateUserData((prev) => {
+											return {
+												...prev,
+												confirm_password:
+													e.target.value,
 											};
 										});
 									}}
@@ -728,12 +799,12 @@ export default function Users() {
 									options={userRolesData.map((role) => {
 										return {
 											role: role.name,
-											code: role.name.toUpperCase(),
+											code: role.id,
 										};
 									})}
 									optionLabel="role"
 									placeholder="Select a Role"
-									className="w-full md:w-14rem"
+									className="w-full md:w-14rem border"
 									id="user-role"
 								/>
 							</span>
@@ -749,7 +820,6 @@ export default function Users() {
 									value={createUserData.track}
 									onChange={(e) =>
 										setCreateUserData((prev) => {
-											console.log(e.target.value);
 											return {
 												...prev,
 												track: e.target.value,
@@ -759,7 +829,7 @@ export default function Users() {
 									options={trackList}
 									optionLabel="name"
 									placeholder="Select a Track"
-									className="w-full md:w-14rem"
+									className="w-full md:w-14rem border"
 									id="user-track"
 								/>
 							</span>
@@ -784,7 +854,7 @@ export default function Users() {
 									options={SchoolList}
 									optionLabel="name"
 									placeholder="Select a School"
-									className="w-full md:w-14rem"
+									className="w-full md:w-14rem border"
 									id="user-school"
 								/>
 							</span>
@@ -792,22 +862,15 @@ export default function Users() {
 							<span className="flex flex-row gap-2 items-center">
 								<label
 									htmlFor="user_profile_picture"
-									className="font-bold text-sm text-center border-1 border-zinc-300"
+									className="font-bold text-sm text-center border-1 border-zinc-300 min-w-fit"
 								>
 									Profile picture:
 								</label>
 
-								<FileUpload
-									mode="basic"
-									name="demo[]"
-									url="/api/upload"
-									accept="image/*"
-									customUpload
-									uploadHandler={customBase64Uploader}
-								/>
 								<InputText
 									placeholder="Profile Picture"
 									value={createUserData.profile_picture}
+									className="border p-2 w-full"
 									onChange={(e) => {
 										setCreateUserData((prev) => {
 											return {
@@ -823,7 +886,8 @@ export default function Users() {
 
 					<footer className="flex flex-row gap-6 justify-center mt-4">
 						<button
-							onClick={() =>
+							onClick={(e) => {
+								e.preventDefault();
 								confirmDialog({
 									message:
 										"Are you sure you want to proceed?",
@@ -831,14 +895,15 @@ export default function Users() {
 									icon: "pi pi-exclamation-triangle",
 									defaultFocus: "accept",
 									accept: () => CreateUser(createUserData),
-								})
-							}
+								});
+							}}
+							type="submit"
 							className="w-fit h-fit bg-green-600 px-4 py-1 text-white rounded-md font-normal"
 						>
 							Create User
 						</button>
 					</footer>
-				</div>
+				</form>
 			</Dialog>
 
 			{/* EDIT USER DIALOG */}
@@ -852,281 +917,294 @@ export default function Users() {
 				dismissableMask={true}
 				draggable={false}
 			>
-				{editUserData && (
-					<div>
-						<section>
-							<h3 className="font-bold text-sm">Info</h3>
-							<div className="px-2 flex flex-col gap-2 mt-2">
-								<span className="flex flex-row gap-2 items-center">
-									<label
-										htmlFor="user_id"
-										className="font-bold text-sm text-center"
-									>
-										ID:
-									</label>
+				<form>
+					<section>
+						<h3 className="font-bold text-sm">Info</h3>
+						<div className="px-2 flex flex-col gap-2 mt-2">
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_id"
+									className="font-bold text-sm text-center"
+								>
+									ID:
+								</label>
 
-									<InputText
-										value={editUserData.id}
-										disabled
-									/>
-								</span>
+								<InputText
+									value={editUserData.id}
+									className="w-full"
+									disabled
+								/>
+							</span>
 
-								<span className="flex flex-row gap-2 items-center">
-									<label
-										htmlFor="user_first_name"
-										className="font-bold text-sm text-center border-1 border-zinc-300"
-									>
-										Name:
-									</label>
-									<InputText
-										placeholder="First Name"
-										value={editUserData.first_name}
-										onChange={(e) => {
-											setEditUserData((prev) => {
-												return {
-													...prev,
-													first_name: e.target.value,
-												};
-											});
-										}}
-									/>
-								</span>
-
-								<span className="flex flex-row gap-2 items-center">
-									<label
-										htmlFor="user_email"
-										className="font-bold text-sm text-center border-1 border-zinc-300"
-									>
-										Email:
-									</label>
-									<InputText
-										placeholder="Email"
-										value={editUserData.email}
-										onChange={(e) => {
-											setEditUserData((prev) => {
-												return {
-													...prev,
-													email: e.target.value,
-												};
-											});
-										}}
-									/>
-								</span>
-
-								<span className="flex flex-row gap-2 items-center">
-									<label
-										htmlFor="user_password"
-										className="font-bold text-sm text-center border-1 border-zinc-300"
-									>
-										Password:
-									</label>
-									<Password
-										placeholder="Password"
-										value={editUserData.password}
-										toggleMask
-										onChange={(e) => {
-											setEditUserData((prev) => {
-												return {
-													...prev,
-													password: e.target.value,
-												};
-											});
-										}}
-									/>
-								</span>
-							</div>
-						</section>
-
-						<section className="mt-3">
-							<div className="flex flex-row justify-between items-center">
-								<h3 className="font-bold text-sm">
-									User Details
-								</h3>
-							</div>
-							<div className="px-2 flex flex-col gap-2 mt-2">
-								<span className="flex flex-row gap-2 items-center">
-									<label
-										htmlFor="user_role"
-										className="font-bold text-sm text-center border-1 border-zinc-300"
-									>
-										Role:
-									</label>
-									<Dropdown
-										value={
-											editUserData.role &&
-											editUserData.role.name
-										}
-										onChange={(e) =>
-											setEditUserData((prev) => {
-												if (!prev) return;
-												return {
-													...prev,
-													role: {
-														...prev.role,
-														name: e.target.value,
-													},
-												};
-											})
-										}
-										options={userRolesData.map((role) => {
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_first_name"
+									className="font-bold text-sm text-center border-1 border-zinc-300 min-w-fit"
+								>
+									First Name:
+								</label>
+								<InputText
+									placeholder="First Name"
+									value={editUserData.first_name}
+									className="border p-2 w-full"
+									onChange={(e) => {
+										setEditUserData((prev) => {
 											return {
-												role: role.name,
-												code: role.name.toUpperCase(),
+												...prev,
+												first_name: e.target.value,
 											};
-										})}
-										optionLabel="role"
-										placeholder="Select a Role"
-										className="w-full md:w-14rem"
-										id="user-role"
-									/>
-								</span>
+										});
+									}}
+								/>
+							</span>
 
-								<span className="flex flex-row gap-2 items-center">
-									<label
-										htmlFor="user_track"
-										className="font-bold text-sm text-center border-1 border-zinc-300"
-									>
-										Track:
-									</label>
-									<Dropdown
-										value={editUserData.track}
-										onChange={(e) =>
-											setEditUserData((prev) => {
-												return {
-													...prev,
-													track: e.target.value,
-												};
-											})
-										}
-										options={trackList}
-										optionLabel="name"
-										placeholder="Select a Track"
-										className="w-full md:w-14rem"
-										id="user-track"
-									/>
-								</span>
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_last_name"
+									className="font-bold text-sm text-center border-1 border-zinc-300 min-w-fit"
+								>
+									Last Name:
+								</label>
+								<InputText
+									placeholder="Last Name"
+									value={editUserData.last_name}
+									className="border p-2 w-full"
+									onChange={(e) => {
+										setEditUserData((prev) => {
+											return {
+												...prev,
+												last_name: e.target.value,
+											};
+										});
+									}}
+								/>
+							</span>
 
-								<span className="flex flex-row gap-2 items-center">
-									<label
-										htmlFor="user_school"
-										className="font-bold text-sm text-center border-1 border-zinc-300"
-									>
-										School:
-									</label>
-									<Dropdown
-										value={
-											editUserData.school &&
-											editUserData.school
-										}
-										onChange={(e) =>
-											setEditUserData((prev) => {
-												return {
-													...prev,
-													school: e.target.value,
-												};
-											})
-										}
-										options={SchoolList}
-										optionLabel="name"
-										placeholder="Select a School"
-										className="w-full md:w-14rem"
-										id="user-school"
-									/>
-								</span>
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_email"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Email:
+								</label>
+								<InputText
+									placeholder="Email"
+									value={editUserData.email}
+									className="border p-2 w-full"
+									onChange={(e) => {
+										setEditUserData((prev) => {
+											return {
+												...prev,
+												email: e.target.value,
+											};
+										});
+									}}
+								/>
+							</span>
 
-								<span className="flex flex-row gap-2 items-center">
-									<label
-										htmlFor="user_profile_picture"
-										className="font-bold text-sm text-center border-1 border-zinc-300"
-									>
-										Profile picture:
-									</label>
-									<FileUpload
-										mode="basic"
-										name="user-profile-picture"
-										// url="http://localhost:8000/api/upload"
-										accept="image/*"
-										maxFileSize={1000000}
-										// onUpload={onUpload}
-										uploadHandler={customBase64Uploader}
-										customUpload
-										auto
-										chooseLabel="Browse"
-									/>
-									<InputText
-										placeholder="Profile Picture"
-										value={
-											editUserData &&
-											editUserData.profile_picture
-										}
-										onChange={(e) => {
-											setEditUserData((prev) => {
-												return {
-													...prev,
-													profile_picture:
-														e.target.value,
-												};
-											});
-										}}
-									/>
-								</span>
-							</div>
-						</section>
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_password"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Password:
+								</label>
 
-						<footer className="flex flex-row gap-6 justify-center mt-4">
-							<button
-								onClick={() =>
-									confirmDialog({
-										message:
-											"Are you sure you want to proceed?",
-										header: "Confirmation",
-										icon: "pi pi-exclamation-triangle",
-										defaultFocus: "accept",
-										accept: () => EditUser(editUserData),
-									})
-								}
-								className="w-fit h-fit bg-green-600 px-4 py-1 text-white rounded-md font-normal"
-							>
-								Save Changes
-							</button>
-							<button
-								onClick={() => {
-									confirmDialog({
-										message:
-											"Do you want to delete this user?",
-										header: "Delete Confirmation",
-										icon: "pi pi-info-circle",
-										defaultFocus: "reject",
-										acceptClassName: "p-button-danger",
-										accept: () =>
-											DeleteUser(editUserData.id),
-									});
-								}}
-								className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
-							>
-								Delete User
-							</button>
+								<Password
+									placeholder="Password"
+									value={editUserData.password}
+									toggleMask
+									className="w-full"
+									inputClassName="w-full border p-2"
+									onChange={(e) => {
+										setEditUserData((prev) => {
+											return {
+												...prev,
+												password: e.target.value,
+											};
+										});
+									}}
+								/>
+							</span>
+						</div>
+					</section>
 
-							<button
-								onClick={() => {
-									confirmDialog({
-										message:
-											"Do you want to delete this user?",
-										header: "Delete Confirmation",
-										icon: "pi pi-info-circle",
-										defaultFocus: "reject",
-										acceptClassName: "p-button-danger",
-										// accept: () =>
-										// DeleteUser(editUserData.id),
-									});
-								}}
-								className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
-							>
-								Disable User
-							</button>
-						</footer>
-					</div>
-				)}
+					<section className="mt-3">
+						<div className="flex flex-row justify-between items-center">
+							<h3 className="font-bold text-sm">User Details</h3>
+						</div>
+						<div className="px-2 flex flex-col gap-2 mt-2">
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_role"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Role:
+								</label>
+								<Dropdown
+									value={editUserData.role.name}
+									onChange={(e) =>
+										setEditUserData((prev) => {
+											return {
+												...prev,
+												role: {
+													...prev.role,
+													// Changes the ID to the id of the role, to be used when sending the request.
+													id: e.target.value["code"],
+													name: e.target.value,
+												},
+											};
+										})
+									}
+									options={userRolesData.map((role) => {
+										return {
+											role: role.name,
+											code: role.id,
+										};
+									})}
+									optionLabel="role"
+									placeholder="Select a Role"
+									className="w-full md:w-14rem border"
+									id="user-role"
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_track"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Track:
+								</label>
+								<Dropdown
+									value={editUserData.track}
+									onChange={(e) =>
+										setEditUserData((prev) => {
+											return {
+												...prev,
+												track: e.target.value,
+											};
+										})
+									}
+									options={trackList}
+									optionLabel="name"
+									placeholder="Select a Track"
+									className="w-full md:w-14rem border"
+									id="user-track"
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_school"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									School:
+								</label>
+								<Dropdown
+									value={
+										editUserData.school &&
+										editUserData.school
+									}
+									onChange={(e) =>
+										setEditUserData((prev) => {
+											return {
+												...prev,
+												school: e.target.value,
+											};
+										})
+									}
+									options={SchoolList}
+									optionLabel="name"
+									placeholder="Select a School"
+									className="w-full md:w-14rem border"
+									id="user-school"
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="user_profile_picture"
+									className="font-bold text-sm text-center border-1 border-zinc-300 min-w-fit"
+								>
+									Profile picture:
+								</label>
+
+								<InputText
+									placeholder="Profile Picture"
+									value={
+										editUserData &&
+										editUserData.profile_picture
+									}
+									onChange={(e) => {
+										setEditUserData((prev) => {
+											return {
+												...prev,
+												profile_picture: e.target.value,
+											};
+										});
+									}}
+									className="w-full border p-2"
+								/>
+							</span>
+						</div>
+					</section>
+
+					<footer className="flex flex-row gap-6 justify-center mt-4">
+						<button
+							onClick={(e) => {
+								e.preventDefault();
+								confirmDialog({
+									message:
+										"Are you sure you want to proceed?",
+									header: "Confirmation",
+									icon: "pi pi-exclamation-triangle",
+									defaultFocus: "accept",
+									accept: () => EditUser(editUserData),
+								});
+							}}
+							className="w-fit h-fit bg-green-600 px-4 py-1 text-white rounded-md font-normal"
+						>
+							Save Changes
+						</button>
+						<button
+							onClick={(e) => {
+								e.preventDefault();
+								confirmDialog({
+									message: "Do you want to delete this user?",
+									header: "Delete Confirmation",
+									icon: "pi pi-info-circle",
+									defaultFocus: "reject",
+									acceptClassName: "p-button-danger",
+									accept: () => DeleteUser(editUserData.id),
+								});
+							}}
+							className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
+						>
+							Delete User
+						</button>
+
+						<button
+							onClick={(e) => {
+								// TODO ability to disable and enable a user.
+								e.preventDefault();
+								confirmDialog({
+									message: "Do you want to delete this user?",
+									header: "Delete Confirmation",
+									icon: "pi pi-info-circle",
+									defaultFocus: "reject",
+									acceptClassName: "p-button-danger",
+									// accept: () =>
+									// DeleteUser(editUserData.id),
+								});
+							}}
+							disabled
+							className="w-fit h-fit bg-gray-500 px-4 py-1 text-white rounded-md font-normal"
+						>
+							Disable User
+						</button>
+					</footer>
+				</form>
 			</Dialog>
 		</div>
 	);

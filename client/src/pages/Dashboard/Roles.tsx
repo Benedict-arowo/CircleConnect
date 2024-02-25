@@ -390,14 +390,14 @@ const Roles = () => {
 			<Toast ref={toast} />
 			<ConfirmDialog />
 
-			<div className="w-full grid place-content-center mt-5">
+			<div className="w-full flex justify-center gap-2 mt-5">
 				<span className="p-input-icon-left max-w-[400px] w-full">
 					<i className="pi pi-search" />
 					<InputText
 						placeholder="Search"
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
-						className="w-full h-full"
+						className="w-full h-full p-2"
 					/>
 				</span>
 			</div>
@@ -424,7 +424,9 @@ const Roles = () => {
 					<Column field="name" header="Name"></Column>
 					<Column
 						field="users"
-						body={(role: Role) => <p>{role.users.length}</p>}
+						body={(role: Role) => (
+							<p>{role.users ? role.users.length : 0}</p>
+						)}
 						header="Users"
 					></Column>
 					<Column
@@ -486,7 +488,7 @@ const Roles = () => {
 										placeholder="Role ID"
 										value={editData.id}
 										disabled
-										className=""
+										className="w-full p-2"
 									/>
 								</span>
 
@@ -501,7 +503,7 @@ const Roles = () => {
 										id="role_name"
 										placeholder="Role Name"
 										value={editData.name}
-										className="w-full"
+										className="w-full border p-2"
 										onChange={(e) =>
 											setEditData((prev) => {
 												if (!prev) return null;
@@ -621,7 +623,7 @@ const Roles = () => {
 									id="role_name"
 									placeholder="Role Name"
 									value={createRoleData.name}
-									className="w-full"
+									className="w-full border p-2"
 									onChange={(e) =>
 										setCreateRoleData((prev) => {
 											return {
