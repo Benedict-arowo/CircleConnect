@@ -455,10 +455,6 @@ export default function Users() {
 		fetchUsers();
 	};
 
-	// useEffect(() => {
-	// 	getUserData();
-	// }, [search, sortedMethod]);
-
 	return (
 		<div className="flex-1 w-full px-6 bg-gray-100">
 			<Toast ref={toast} />

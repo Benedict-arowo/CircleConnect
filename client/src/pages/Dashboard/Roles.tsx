@@ -391,12 +391,15 @@ const Roles = () => {
 			<ConfirmDialog />
 
 			<div className="w-full grid place-content-center mt-5">
-				<input
-					placeholder="Search..."
-					className="border-2 lg:w-[500px] w-[400px] px-2 py-2 outline-[#F1C644] font-light"
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-				></input>
+				<span className="p-input-icon-left max-w-[400px] w-full">
+					<i className="pi pi-search" />
+					<InputText
+						placeholder="Search"
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						className="w-full h-full"
+					/>
+				</span>
 			</div>
 
 			<div className="flex flex-row text-center mt-10 gap-8 w-full justify-between">

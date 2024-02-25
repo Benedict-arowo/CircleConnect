@@ -18,13 +18,13 @@ import Projects from "./pages/Dashboard/Projects";
 
 // TODO: Implement Lazy loading
 
-const theme = createTheme({
-	palette: {
-		primary: {
-			main: red[500],
-		},
-	},
-});
+// const theme = createTheme({
+// 	palette: {
+// 		primary: {
+// 			main: red[500],
+// 		},
+// 	},
+// });
 
 const App = () => {
 	return (
