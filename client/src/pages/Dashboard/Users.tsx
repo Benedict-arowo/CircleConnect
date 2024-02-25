@@ -15,7 +15,7 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import { Dropdown } from "primereact/dropdown";
-import { FileUpload } from "primereact/fileupload";
+import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
 import { Password } from "primereact/password";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Role } from "./Roles";
@@ -223,6 +223,20 @@ export default function Users() {
 			);
 
 		setUserRolesData(data.data);
+	};
+
+	const customBase64Uploader = async (event: FileUploadHandlerEvent) => {
+		console.log(event);
+		// convert file to base64 encoded
+		const file = event.files[0];
+		const reader = new FileReader();
+		let blob = await fetch(file.objectURL).then((r) => r.blob()); //blob:url
+
+		reader.readAsDataURL(blob);
+
+		reader.onloadend = function () {
+			const base64data = reader.result;
+		};
 	};
 
 	const getUserData = () => {
@@ -817,15 +831,14 @@ export default function Users() {
 								>
 									Profile picture:
 								</label>
+
 								<FileUpload
 									mode="basic"
-									name="user-profile-picture"
+									name="demo[]"
 									url="/api/upload"
 									accept="image/*"
-									maxFileSize={1000000}
-									// onUpload={onUpload}
-									auto
-									chooseLabel="Browse"
+									customUpload
+									uploadHandler={customBase64Uploader}
 								/>
 								<InputText
 									placeholder="Profile Picture"
@@ -1066,10 +1079,12 @@ export default function Users() {
 									<FileUpload
 										mode="basic"
 										name="user-profile-picture"
-										url="/api/upload"
+										// url="http://localhost:8000/api/upload"
 										accept="image/*"
 										maxFileSize={1000000}
 										// onUpload={onUpload}
+										uploadHandler={customBase64Uploader}
+										customUpload
 										auto
 										chooseLabel="Browse"
 									/>
