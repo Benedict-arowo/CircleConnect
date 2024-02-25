@@ -7,7 +7,6 @@ import {
 	TableHead,
 	TableRow,
 } from "@mui/material";
-import { Button } from "@chakra-ui/react";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { UserTypeClean } from "../../types";
 import UseFetch from "../../Components/Fetch";
@@ -99,6 +98,7 @@ const Roles = () => {
 	const [displayMemberMenu, setDisplayMemberMenu] = useState(false);
 	const [createRoleData, setCreateRoleData] = useState(defaultRoleData);
 	const [newRoleDialog, setNewRoleDialog] = useState(false);
+	const [search, setSearch] = useState("");
 
 	const toast = useRef<Toast | null>(null);
 
@@ -156,6 +156,16 @@ const Roles = () => {
 				users: role.users,
 			};
 		});
+	};
+
+	const getData = () => {
+		if (search) {
+			return data.filter(
+				(role) =>
+					role.name.toLowerCase().includes(search.toLowerCase()) ||
+					role.id.toLowerCase().includes(search.toLowerCase())
+			);
+		} else return data;
 	};
 
 	const DisplayPermissions = ({
@@ -392,6 +402,8 @@ const Roles = () => {
 				<input
 					placeholder="Search..."
 					className="border-2 lg:w-[500px] w-[400px] px-2 py-2 outline-[#F1C644] font-light"
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
 				></input>
 			</div>
 
@@ -404,13 +416,6 @@ const Roles = () => {
 						className="pi pi-plus cursor-pointer shadow-lg hover:scale-105 duration-200 bg-yellow-400 text-white px-2 py-2 rounded-full"
 					></i>
 				</section>
-				<Button
-					colorScheme="yellow"
-					color="white"
-					className="shadow-sm"
-				>
-					Filter
-				</Button>
 			</div>
 
 			<div className="mt-4 border-t-2 w-full">
@@ -431,7 +436,7 @@ const Roles = () => {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{data.map((row) => {
+							{getData().map((row) => {
 								return (
 									<TableRow
 										key={row.id}
