@@ -168,13 +168,13 @@ const DashboardSidebar = () => {
 						</section>
 
 						<div>
-							<Typography
+							{/* <Typography
 								variant="h6"
 								component="h2"
 								sx={{ color: "white" }}
 							>
 								John Doe
-							</Typography>
+							</Typography> */}
 							<p className="text-gray-400 text-xs">ADMIN</p>
 						</div>
 					</div>

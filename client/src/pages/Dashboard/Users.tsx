@@ -20,6 +20,9 @@ import { Password } from "primereact/password";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Role } from "./Roles";
 import { CascadeSelect } from "primereact/cascadeselect";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Tag } from "primereact/tag";
 
 interface userData {
 	id: string;
@@ -531,113 +534,79 @@ export default function Users() {
 			</div>
 
 			<div className="mt-4 border-t-2 w-full">
-				<TableContainer component={Paper}>
-					<Table
-						sx={{
-							"& tr > *:not(:first-child)": {
-								textAlign: "center",
-							},
+				<DataTable
+					value={getUserData()}
+					tableStyle={{ minWidth: "50rem" }}
+					showGridlines
+					stripedRows
+				>
+					<Column
+						body={(user: userData) => {
+							return (
+								<>
+									{user.profile_picture && (
+										<Avatar
+											image={user.profile_picture}
+											shape="square"
+											style={{ objectFit: "cover" }}
+										/>
+									)}
+									{!user.profile_picture && (
+										<Avatar
+											label={user.first_name[0]}
+											style={{
+												backgroundColor: "#9c27b0",
+												color: "#ffffff",
+											}}
+											shape="circle"
+										/>
+									)}
+								</>
+							);
 						}}
-					>
-						<TableHead>
-							<TableRow>
-								<TableCell>#</TableCell>
-								<TableCell>Name</TableCell>
-								<TableCell
-									style={{
-										color:
-											search.mode &&
-											search.mode.code === "ROLE"
-												? "blue"
-												: "",
-									}}
+					/>
+					<Column field="first_name" header="Name"></Column>
+					<Column
+						body={(user: userData) => (
+							<Tag value={user.role.name} severity="success" />
+						)}
+						header="Role"
+					></Column>
+					<Column
+						body={(user: userData) => (
+							<Tag value={user.school} severity="info" />
+						)}
+						header="School"
+					></Column>
+					<Column
+						body={(user: userData) => <p>{user.projects.length}</p>}
+						header="Project(s)"
+					></Column>
+					<Column field="track" header="Track" />
+					<Column
+						body={(user: userData) => (
+							<button
+								className=" ml-5"
+								onClick={() => manageUser(user.id)}
+							>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									className="w-6 h-6"
 								>
-									Role
-								</TableCell>
-								<TableCell
-									style={{
-										color:
-											search.mode &&
-											search.mode.code === "SCHOOL"
-												? "blue"
-												: "",
-									}}
-								>
-									School
-								</TableCell>
-								<TableCell
-									style={{
-										color:
-											search.mode &&
-											search.mode.code === "TRACK"
-												? "blue"
-												: "",
-									}}
-								>
-									Track
-								</TableCell>
-								<TableCell>Project(s)</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{getUserData().map((row) => (
-								<TableRow key={row.id}>
-									<TableCell className="">
-										{row.profile_picture && (
-											<Avatar
-												image={row.profile_picture}
-												shape="square"
-												style={{ objectFit: "cover" }}
-											/>
-										)}
-										{!row.profile_picture && (
-											<Avatar
-												label={row.first_name[0]}
-												style={{
-													backgroundColor: "#9c27b0",
-													color: "#ffffff",
-												}}
-												shape="circle"
-											/>
-										)}
-									</TableCell>
-									<TableCell>{row.first_name}</TableCell>
-									<TableCell>{row.role.name}</TableCell>
-									<TableCell className="w-[64px]">
-										{row.school}
-									</TableCell>
-									<TableCell>
-										<p className="bg-emerald-500 mx-auto px-3 py-1 rounded-sm text-white w-fit">
-											{row.track}
-										</p>
-									</TableCell>
-									<TableCell>{row.projects.length}</TableCell>
-									<TableCell>
-										<button
-											className=" ml-5"
-											onClick={() => manageUser(row.id)}
-										>
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												fill="none"
-												viewBox="0 0 24 24"
-												stroke-width="1.5"
-												stroke="currentColor"
-												className="w-6 h-6"
-											>
-												<path
-													stroke-linecap="round"
-													stroke-linejoin="round"
-													d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-												/>
-											</svg>
-										</button>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</TableContainer>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+									/>
+								</svg>
+							</button>
+						)}
+					/>
+				</DataTable>
 			</div>
 
 			<Dialog

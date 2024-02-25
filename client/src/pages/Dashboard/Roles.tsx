@@ -454,7 +454,6 @@ const Roles = () => {
 								</svg>
 							</button>
 						)}
-						header="Operation"
 					></Column>
 				</DataTable>
 			</div>
