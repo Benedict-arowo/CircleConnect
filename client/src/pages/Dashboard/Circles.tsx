@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
 	Table,
 	TableBody,
@@ -7,13 +6,14 @@ import {
 	TableHead,
 	TableRow,
 	Paper,
-	Modal,
-	Box,
 } from "@mui/material";
 import { Button } from "@chakra-ui/react";
-import ChildModal from "../../Components/ChildModal";
 import { useEffect, useState } from "react";
 import UseFetch from "../../Components/Fetch";
+import { Dialog } from "primereact/dialog";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { Toast } from "primereact/toast";
+import { useRef } from "react";
 
 type UserType = {
 	id: string;
@@ -39,14 +39,16 @@ type CircleData = {
 	};
 };
 
-export default function Dashboard() {
+export default function CirclesDashboard() {
 	const [data, setData] = useState<CircleData[]>([]);
 	const [selectedItem, setSelectedItem] = useState<CircleData | null>(null);
-	const [open, setOpen] = React.useState(false);
+	const [visible, setVisible] = useState(false);
 	const SelectItem = (item: CircleData) => {
 		setSelectedItem(item);
 		handleOpen();
 	};
+
+	const toast = useRef<Toast | null>(null);
 
 	const fetchCircles = async () => {
 		const { data, response } = await UseFetch({
@@ -75,6 +77,13 @@ export default function Dashboard() {
 	const DeleteCircle = async () => {
 		if (!selectedItem) return;
 
+		toast.current?.show({
+			severity: "info",
+			summary: "Loading...",
+			detail: "Deleting circle...",
+			life: 3000,
+		});
+
 		const { data, response } = await UseFetch({
 			url: `circle/${selectedItem.id}`,
 			options: {
@@ -85,9 +94,17 @@ export default function Dashboard() {
 		});
 
 		if (!response.ok)
-			throw new Error(
-				data ? data.message : "Error trying to communicate with server."
-			);
+			// Displays the error message gotten back from the server, and if there isn't one, it uses a generic message.
+			return toast.current?.show({
+				severity: "error",
+				summary: "Oops..",
+				detail: `${
+					data && data.message
+						? data.message
+						: "Error trying to communicate with the server."
+				}`,
+				life: 3000,
+			});
 
 		console.log("circle deleted successfully");
 		// Removes the deleted item from the list of items stored locally
@@ -114,11 +131,24 @@ export default function Dashboard() {
 		});
 
 		if (!response.ok)
-			throw new Error(
-				data ? data.message : "Error trying to communicate with server."
-			);
+			// Displays the error message gotten back from the server, and if there isn't one, it uses a generic message.
+			return toast.current?.show({
+				severity: "error",
+				summary: "Oops..",
+				detail: `${
+					data && data.message
+						? data.message
+						: "Error trying to communicate with the server."
+				}`,
+				life: 3000,
+			});
 
-		console.log("New circle added successfully");
+		toast.current?.show({
+			severity: "success",
+			summary: "Circle Created!",
+			detail: "Successfully saved changes...",
+			life: 3000,
+		});
 		// Adds the new circle to the list of circles.
 		setData((prevData) => [...prevData, data.data]);
 	};
@@ -150,9 +180,24 @@ export default function Dashboard() {
 		});
 
 		if (!response.ok)
-			throw new Error(
-				data ? data.message : "Error trying to communicate with server."
-			);
+			// Displays the error message gotten back from the server, and if there isn't one, it uses a generic message.
+			return toast.current?.show({
+				severity: "error",
+				summary: "Oops..",
+				detail: `${
+					data && data.message
+						? data.message
+						: "Error trying to communicate with the server."
+				}`,
+				life: 3000,
+			});
+
+		toast.current?.show({
+			severity: "success",
+			summary: "Circle Updated!",
+			detail: "Successfully saved changes...",
+			life: 3000,
+		});
 
 		console.log("Circle updated successfully");
 		// Update the data state with the updated item
@@ -163,20 +208,85 @@ export default function Dashboard() {
 		);
 	};
 
-	const handleOpen = () => {
-		setOpen(true);
+	const [query, setQuery] = useState("");
+
+	const handleSearch = () => {
+		const searchData: CircleData = {
+			id: selectedItem?.id ?? 0, // Use optional chaining and nullish coalescing
+			description: selectedItem?.description ?? "",
+			rating: selectedItem?.rating ?? 0,
+			members: selectedItem?.members ?? [],
+			lead: selectedItem?.lead ?? null,
+			colead: selectedItem?.colead ?? null,
+			projects: selectedItem?.projects ?? [],
+			createdAt: selectedItem?.createdAt ?? new Date(),
+			_count: selectedItem?._count ?? {
+				members: 0,
+				projects: 0,
+				requests: 0,
+			},
+		};
+
+		if (!query.trim()) {
+			setData(data);
+			return;
+		}
+
+		const lowerCaseQuery = query.toLowerCase();
+		const filtered = data.filter(
+			(item) =>
+				item.id.toString().includes(lowerCaseQuery) ||
+				item.members.toString().toLowerCase().includes(lowerCaseQuery)
+		);
+
+		if(filtered.length === 0) {
+			setData(data);
+			return toast.current?.show({
+				severity: "error",
+				summary: "Circle not found!",
+				detail: "",
+				life: 3000,
+			});
+		}
+		else {
+			setData(filtered);
+		}
+
+		
 	};
-	const handleClose = () => {
-		setOpen(false);
+
+	//
+
+	const handleOpen = () => {
+		setVisible(true);
 	};
 
 	return (
 		<div className="flex-1 w-full px-6 bg-gray-100">
-			<div className="w-full grid place-content-center mt-5">
+			<Toast ref={toast} />
+			<ConfirmDialog />
+			<div className="w-full place-content-center mt-5 flex gap-2">
 				<input
+					onChange={(e) => setQuery(e.target.value)}
 					placeholder="Search..."
 					className="border-2 lg:w-[500px] w-[400px] px-2 py-2 outline-[#F1C644] font-light"
 				></input>
+				<button onClick={handleSearch} className="border-2">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						className="w-4 h-4"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+						/>
+					</svg>
+				</button>
 			</div>
 
 			<div className="flex flex-row text-center mt-10 gap-8 w-full justify-between">
@@ -262,77 +372,65 @@ export default function Dashboard() {
 				</TableContainer>
 
 				{selectedItem && (
-					<Modal
-						open={open}
-						onClose={handleClose}
-						aria-labelledby="parent-modal-title"
-						aria-describedby="parent-modal-description"
+					<Dialog
+						header="Editing Circle"
+						visible={visible}
+						style={{ width: "50vw" }}
+						onHide={() => setVisible(false)}
 					>
-						<Box className="bg-white w-96 absolute right-0 top-40">
-							<div className="flex justify-center mt-5 items-center ">
-								<button
-									onClick={handleClose}
-									title="close"
-									className="group cursor-pointer outline-none hover:rotate-90 duration-300"
-								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke-width="1.5"
-										stroke="currentColor"
-										className="w-6 h-6 fill-slate-100"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											d="M6 18 18 6M6 6l12 12"
-										/>
-									</svg>
-								</button>
+						<div className="flex flex-col gap-5 m-10">
+							<div className="flex   justify-between">
+								<p>ID</p>
+								<p>{selectedItem.id}</p>
+							</div>
+							<div className="flex   justify-between">
+								<p>Member </p>
+								<p>{selectedItem.members.length}</p>
 							</div>
 
-							<div className="flex flex-col gap-5 m-10">
-								<div className="flex   justify-between">
-									<p>ID:</p>
-									<p>{selectedItem.id}</p>
-								</div>
-								<div className="flex   justify-between">
-									<p>Member: </p>
-									<p>{selectedItem.members.length}</p>
-								</div>
-
-								<div className="flex   justify-between">
-									<p>Project:</p>
-									<p> {selectedItem.projects.length}</p>
-								</div>
-								<div className="flex   justify-between">
-									<p>Rating: </p>
-									<p>{selectedItem.rating}</p>
-								</div>
+							<div className="flex   justify-between">
+								<p>Project</p>
+								<p> {selectedItem.projects.length}</p>
 							</div>
+							<div className="flex   justify-between">
+								<p>Rating </p>
+								<p>{selectedItem.rating}</p>
+							</div>
+						</div>
 
-							<div className="flex  justify-evenly mb-5">
-								{
-									<ChildModal
-										text="Delete"
-										onClick={DeleteCircle}
-										text2="Delete"
-										text3="Are you sure you want to delete this cirlce?"
-										textp="This cirlce will be deleted permanently. You can't undo this action."
-									/>
+						<footer className="flex flex-row gap-6 justify-center mt-4">
+							<button
+								onClick={() =>
+									confirmDialog({
+										message:
+											"Are you sure you want to proceed?",
+										header: "Confirmation",
+										icon: "pi pi-exclamation-triangle",
+										defaultFocus: "accept",
+										accept: editCircle,
+									})
 								}
-
-								<button
-									onClick={editCircle}
-									className=" bg-transparent text-blue-700 font-light font-serif"
-								>
-									{" "}
-									EDIT
-								</button>
-							</div>
-						</Box>
-					</Modal>
+								className="w-fit h-fit bg-green-600 px-4 py-1 text-white rounded-md font-normal"
+							>
+								Edit Circle
+							</button>
+							<button
+								onClick={() =>
+									confirmDialog({
+										message:
+											"Are you sure you want to proceed?",
+										header: "Confirmation",
+										icon: "pi pi-exclamation-triangle",
+										defaultFocus: "accept",
+										accept: DeleteCircle,
+									})
+								}
+								className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
+							>
+								Delete Circle
+							</button>
+						</footer>
+					</Dialog>
 				)}
 			</div>
 		</div>

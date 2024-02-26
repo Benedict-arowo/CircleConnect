@@ -15,6 +15,7 @@ import Roles from "./pages/Dashboard/Roles";
 import DashboardSidebar from "./Components/dashboard_sidebar";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Projects from "./pages/Dashboard/Projects";
+import Circles from "./pages/Discover";
 
 // TODO: Implement Lazy loading
 
@@ -41,7 +42,7 @@ const App = () => {
 					<Route path="/auth/success" element={<Success />} />
 					<Route path="/dashboard" element={<DashboardSidebar />}>
 						<Route path="" element={<Dashboard />} />
-						<Route path="circles" element={<CirclesDashboard />} />
+						<Route path="circles" element={<CirclesDashboard/>} />
 						<Route path="users" element={<Users />} />
 						<Route path="roles" element={<Roles />} />
 						<Route path="projects" element={<Projects />} />
