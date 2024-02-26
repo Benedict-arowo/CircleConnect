@@ -23,7 +23,7 @@ type UserType = {
 	projects: [];
 };
 
-type CircleData = {
+export type CircleData = {
 	id: number;
 	description: string;
 	rating: number;
@@ -239,7 +239,7 @@ export default function CirclesDashboard() {
 				item.members.toString().toLowerCase().includes(lowerCaseQuery)
 		);
 
-		if(filtered.length === 0) {
+		if (filtered.length === 0) {
 			setData(data);
 			return toast.current?.show({
 				severity: "error",
@@ -247,12 +247,9 @@ export default function CirclesDashboard() {
 				detail: "",
 				life: 3000,
 			});
-		}
-		else {
+		} else {
 			setData(filtered);
 		}
-
-		
 	};
 
 	//

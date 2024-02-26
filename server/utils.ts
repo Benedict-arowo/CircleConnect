@@ -56,6 +56,7 @@ export const UserSelectClean = {
 	id: true,
 	profile_picture: true,
 	first_name: true,
+	last_name: true,
 	role: true,
 };
 
