@@ -30,6 +30,11 @@ model Role {
   canManageRoles Boolean @default(false)
   canManageUsers Boolean @default(false)
 
+  canCreateProjectReviews Boolean @default(false)
+  canModifyOwnProjectReviews Boolean @default(false)
+  canDeleteOwnProjectReviews Boolean @default(false)
+  canManageProjectRevies Boolean @default(false)
+
   isAdmin Boolean @default(false)
   
   users User[] 
