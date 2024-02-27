@@ -95,6 +95,10 @@ export interface Req extends Request {
 			canDeleteOtherProject: boolean;
 			canAddProjectToCircle: boolean;
 			canRemoveProjectFromCircle: boolean;
+			canCreateProjectReviews: boolean;
+			canModifyOwnProjectReviews: boolean;
+			canManageProjectRevies: boolean;
+			canDeleteOwnProjectReviews: boolean;
 			isAdmin: boolean;
 		};
 		request?: {
