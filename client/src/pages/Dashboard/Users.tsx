@@ -365,7 +365,7 @@ export default function Users() {
 						userDetails.first_name && userDetails.first_name,
 					last_name: userDetails.last_name && userDetails.last_name,
 					password: userDetails.password && userDetails.password,
-					role: userDetails.role.id && userDetails.role.id,
+					roleId: userDetails.role.id && userDetails.role.id,
 					track: userDetails.track.code && userDetails.track.code,
 					school: userDetails.school.code && userDetails.school.code,
 				},
