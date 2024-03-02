@@ -39,6 +39,7 @@ export type User = {
 		canRemoveProjectFromCircle: boolean;
 		canManageRoles: boolean;
 		canManageUsers: boolean;
+		canAddUserToProject: boolean;
 		isAdmin: boolean;
 	};
 };
