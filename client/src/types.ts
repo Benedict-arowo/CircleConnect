@@ -22,6 +22,7 @@ export type UserTypeClean = {
 	id: string;
 	profile_picture: string;
 	first_name: string;
+	last_name: string;
 };
 
 export type pinProject = {
