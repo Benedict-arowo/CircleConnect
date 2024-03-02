@@ -35,6 +35,7 @@ export type BodyUserArgs = {
 		pictures?: string;
 		visibility?: string;
 		pinned?: boolean;
+		createdBy?: string;
 	};
 };
 
@@ -170,9 +171,21 @@ export const GetProjectService = async (id: string) => {
 	return project;
 };
 
-export const CreateProjectService = async ({ body, user }: BodyUserArgs) => {
-	const { name, description, tags, github, liveLink, pictures } = body;
-
+export const CreateProjectService = async ({
+	body,
+	user: activeUser,
+}: BodyUserArgs) => {
+	const {
+		name,
+		description,
+		tags,
+		github,
+		liveLink,
+		pictures,
+		createdBy,
+		circleId,
+	} = body;
+	const { role: userRole } = activeUser;
 	if (!name || !description)
 		throw new CustomError(
 			"Name, and Description must be provided.",
@@ -211,13 +224,34 @@ export const CreateProjectService = async ({ body, user }: BodyUserArgs) => {
 	// 		);
 	// }
 
+	if (createdBy) {
+		// Permission checking, admin or can add use to project permission only
+		if (!(userRole.isAdmin || userRole.canAddUserToProject))
+			throw new CustomError(
+				"You do not have permission to perform this action.",
+				StatusCodes.UNAUTHORIZED
+			);
+
+		const user = await prisma.user.findUnique({
+			where: {
+				id: createdBy,
+			},
+		});
+
+		if (!user)
+			throw new CustomError(
+				"User not found.",
+				StatusCodes.INTERNAL_SERVER_ERROR
+			);
+	}
+
 	const project = await prisma.project.create({
 		data: {
 			name,
 			description,
 			tags: tags ? tags.split("|") : undefined,
 			// circleId: circleId ? Number(circleId) : undefined,
-			createdById: user.id,
+			createdById: createdBy ? createdBy : user.id,
 			github: github ? github : undefined,
 			liveLink: liveLink ? liveLink : undefined,
 			pictures: pictures ? pictures.split("|") : undefined,

@@ -30,7 +30,7 @@ const { instrument } = require("@socket.io/admin-ui");
 dotenv.config();
 
 const makeApp = (
-	database: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+	database: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>
 ) => {
 	const app: Express = express();
 	const server = http.createServer(app);
@@ -52,7 +52,7 @@ const makeApp = (
 				prisma: database, // Prisma client instance
 				tableName: process.env.SESSION_TABLE_NAME as string, // Name of the session table in database
 			}),
-		}),
+		})
 	);
 
 	// Socket.io
@@ -68,7 +68,7 @@ const makeApp = (
 		cors({
 			origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
 			credentials: true,
-		}),
+		})
 	);
 	app.use(express.json());
 	app.use(express.urlencoded({ extended: false }));
@@ -124,7 +124,7 @@ const makeApp = (
 	app.use(
 		"/api-docs",
 		swaggerUi.serve,
-		swaggerUi.setup(specs, { explorer: true }),
+		swaggerUi.setup(specs, { explorer: true })
 	);
 	app.use("/auth/google", googleRouter);
 	app.use("/auth/github", githubRouter);
