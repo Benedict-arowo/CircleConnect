@@ -328,6 +328,47 @@ const Projects = () => {
 		setEditProjectData(defaultEditProjectData);
 	};
 
+	const DeleteProject = async (projectId: string) => {
+		toast.current?.show({
+			severity: "info",
+			summary: "Loading...",
+			detail: "Deleting project...",
+			life: 3000,
+		});
+
+		const { data, response } = await UseFetch({
+			url: `project/${projectId}`,
+			options: {
+				method: "DELETE",
+				returnResponse: true,
+				useServerUrl: true,
+			},
+		});
+
+		if (!response.ok)
+			// Displays the error message gotten back from the server, and if there isn't one, it uses a generic message.
+			return toast.current?.show({
+				severity: "error",
+				summary: "Oops..",
+				detail: `${
+					data && data.message
+						? data.message
+						: "Error trying to communicate with the server."
+				}`,
+				life: 3000,
+			});
+
+		toast.current?.show({
+			severity: "success",
+			summary: "Project Deleted!",
+			detail: "Successfully deleted project...",
+			life: 3000,
+		});
+
+		await fetchProjects();
+		setEditDialogIsVisible(false);
+	};
+
 	const CreateProject = async () => {
 		toast.current?.show({
 			severity: "info",
@@ -377,6 +418,33 @@ const Projects = () => {
 		await fetchProjects();
 		setCreateProjectDialogIsVisible(false);
 		setCreateProjectData(defaultCreateProjectData);
+	};
+
+	/**
+	 * Retrieves filtered data based on the search input.
+	 * If a search query is provided, filters the data based on the following conditions:
+	 * - Matches the name (case-insensitive) or rating (as a string) of each item
+	 * - Matches the ID (as a string) of the circle property of each item, if it exists
+	 * - Matches any tag (case-insensitive) that starts with the search query
+	 * If no search query is provided, returns the original data.
+	 *
+	 * @returns {Array} The filtered data based on the search input.
+	 */
+	const getData = () => {
+		if (search) {
+			return data.filter(
+				(item) =>
+					item.name.toLowerCase().includes(search.toLowerCase()) ||
+					item.rating.toString().includes(search) ||
+					(item.circle &&
+						item.circle.id.toString().includes(search)) ||
+					item.tags.find((tag) =>
+						tag.toLowerCase().startsWith(search.toLowerCase())
+					)
+			);
+		}
+
+		return data;
 	};
 
 	return (
@@ -450,7 +518,7 @@ const Projects = () => {
 
 			<div className="mt-4 border-t-2 w-full">
 				<DataTable
-					value={data}
+					value={getData()}
 					tableStyle={{ minWidth: "50rem" }}
 					showGridlines
 					stripedRows
@@ -745,7 +813,8 @@ const Projects = () => {
 									icon: "pi pi-info-circle",
 									defaultFocus: "reject",
 									acceptClassName: "p-button-danger",
-									// accept: () => DeleteRole(editData.id),
+									accept: () =>
+										DeleteProject(editProjectData.id),
 								});
 							}}
 							className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
@@ -860,7 +929,7 @@ const Projects = () => {
 								</label>
 								<Chips
 									value={createProjectData.tags}
-									className="p-2 border min-w-full "
+									className="p-2 border "
 									onChange={(e) =>
 										setCreateProjectData((prev) => ({
 											...prev,

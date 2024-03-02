@@ -25,7 +25,7 @@ export const getProject = async (req: Req, res: Response) => {
 	if (!id)
 		throw new CustomError(
 			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	const project = await GetProjectService(id);
@@ -41,7 +41,7 @@ export const createProject = async (req: Req, res: Response) => {
 	if (!(userRole.canCreateProject || userRole.isAdmin))
 		throw new CustomError(
 			"You do not have permission to perform this action",
-			StatusCodes.UNAUTHORIZED,
+			StatusCodes.UNAUTHORIZED
 		);
 
 	const project = await CreateProjectService({
@@ -69,7 +69,7 @@ export const editProject = async (req: Req, res: Response) => {
 	)
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED,
+			StatusCodes.UNAUTHORIZED
 		);
 
 	const project = await EditProjectService({
@@ -96,7 +96,7 @@ export const deleteProject = async (req: Req, res: Response) => {
 	)
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED,
+			StatusCodes.UNAUTHORIZED
 		);
 
 	await DeleteProjectService({ user: req.user, id, body: {} });
@@ -112,7 +112,7 @@ export const rateProject = async (req: Req, res: Response) => {
 	if (!rating)
 		throw new CustomError(
 			"Rating must be provided.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	if (rating > MAX_RATING_VALUE)
@@ -136,13 +136,13 @@ export const manageProjectCircle = async (req: Req, res: Response) => {
 	if (circleId && !userRole.canAddProjectToCircle)
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED,
+			StatusCodes.UNAUTHORIZED
 		);
 
 	if (!circleId && !userRole.canRemoveProjectFromCircle)
 		throw new CustomError(
 			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED,
+			StatusCodes.UNAUTHORIZED
 		);
 
 	const project = await ManageProjectCircleService({
