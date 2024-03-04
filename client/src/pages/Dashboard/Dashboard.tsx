@@ -7,7 +7,6 @@ const Dashboard = () => {
 	const [chartOptions, setChartOptions] = useState({});
 	const [chartTrackData, setTrackChartData] = useState({});
 	const [chartTrackOptions, setTrackChartOptions] = useState({});
-	const user = UseUser();
 
 	useEffect(() => {
 		const documentStyle = getComputedStyle(document.documentElement);
