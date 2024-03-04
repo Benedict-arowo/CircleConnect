@@ -29,7 +29,8 @@ import { format } from "timeago.js";
 import { UseSocketContext } from "../contexts/SocketContext";
 import Notify from "./Notify";
 import { Socket } from "socket.io-client";
-import { UseUser } from "../contexts/UserContext";
+import { UseSetUser, UseUser } from "../contexts/UserContext";
+import { LogoutFunc } from "./Fetch/LogoutFunc";
 
 type Props = {
 	className?: string;
@@ -50,6 +51,7 @@ type Notification = {
 const Nav = (props: Props) => {
 	const dispatch = useDispatch();
 	const socket: Socket = UseSocketContext();
+	const setUser = UseSetUser();
 	const { className, type = "dark", useBackground = true } = props;
 	// const user = useSelector((state) => state.user);
 	const user = UseUser();
@@ -99,25 +101,6 @@ const Nav = (props: Props) => {
 	useEffect(() => {
 		fetchNotifications();
 	}, []);
-
-	const logoutHandler = async () => {
-		dispatch(logoutUser());
-		onClose();
-		await UseFetch({
-			url: "logout",
-			options: {
-				method: "GET",
-				useServerUrl: true,
-				returnResponse: true,
-			},
-		})
-			.then(({ response }) => {
-				if (!response.ok) throw new Error();
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	};
 
 	const updateNotification = async (id: string, status: boolean) => {
 		const { data, response } = await UseFetch({
@@ -391,7 +374,11 @@ const Nav = (props: Props) => {
 								<div className="w-full h-[1px] rounded-md bg-gray-200 my-1"></div>
 
 								<button
-									onClick={logoutHandler}
+									onClick={() => {
+										LogoutFunc();
+										setUser({ mode: "LOGOUT" });
+										onClose();
+									}}
 									className="mt-2 px-2 font-light"
 								>
 									Logout
