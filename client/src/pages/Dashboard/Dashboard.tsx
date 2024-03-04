@@ -69,7 +69,6 @@ const Dashboard = () => {
 		setTrackChartOptions(track_options);
 	}, []);
 
-	console.log(user);
 	return (
 		<div className="flex-1 w-full px-6 bg-gray-100">
 			<header className="flex flex-row gap-4 w-full justify-center">

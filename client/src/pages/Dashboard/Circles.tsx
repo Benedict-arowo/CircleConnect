@@ -14,6 +14,9 @@ import { Dialog } from "primereact/dialog";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Toast } from "primereact/toast";
 import { useRef } from "react";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Avatar } from "primereact/avatar";
 
 type UserType = {
 	id: string;
@@ -308,128 +311,150 @@ export default function CirclesDashboard() {
 			</div>
 
 			<div className="mt-4 border-t-2 w-full">
-				<TableContainer component={Paper}>
-					<Table
-						sx={{
-							"& tr > *:not(:first-type-of)": {
-								textAlign: "center",
-							},
+				<DataTable
+					value={data}
+					tableStyle={{ minWidth: "50rem" }}
+					showGridlines
+					stripedRows
+				>
+					<Column field="id" header="ID" />
+					<Column
+						field="rating"
+						body={(circleData) => (
+							<p className="text-blue-500">
+								{circleData.rating}/5
+							</p>
+						)}
+						header="Rating"
+					/>
+					<Column
+						header="Projects"
+						body={(circleData) => circleData.projects.length}
+					/>
+					<Column
+						header="Members"
+						body={(circleData) => {
+							let memberLength = circleData._count.members;
+
+							if (circleData.lead) memberLength += 1;
+							if (circleData.colead) memberLength += 1;
+							return memberLength;
 						}}
-					>
-						<TableHead>
-							<TableRow>
-								<TableCell>ID</TableCell>
-								<TableCell>Member(s)</TableCell>
-								<TableCell>Project(s)</TableCell>
-								<TableCell>Rating</TableCell>
-								<TableCell>Operation</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{data.map((row) => {
-								let memberLength = row._count.members;
+					/>
+					<Column
+						header="Lead"
+						body={(circleData) => {
+							return (
+								<>
+									{circleData.lead && (
+										<Avatar
+											image={
+												circleData.lead.profile_picture
+											}
+											label={
+												circleData.lead.first_name[0]
+											}
+											style={{
+												backgroundColor: "#9c27b0",
+												color: "#ffffff",
+												objectFit: "cover",
+											}}
+											shape="circle"
+										/>
+									)}
+								</>
+							);
+						}}
+					/>
+					<Column
+						body={(circleData) => {
+							return (
+								<Button
+									className=""
+									onClick={() => SelectItem(circleData)}
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="1.5"
+										stroke="currentColor"
+										className="w-6 h-6"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+										/>
+									</svg>
+								</Button>
+							);
+						}}
+					/>
+				</DataTable>
+			</div>
 
-								if (row.lead) memberLength += 1;
-								if (row.colead) memberLength += 1;
-
-								return (
-									<TableRow key={row.id}>
-										<TableCell>{row.id}</TableCell>
-										<TableCell>{memberLength}</TableCell>
-										<TableCell>
-											{row._count.projects}
-										</TableCell>
-										<TableCell>{row.rating}</TableCell>
-										<TableCell>
-											<Button
-												className=" ml-5"
-												onClick={() => SelectItem(row)}
-											>
-												<svg
-													xmlns="http://www.w3.org/2000/svg"
-													fill="none"
-													viewBox="0 0 24 24"
-													stroke-width="1.5"
-													stroke="currentColor"
-													className="w-6 h-6"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-													/>
-												</svg>
-											</Button>
-										</TableCell>
-									</TableRow>
-								);
-							})}
-						</TableBody>
-					</Table>
-				</TableContainer>
-
-				{selectedItem && (
-					<Dialog
-						header="Editing Circle"
-						visible={visible}
-						style={{ width: "50vw" }}
-						onHide={() => setVisible(false)}
-					>
-						<div className="flex flex-col gap-5 m-10">
-							<div className="flex   justify-between">
-								<p>ID</p>
-								<p>{selectedItem.id}</p>
-							</div>
-							<div className="flex   justify-between">
-								<p>Member </p>
-								<p>{selectedItem.members.length}</p>
-							</div>
-
-							<div className="flex   justify-between">
-								<p>Project</p>
-								<p> {selectedItem.projects.length}</p>
-							</div>
-							<div className="flex   justify-between">
-								<p>Rating </p>
-								<p>{selectedItem.rating}</p>
-							</div>
+			{selectedItem && (
+				<Dialog
+					header="Editing Circle"
+					visible={visible}
+					style={{ width: "50vw" }}
+					onHide={() => setVisible(false)}
+				>
+					<div className="flex flex-col gap-5 m-10">
+						<div className="flex   justify-between">
+							<p>ID</p>
+							<p>{selectedItem.id}</p>
+						</div>
+						<div className="flex   justify-between">
+							<p>Member </p>
+							<p>{selectedItem.members.length}</p>
 						</div>
 
-						<footer className="flex flex-row gap-6 justify-center mt-4">
-							<button
-								onClick={() =>
-									confirmDialog({
-										message:
-											"Are you sure you want to proceed?",
-										header: "Confirmation",
-										icon: "pi pi-exclamation-triangle",
-										defaultFocus: "accept",
-										accept: editCircle,
-									})
-								}
-								className="w-fit h-fit bg-green-600 px-4 py-1 text-white rounded-md font-normal"
-							>
-								Edit Circle
-							</button>
-							<button
-								onClick={() =>
-									confirmDialog({
-										message:
-											"Are you sure you want to proceed?",
-										header: "Confirmation",
-										icon: "pi pi-exclamation-triangle",
-										defaultFocus: "accept",
-										accept: DeleteCircle,
-									})
-								}
-								className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
-							>
-								Delete Circle
-							</button>
-						</footer>
-					</Dialog>
-				)}
-			</div>
+						<div className="flex   justify-between">
+							<p>Project</p>
+							<p> {selectedItem.projects.length}</p>
+						</div>
+						<div className="flex   justify-between">
+							<p>Rating </p>
+							<p>{selectedItem.rating}</p>
+						</div>
+					</div>
+
+					<footer className="flex flex-row gap-6 justify-center mt-4">
+						<button
+							onClick={() =>
+								confirmDialog({
+									message:
+										"Are you sure you want to proceed?",
+									header: "Confirmation",
+									icon: "pi pi-exclamation-triangle",
+									defaultFocus: "accept",
+									accept: editCircle,
+								})
+							}
+							className="w-fit h-fit bg-green-600 px-4 py-1 text-white rounded-md font-normal"
+						>
+							Edit Circle
+						</button>
+						<button
+							onClick={() =>
+								confirmDialog({
+									message:
+										"Are you sure you want to proceed?",
+									header: "Confirmation",
+									icon: "pi pi-exclamation-triangle",
+									defaultFocus: "accept",
+									accept: DeleteCircle,
+								})
+							}
+							className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
+						>
+							Delete Circle
+						</button>
+					</footer>
+				</Dialog>
+			)}
 		</div>
 	);
 }

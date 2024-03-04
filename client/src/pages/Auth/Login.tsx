@@ -135,7 +135,6 @@ const Login = () => {
 			}
 
 			// Save user's credentials to session storage
-			console.log(data.data);
 			// dispatch(loginUser(data.data));
 			SetUser({ mode: "LOGIN", data: data.data });
 			// setUser({

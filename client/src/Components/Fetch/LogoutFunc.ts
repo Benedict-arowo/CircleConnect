@@ -2,9 +2,9 @@ import UseFetch from "../Fetch";
 
 export const LogoutFunc = async () => {
 	const { response, data } = await UseFetch({
-		url: "activeUser",
+		url: "logout",
 		options: {
-			method: "POST",
+			method: "GET",
 			returnResponse: true,
 			useServerUrl: true,
 		},
