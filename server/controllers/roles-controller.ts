@@ -11,6 +11,7 @@ import {
 	permissionList,
 	validatePermission,
 } from "../service/roles.service";
+import { UserSelectClean } from "../utils";
 
 export const createRole = async (req: Req, res: Response) => {
 	const {
@@ -58,6 +59,11 @@ export const getRoles = async (req: Req, res: Response) => {
 		);
 
 	const roles = await prisma.role.findMany({
+		include: {
+			users: {
+				select: UserSelectClean,
+			},
+		},
 		take: limit ? parseInt(limit) : undefined,
 	});
 

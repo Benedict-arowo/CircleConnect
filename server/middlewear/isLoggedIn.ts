@@ -22,8 +22,8 @@ const isLoggedIn = (req: Req, res: Response, next: NextFunction) => {
 					next(
 						new CustomError(
 							"Authentication failed",
-							StatusCodes.UNAUTHORIZED
-						)
+							StatusCodes.UNAUTHORIZED,
+						),
 					);
 				}
 
@@ -33,8 +33,8 @@ const isLoggedIn = (req: Req, res: Response, next: NextFunction) => {
 					next(
 						new CustomError(
 							"You must be authenticated to access this route.",
-							StatusCodes.UNAUTHORIZED
-						)
+							StatusCodes.UNAUTHORIZED,
+						),
 					);
 				}
 
@@ -42,7 +42,7 @@ const isLoggedIn = (req: Req, res: Response, next: NextFunction) => {
 				req.user = user;
 				console.log("jwt authentication succeeded");
 				next();
-			}
+			},
 		)(req, res, next); // Invoke the middleware function returned by passport.authenticate
 	}
 };

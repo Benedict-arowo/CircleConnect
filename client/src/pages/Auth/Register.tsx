@@ -29,7 +29,7 @@ const Register = () => {
 		const loginWindow = window.open(
 			GOOGLE_AUTH_URL,
 			"_blank",
-			"width=500,height=600"
+			"width=500,height=600",
 		);
 		timer = setInterval(() => {
 			if (loginWindow && loginWindow.closed) {
@@ -52,7 +52,7 @@ const Register = () => {
 		const loginWindow = window.open(
 			GITHUB_AUTH_URL,
 			"_blank",
-			"width=500,height=600"
+			"width=500,height=600",
 		);
 		timer = setInterval(() => {
 			if (loginWindow && loginWindow.closed) {
@@ -144,7 +144,8 @@ const Register = () => {
 					<fieldset className="flex flex-col gap-1">
 						<label
 							className="text-gray-600 font-light"
-							htmlFor="first_name">
+							htmlFor="first_name"
+						>
 							First Name <span className="text-red-500">*</span>
 						</label>
 						<input
@@ -168,7 +169,8 @@ const Register = () => {
 					<fieldset className="flex flex-col gap-1">
 						<label
 							className="text-gray-600 font-light"
-							htmlFor="last_name">
+							htmlFor="last_name"
+						>
 							Last Name <span className="text-red-500">*</span>
 						</label>
 						<input
@@ -192,7 +194,8 @@ const Register = () => {
 					<fieldset className="flex flex-col gap-1">
 						<label
 							className="text-gray-600 font-light"
-							htmlFor="email_address">
+							htmlFor="email_address"
+						>
 							Email <span className="text-red-500">*</span>
 						</label>
 						<input
@@ -216,7 +219,8 @@ const Register = () => {
 					<fieldset className="flex flex-col gap-1">
 						<label
 							className="text-gray-600 font-light"
-							htmlFor="password">
+							htmlFor="password"
+						>
 							Password <span className="text-red-500">*</span>
 						</label>
 						<input
@@ -240,14 +244,16 @@ const Register = () => {
 					<div className="flex flex-col items-center gap-2">
 						<button
 							type="submit"
-							className="bg-red-500 w-fit text-white px-12 rounded-md py-2 font-light hover:bg-red-400 active:bg-red-700 duration-300">
+							className="bg-red-500 w-fit text-white px-12 rounded-md py-2 font-light hover:bg-red-400 active:bg-red-700 duration-300"
+						>
 							Register
 						</button>
 						<p className="text-gray-500 font-light">
 							Already have an account?{" "}
 							<a
 								href="./login"
-								className="text-red-500 hover:text-red-300 active:text-red-700 duration-300">
+								className="text-red-500 hover:text-red-300 active:text-red-700 duration-300"
+							>
 								Login here!
 							</a>
 						</p>
@@ -256,7 +262,8 @@ const Register = () => {
 
 				<section
 					aria-label="Register with other services"
-					className="flex flex-col gap-4 my-8 items-center">
+					className="flex flex-col gap-4 my-8 items-center"
+				>
 					<GoogleButton onClick={handleGoogleAuth} type="light" />
 					<GithubButton onClick={handleGithubAuth} type="light" />
 					{isLoading && <Spinner />}

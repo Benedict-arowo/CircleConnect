@@ -105,7 +105,8 @@ const Circles = () => {
 							strokeWidth={1.5}
 							stroke="currentColor"
 							// onClick={searchHandler}
-							className="w-6 h-6 cursor-pointer">
+							className="w-6 h-6 cursor-pointer"
+						>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
@@ -118,7 +119,8 @@ const Circles = () => {
 						variant="enclosed"
 						index={tabIndex}
 						onChange={handleTabsChange}
-						isLazy>
+						isLazy
+					>
 						<TabList mb="1em">
 							<Tab _selected={{ color: "red.500" }}>Circles</Tab>
 							<Tab _selected={{ color: "red.500" }}>Projects</Tab>
@@ -131,7 +133,8 @@ const Circles = () => {
 										<a
 											className="font-semibold mb-2 text-3xl text-gray-800 "
 											href="#circles"
-											id="circles">
+											id="circles"
+										>
 											Circles
 										</a>
 									</h1>
@@ -151,7 +154,8 @@ const Circles = () => {
 										<a
 											className="font-semibold mb-2 text-3xl text-gray-800 "
 											href="#circles"
-											id="circles">
+											id="circles"
+										>
 											Projects
 										</a>
 									</h1>

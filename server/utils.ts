@@ -28,6 +28,7 @@ export const UserSelectMinimized = {
 	id: true,
 	profile_picture: true,
 	first_name: true,
+	last_name: true,
 	projects: {
 		select: {
 			id: true,
@@ -55,6 +56,7 @@ export const UserSelectClean = {
 	id: true,
 	profile_picture: true,
 	first_name: true,
+	last_name: true,
 	role: true,
 };
 

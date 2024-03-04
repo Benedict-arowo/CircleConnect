@@ -36,12 +36,14 @@ export const permissionList = [
 	"canAddProjectToCircle",
 	"canRemoveProjectFromCircle",
 	"isAdmin",
+	"canManageRoles",
+	"canManageUsers",
 ];
 
 export const validatePermission = (permsObj: PermsObj) => {
 	for (const permission in permsObj) {
 		if (!permissionList.includes(permission)) {
-			console.log("error");
+			console.log(permission);
 			return new Error("Not a valid permission");
 		}
 	}

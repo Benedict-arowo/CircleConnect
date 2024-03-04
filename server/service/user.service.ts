@@ -105,6 +105,35 @@ export const CreateUserService = async ({ body }: UserArgs) => {
 					: undefined,
 				track: track ? (track.toUpperCase() as TrackType) : undefined,
 			},
+			select: {
+				email: true,
+				id: true,
+				profile_picture: true,
+				first_name: true,
+				last_name: true,
+				projects: {
+					select: {
+						id: true,
+						name: true,
+						circle: true,
+					},
+				},
+				role: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+				track: true,
+				school: true,
+				coleadOf: true,
+				leadOf: true,
+				memberOf: true,
+				joined: true,
+				createdAt: true,
+				pendingRequest: true,
+				projectRatings: true,
+			},
 		});
 
 		return newUser;
@@ -173,7 +202,7 @@ export const EditUserService = async ({ body, user, id }: EditUserArgs) => {
 		);
 
 	// If user has provided a school, it ensures that it's a valid school by comparing it with school list.
-	if (school && !SCHOOL_LIST.includes(school.toUpperCase()))
+	if (school && !SCHOOL_LIST.includes(school.toString().toUpperCase()))
 		throw new CustomError(
 			"School provided is not valid.",
 			StatusCodes.BAD_REQUEST
@@ -181,7 +210,7 @@ export const EditUserService = async ({ body, user, id }: EditUserArgs) => {
 
 	// If user has provided a track, it ensures that it's a valid track by comparing it with track list.
 	const allTracks = [...TRACK_LIST.engineering, ...TRACK_LIST.product];
-	if (track && !allTracks.includes(track.toUpperCase()))
+	if (track && !allTracks.includes(track.toString().toUpperCase()))
 		throw new CustomError(
 			"Track provided is not valid.",
 			StatusCodes.BAD_REQUEST
@@ -200,6 +229,35 @@ export const EditUserService = async ({ body, user, id }: EditUserArgs) => {
 				: undefined,
 			profile_picture: profile_picture ? profile_picture : undefined,
 			track: track ? (track.toUpperCase() as TrackType) : undefined,
+		},
+		select: {
+			email: true,
+			id: true,
+			profile_picture: true,
+			first_name: true,
+			last_name: true,
+			projects: {
+				select: {
+					id: true,
+					name: true,
+					circle: true,
+				},
+			},
+			role: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+			track: true,
+			school: true,
+			coleadOf: true,
+			leadOf: true,
+			memberOf: true,
+			joined: true,
+			createdAt: true,
+			pendingRequest: true,
+			projectRatings: true,
 		},
 	});
 

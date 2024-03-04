@@ -133,7 +133,9 @@ export const CirclesService = async ({ query }: CirclesServiceArgs) => {
 				// TODO: Simplify this code to avoid repetition.
 				select: {
 					description: true,
-					createdBy: true,
+					createdBy: {
+						select: UserSelectClean,
+					},
 					createdAt: true,
 					github: true,
 					id: true,

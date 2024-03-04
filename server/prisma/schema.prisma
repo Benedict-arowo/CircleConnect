@@ -26,9 +26,15 @@ model Role {
   canDeleteOtherProject Boolean @default(false)
   canAddProjectToCircle Boolean @default(false)
   canRemoveProjectFromCircle Boolean @default(false)
+  canAddUserToProject Boolean @default(false)
 
   canManageRoles Boolean @default(false)
   canManageUsers Boolean @default(false)
+
+  canCreateProjectReviews Boolean @default(false)
+  canModifyOwnProjectReviews Boolean @default(false)
+  canDeleteOwnProjectReviews Boolean @default(false)
+  canManageProjectReviwes Boolean @default(false)
 
   isAdmin Boolean @default(false)
   
@@ -106,6 +112,7 @@ model ProjectReview {
   projectId String 
   createdAt        DateTime         @default(now())
 }
+
 model Project {
   id               String           @id @unique @default(uuid())
   name             String

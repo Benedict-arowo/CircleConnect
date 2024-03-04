@@ -8,7 +8,7 @@ const googleRouter = express.Router();
 
 googleRouter.get(
 	"/",
-	passport.authenticate("google", { scope: ["email", "profile"] })
+	passport.authenticate("google", { scope: ["email", "profile"] }),
 );
 
 googleRouter.get(
@@ -19,7 +19,7 @@ googleRouter.get(
 	function (req: Request, res: Response) {
 		// Successful authentication, redirect home.
 		res.redirect(process.env.SIGN_IN_SUCCESSFULL_ROUTE as string);
-	}
+	},
 );
 
 export default googleRouter;

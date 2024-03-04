@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
 
 const SocketContextProvider = createContext({});
-
 export const UseSocketContext = () => useContext(SocketContextProvider);
 
 const SocketContext = ({ children }) => {

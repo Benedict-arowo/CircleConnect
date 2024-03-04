@@ -160,7 +160,8 @@ const Circle = () => {
 						key={circleMember.id}
 						title={circleMember.first_name}
 						className="hover:outline-red-600 outline-none rounded-full outline transition-all duration-300"
-						href={`../user/${circleMember.id}`}>
+						href={`../user/${circleMember.id}`}
+					>
 						<Avatar
 							size={"2xl"}
 							name={`${circleMember.first_name}`}
@@ -219,7 +220,7 @@ const Circle = () => {
 				} else if (
 					data.members.some(
 						(members: CircleMemberType) =>
-							members.id === User.info.id
+							members.id === User.info.id,
 					)
 				) {
 					setState(() => {
@@ -233,7 +234,8 @@ const Circle = () => {
 					});
 				} else if (
 					data.requests.some(
-						(member: CircleMemberType) => member.id === User.info.id
+						(member: CircleMemberType) =>
+							member.id === User.info.id,
 					)
 				) {
 					setState(() => {
@@ -261,7 +263,7 @@ const Circle = () => {
 				setErr(() =>
 					err.message === "Failed to fetch"
 						? "Error trying to communicate with the server."
-						: err.message
+						: err.message,
 				);
 			});
 	};
@@ -484,7 +486,8 @@ const Circle = () => {
 													});
 													onOpen();
 												}}
-												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1">
+												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1"
+											>
 												LEAVE CIRCLE
 											</button>
 										)}
@@ -503,7 +506,8 @@ const Circle = () => {
 																fetchCircle,
 														})
 													}
-													className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1">
+													className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1"
+												>
 													REQUEST TO JOIN
 												</button>
 											)}
@@ -521,7 +525,8 @@ const Circle = () => {
 															fetchCircle,
 													})
 												}
-												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1">
+												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1"
+											>
 												CANCEL JOIN REQUEST
 											</button>
 										)}
@@ -535,20 +540,23 @@ const Circle = () => {
 										<div className="flex flex-row gap-3">
 											<button
 												onClick={settingsDrawerOnOpen}
-												className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+												className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1"
+											>
 												Settings
 											</button>
 										</div>
 									)}
 									<button
 										onClick={drawerOnOpen}
-										className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+										className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1"
+									>
 										Members
 									</button>
 									{state.isMember && (
 										<button
 											onClick={projectDrawerOnOpen}
-											className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1">
+											className="text-gray-500 bg-green-500 text-base rounded-sm hover:bg-gray-500 hover:text-white bg-transparent border border-gray-800 duration-300 px-8 py-1"
+										>
 											Add Project
 										</button>
 									)}
@@ -563,7 +571,8 @@ const Circle = () => {
 											viewBox="0 0 24 24"
 											strokeWidth={1.5}
 											stroke="currentColor"
-											className="w-6 h-6 cursor-pointer text-gray-800 hover:text-gray-950 transition-all duration-300">
+											className="w-6 h-6 cursor-pointer text-gray-800 hover:text-gray-950 transition-all duration-300"
+										>
 											<path
 												strokeLinecap="round"
 												strokeLinejoin="round"
@@ -598,7 +607,7 @@ const Circle = () => {
 																	() => {
 																		onClose();
 																		Navigate(
-																			"/"
+																			"/",
 																		);
 																	},
 															}),
@@ -606,7 +615,8 @@ const Circle = () => {
 												});
 												onOpen();
 											}}
-											className="w-6 h-6 cursor-pointer text-gray-800 hover:text-red-600 transition-all duration-300">
+											className="w-6 h-6 cursor-pointer text-gray-800 hover:text-red-600 transition-all duration-300"
+										>
 											<path
 												strokeLinecap="round"
 												strokeLinejoin="round"
@@ -622,7 +632,8 @@ const Circle = () => {
 								<a
 									className="font-light mb-2 text-3xl text-gray-800"
 									href="#members"
-									id="members">
+									id="members"
+								>
 									Members
 								</a>
 
@@ -638,7 +649,8 @@ const Circle = () => {
 							</div>
 							<AvatarGroup
 								max={5}
-								className="flex flex-row justify-center gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-[180px] py-4 px-12 ">
+								className="flex flex-row justify-center gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-[180px] py-4 px-12 "
+							>
 								{displayMembers([
 									circle.lead,
 									circle.colead,
@@ -651,7 +663,8 @@ const Circle = () => {
 							<a
 								className="font-light mb-2 text-3xl text-gray-800"
 								href="#pinned_projects"
-								id="pinned_projects">
+								id="pinned_projects"
+							>
 								Pinned Projects
 							</a>
 							<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 pr-8">
@@ -659,7 +672,7 @@ const Circle = () => {
 									showManageMenu={true}
 									projects={circle.projects.filter(
 										(project) =>
-											project.pinned ? true : false
+											project.pinned ? true : false,
 									)}
 									circle={circle}
 									makeReq={makeReq}
@@ -674,7 +687,8 @@ const Circle = () => {
 							<a
 								className="font-light mb-2 text-3xl text-gray-800"
 								href="#projects"
-								id="projects">
+								id="projects"
+							>
 								Projects
 							</a>
 							<section className="flex flex-row gap-8 flex-wrap justify-center pt-2">
@@ -682,7 +696,7 @@ const Circle = () => {
 									showManageMenu={true}
 									projects={circle.projects.filter(
 										(project) =>
-											!project.pinned ? true : false
+											!project.pinned ? true : false,
 									)}
 									setAlertState={setAlertState}
 									makeReq={makeReq}
@@ -696,7 +710,8 @@ const Circle = () => {
 						<Drawer
 							onClose={drawerOnClose}
 							size={"md"}
-							isOpen={drawerIsOpen}>
+							isOpen={drawerIsOpen}
+						>
 							<DrawerOverlay />
 							<DrawerContent>
 								<DrawerHeader borderBottomWidth="1px">
@@ -706,16 +721,18 @@ const Circle = () => {
 											className="relative"
 											onClick={() =>
 												setShowRequests(
-													(prevState) => !prevState
+													(prevState) => !prevState,
 												)
-											}>
+											}
+										>
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
 												fill="none"
 												viewBox="0 0 24 24"
 												strokeWidth={1.5}
 												stroke="currentColor"
-												className="w-8 h-8 cursor-pointer">
+												className="w-8 h-8 cursor-pointer"
+											>
 												<path
 													strokeLinecap="round"
 													strokeLinejoin="round"
@@ -806,14 +823,15 @@ const Circle = () => {
 																									"Successfully promoted user.",
 																								successFunc:
 																									fetchCircle,
-																							}
+																							},
 																						),
 																				header: "Promote user",
 																			};
-																		}
+																		},
 																	);
 																	onOpen();
-																}}>
+																}}
+															>
 																Promote
 															</p>
 															<p
@@ -852,14 +870,15 @@ const Circle = () => {
 																									"Successfully demoted user.",
 																								successFunc:
 																									fetchCircle,
-																							}
+																							},
 																						),
 																				header: "Demote user",
 																			};
-																		}
+																		},
 																	);
 																	onOpen();
-																}}>
+																}}
+															>
 																Demote
 															</p>
 															<svg
@@ -904,15 +923,16 @@ const Circle = () => {
 																									"Successfully removed user from circle.",
 																								successFunc:
 																									fetchCircle,
-																							}
+																							},
 																						),
 																				header: "Remove user",
 																			};
-																		}
+																		},
 																	);
 																	onOpen();
 																}}
-																className="w-4 h-4 hover:text-red-500 duration-300 transition-all">
+																className="w-4 h-4 hover:text-red-500 duration-300 transition-all"
+															>
 																<path
 																	strokeLinecap="round"
 																	strokeLinejoin="round"
@@ -966,7 +986,8 @@ const Circle = () => {
 						<Drawer
 							onClose={settingsDrawerOnClose}
 							size={"md"}
-							isOpen={settingsDrawerIsOpen}>
+							isOpen={settingsDrawerIsOpen}
+						>
 							<DrawerOverlay />
 							<DrawerContent>
 								<DrawerHeader borderBottomWidth="1px">
@@ -985,7 +1006,7 @@ const Circle = () => {
 											value={description}
 											onChange={(e) =>
 												setDescription(
-													() => e.target.value
+													() => e.target.value,
 												)
 											}
 										/>
@@ -1005,12 +1026,13 @@ const Circle = () => {
 														settingsDrawerOnClose();
 														fetchCircle();
 														setDescription(
-															() => ""
+															() => "",
 														);
 													},
 												});
 											}}
-											className="bg-red-500 text-white px-4 py-1 w-fit mt-2">
+											className="bg-red-500 text-white px-4 py-1 w-fit mt-2"
+										>
 											Save Description
 										</button>
 									</div>
@@ -1021,7 +1043,8 @@ const Circle = () => {
 						<Drawer
 							onClose={projectDrawerOnClose}
 							size={"md"}
-							isOpen={projectDrawerIsOpen}>
+							isOpen={projectDrawerIsOpen}
+						>
 							<DrawerOverlay />
 							<DrawerContent>
 								<DrawerHeader borderBottomWidth="1px">
@@ -1045,12 +1068,13 @@ const Circle = () => {
 														circle.projects.find(
 															(project) =>
 																project.id ===
-																projectId
+																projectId,
 														);
 													return (
 														<div
 															className="flex flex-row justify-between gap-4"
-															key={id}>
+															key={id}
+														>
 															<p>{name}</p>
 															{!inCircle && (
 																<button
@@ -1073,9 +1097,10 @@ const Circle = () => {
 																					"Successfully added the project.",
 																				successFunc:
 																					fetchCircle,
-																			}
+																			},
 																		)
-																	}>
+																	}
+																>
 																	Add
 																</button>
 															)}
@@ -1099,15 +1124,16 @@ const Circle = () => {
 																					"Successfully removed the project.",
 																				successFunc:
 																					fetchCircle,
-																			}
+																			},
 																		)
-																	}>
+																	}
+																>
 																	Remove
 																</button>
 															)}
 														</div>
 													);
-												}
+												},
 											)}
 									</div>
 								</DrawerBody>
@@ -1119,12 +1145,14 @@ const Circle = () => {
 							<AlertDialog
 								isOpen={isOpen}
 								leastDestructiveRef={cancelRef}
-								onClose={onClose}>
+								onClose={onClose}
+							>
 								<AlertDialogOverlay>
 									<AlertDialogContent>
 										<AlertDialogHeader
 											fontSize="lg"
-											fontWeight="bold">
+											fontWeight="bold"
+										>
 											{alertState.header}
 										</AlertDialogHeader>
 
@@ -1135,7 +1163,8 @@ const Circle = () => {
 										<AlertDialogFooter>
 											<Button
 												ref={cancelRef}
-												onClick={onClose}>
+												onClick={onClose}
+											>
 												Cancel
 											</Button>
 											<Button
@@ -1144,7 +1173,8 @@ const Circle = () => {
 													alertState.doneFunc();
 													onClose();
 												}}
-												ml={3}>
+												ml={3}
+											>
 												{alertState.doneText}
 											</Button>
 										</AlertDialogFooter>
