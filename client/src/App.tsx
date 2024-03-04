@@ -15,6 +15,11 @@ import Roles from "./pages/Dashboard/Roles";
 import DashboardSidebar from "./Components/dashboard_sidebar";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Projects from "./pages/Dashboard/Projects";
+import AdminOnly from "./Middlewears/AdminOnly";
+import CheckAuth from "./Middlewears/CheckAuth";
+import NoAuth from "./Middlewears/NoAuth";
+import Error from "./pages/Error";
+// import { UseSetUser, UseUser, UseUserProvider } from "./contexts/UserContext";
 // import Circles from "./pages/Discover";
 
 // TODO: Implement Lazy loading
@@ -31,24 +36,51 @@ const App = () => {
 	return (
 		<div className="max-w-screen-2xl mx-auto">
 			<ThemeProvider theme={theme}>
-				<Routes>
-					<Route path="/" element={<Index />} />
-					<Route path="/discover" element={<Discover />} />
-					<Route path="/project/:id" element={<Project />} />
-					<Route path="/circle/:id" element={<Circle />} />
-					<Route path="/test" element={<Test />} />
-					<Route path="/login" element={<Login />} />
-					<Route path="/register" element={<Register />} />
-					<Route path="/auth/success" element={<Success />} />
-					<Route path="/dashboard" element={<DashboardSidebar />}>
-						<Route path="" element={<Dashboard />} />
-						{/* TODO: Change data table from mui to PrimeReact */}
-						<Route path="circles" element={<CirclesDashboard />} />
-						<Route path="users" element={<Users />} />
-						<Route path="roles" element={<Roles />} />
-						<Route path="projects" element={<Projects />} />
-					</Route>
-				</Routes>
+				<CheckAuth>
+					<Routes>
+						<Route path="/" element={<Index />} />
+						<Route path="/discover" element={<Discover />} />
+						<Route path="/project/:id" element={<Project />} />
+						<Route path="/circle/:id" element={<Circle />} />
+						<Route path="/test" element={<Test />} />
+						<Route path="/error" element={<Error />} />
+						<Route path="/auth/success" element={<Success />} />
+						<Route
+							path="/login"
+							element={
+								<NoAuth>
+									<Login />
+								</NoAuth>
+							}
+						/>
+						<Route
+							path="/register"
+							element={
+								<NoAuth>
+									<Register />
+								</NoAuth>
+							}
+						/>
+						<Route
+							path="/dashboard"
+							element={
+								<AdminOnly>
+									<DashboardSidebar />
+								</AdminOnly>
+							}
+						>
+							<Route path="" element={<Dashboard />} />
+							{/* TODO: Change data table from mui to PrimeReact */}
+							<Route
+								path="circles"
+								element={<CirclesDashboard />}
+							/>
+							<Route path="users" element={<Users />} />
+							<Route path="roles" element={<Roles />} />
+							<Route path="projects" element={<Projects />} />
+						</Route>
+					</Routes>
+				</CheckAuth>
 			</ThemeProvider>
 		</div>
 	);

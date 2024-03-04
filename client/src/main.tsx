@@ -11,6 +11,7 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "./index.css";
 import React from "react";
+import UserContext from "./contexts/UserContext.tsx";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
@@ -18,9 +19,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 			<ChakraProvider>
 				<BrowserRouter>
 					<PrimeReactProvider>
-						<SocketContext>
-							<App />
-						</SocketContext>
+						<UserContext>
+							<SocketContext>
+								<App />
+							</SocketContext>
+						</UserContext>
 					</PrimeReactProvider>
 				</BrowserRouter>
 			</ChakraProvider>
