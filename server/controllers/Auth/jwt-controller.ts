@@ -27,6 +27,15 @@ export const loginJWT = async (req: Req, res: Response) => {
 	}
 	const User = await prisma.user.findUnique({
 		where: { email },
+		select: {
+			id: true,
+			first_name: true,
+			last_name: true,
+			email: true,
+			profile_picture: true,
+			role: true,
+			password: true,
+		},
 	});
 
 	if (!User) {
