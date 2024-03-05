@@ -165,23 +165,24 @@ export default function CirclesDashboard() {
 			life: 3000,
 		});
 		// Adds the new circle to the list of circles.
-		setData((prevData) => [...prevData, data.data]);
+		setData((prevData) => [
+			...prevData,
+			{ ...data.data, members: [], projects: [] },
+		]);
 	};
 
 	// Update circle
 	const editCircle = async () => {
 		if (!selectedItem) return;
 
-		const updatedData: CircleData = {
+		const updatedData = {
 			id: selectedItem.id,
 			description: "New Description",
 			rating: selectedItem.rating,
 			members: selectedItem.members,
-			lead: selectedItem.lead,
-			colead: selectedItem.colead,
-			projects: selectedItem.projects,
-			createdAt: selectedItem.createdAt,
-			_count: selectedItem._count,
+			lead: selectedItem.lead.id,
+			colead: selectedItem.colead.id,
+			// projects: selectedItem.projects,
 		};
 
 		const { data, response } = await UseFetch({
@@ -341,7 +342,7 @@ export default function CirclesDashboard() {
 					<Column
 						header="Members"
 						body={(circleData) => {
-							let memberLength = circleData._count.members;
+							let memberLength = circleData.members.length;
 
 							if (circleData.lead) memberLength += 1;
 							if (circleData.colead) memberLength += 1;
