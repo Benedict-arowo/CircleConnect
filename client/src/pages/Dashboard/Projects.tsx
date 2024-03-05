@@ -15,6 +15,7 @@ import { Chips } from "primereact/chips";
 import { Dropdown } from "primereact/dropdown";
 import { CircleData } from "./Circles";
 import { UserTypeClean } from "../../types";
+import { FetchUsers } from "../../Components/Fetch/Users";
 
 interface projectData {
 	id: string;
@@ -183,24 +184,6 @@ const Projects = () => {
 		setData(data.data);
 	};
 
-	const fetchUsers = async () => {
-		const { data, response } = await UseFetch({
-			url: "user",
-			options: {
-				method: "GET",
-				useServerUrl: true,
-				returnResponse: true,
-			},
-		});
-
-		if (!response.ok)
-			throw new Error(
-				data ? data.message : "Error trying to communicate with server."
-			);
-
-		setUsers(data.data);
-	};
-
 	const fetchCircles = async () => {
 		const { data, response } = await UseFetch({
 			url: "circle",
@@ -223,7 +206,7 @@ const Projects = () => {
 		(async () => {
 			await fetchProjects();
 			await fetchCircles();
-			await fetchUsers();
+			await FetchUsers().then((data) => setUsers(data));
 		})();
 	}, []);
 

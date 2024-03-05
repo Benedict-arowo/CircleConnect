@@ -1,12 +1,3 @@
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	Paper,
-} from "@mui/material";
 import { Button } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import UseFetch from "../../Components/Fetch";
@@ -17,6 +8,10 @@ import { useRef } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Avatar } from "primereact/avatar";
+import { InputText } from "primereact/inputtext";
+import { Dropdown } from "primereact/dropdown";
+import { UserTypeClean } from "../../types";
+import { FetchUsers } from "../../Components/Fetch/Users";
 
 type UserType = {
 	id: string;
@@ -42,16 +37,32 @@ export type CircleData = {
 	};
 };
 
+export type SelectedItem = {
+	id: number;
+	description: string;
+	rating: number;
+	members: UserType[];
+	lead: {
+		id?: string;
+		code?: string;
+	};
+	colead: {
+		id?: string;
+		code?: string;
+	};
+};
+
 export default function CirclesDashboard() {
 	const [data, setData] = useState<CircleData[]>([]);
-	const [selectedItem, setSelectedItem] = useState<CircleData | null>(null);
+	const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 	const [visible, setVisible] = useState(false);
 	const SelectItem = (item: CircleData) => {
 		setSelectedItem(item);
 		handleOpen();
 	};
-
+	const [users, setUsers] = useState<UserTypeClean[]>([]);
 	const toast = useRef<Toast | null>(null);
+	const [query, setQuery] = useState("");
 
 	const fetchCircles = async () => {
 		const { data, response } = await UseFetch({
@@ -73,20 +84,15 @@ export default function CirclesDashboard() {
 
 	// Get Cirlce
 	useEffect(() => {
-		(async () => await fetchCircles())();
+		(async () => {
+			await fetchCircles();
+			await FetchUsers().then((data) => setUsers(data));
+		})();
 	}, []);
 
 	//Delete circle
 	const DeleteCircle = async () => {
 		if (!selectedItem) return;
-
-		toast.current?.show({
-			severity: "info",
-			summary: "Loading...",
-			detail: "Deleting circle...",
-			life: 3000,
-		});
-
 		const { data, response } = await UseFetch({
 			url: `circle/${selectedItem.id}`,
 			options: {
@@ -109,15 +115,20 @@ export default function CirclesDashboard() {
 				life: 3000,
 			});
 
-		console.log("circle deleted successfully");
 		// Removes the deleted item from the list of items stored locally
 		setData((prevData) =>
 			prevData.filter((item) => item.id !== selectedItem.id)
 		);
 		setSelectedItem(null);
+		return toast.current?.show({
+			severity: "success",
+			summary: "SUCCESS",
+			detail: "Successfully deleted circle.",
+			life: 3000,
+		});
 	};
 
-	const addCircle = async () => {
+	const CreateCircle = async () => {
 		const { data, response } = await UseFetch({
 			url: "circle",
 			options: {
@@ -125,8 +136,9 @@ export default function CirclesDashboard() {
 				// TODO: body information needs to be set properly, this setup is just a demo.
 				body: {
 					name: "New circle",
-					id: Number,
-					description: "Description",
+					circle_num: 4,
+					description:
+						"Description lorem ipsum dolor sit amet interdum. Cum socis natoque penatibus et magnis dis parturient",
 				},
 				returnResponse: true,
 				useServerUrl: true,
@@ -211,51 +223,62 @@ export default function CirclesDashboard() {
 		);
 	};
 
-	const [query, setQuery] = useState("");
-
-	const handleSearch = () => {
-		const searchData: CircleData = {
-			id: selectedItem?.id ?? 0, // Use optional chaining and nullish coalescing
-			description: selectedItem?.description ?? "",
-			rating: selectedItem?.rating ?? 0,
-			members: selectedItem?.members ?? [],
-			lead: selectedItem?.lead ?? null,
-			colead: selectedItem?.colead ?? null,
-			projects: selectedItem?.projects ?? [],
-			createdAt: selectedItem?.createdAt ?? new Date(),
-			_count: selectedItem?._count ?? {
-				members: 0,
-				projects: 0,
-				requests: 0,
-			},
-		};
-
-		if (!query.trim()) {
-			setData(data);
-			return;
-		}
-
-		const lowerCaseQuery = query.toLowerCase();
-		const filtered = data.filter(
-			(item) =>
-				item.id.toString().includes(lowerCaseQuery) ||
-				item.members.toString().toLowerCase().includes(lowerCaseQuery)
+	const selectedUserTemplate = (option: { id: string; code: string }) => {
+		const currUser = users.find((user) => user.id === option.code);
+		return (
+			<div className="flex gap-2 items-center">
+				<Avatar
+					label="P"
+					image={currUser?.profile_picture}
+					shape="circle"
+					size="normal"
+				/>
+				<p className="font-medium">{option.id}</p>
+			</div>
 		);
-
-		if (filtered.length === 0) {
-			setData(data);
-			return toast.current?.show({
-				severity: "error",
-				summary: "Circle not found!",
-				detail: "",
-				life: 3000,
-			});
-		} else {
-			setData(filtered);
-		}
 	};
 
-	//
+	const userOptionTemplate = (
+		option: { id: string; code: string },
+		props
+	) => {
+		if (option) {
+			const currUser = users.find((user) => user.id === option.code);
+			return (
+				<div className="flex gap-2 items-center">
+					<Avatar
+						label="P"
+						image={currUser?.profile_picture}
+						shape="circle"
+						size="normal"
+					/>
+					<p className="font-medium">{option.id}</p>
+				</div>
+			);
+		}
+		return <span>{props.placeholder}</span>;
+	};
+
+	const GetData = () => {
+		return data.filter(
+			(item) =>
+				item.id.toString().includes(query) ||
+				item.lead?.first_name
+					.toLowerCase()
+					.includes(query.toLowerCase()) ||
+				item.colead?.first_name
+					.toLowerCase()
+					.includes(query.toLowerCase()) ||
+				item.members.some((member) =>
+					member.first_name
+						.toLowerCase()
+						.includes(query.toLowerCase())
+				) ||
+				item.projects.some((project) =>
+					project.name.toLowerCase().includes(query.toLowerCase())
+				)
+		);
+	};
 
 	const handleOpen = () => {
 		setVisible(true);
@@ -271,22 +294,6 @@ export default function CirclesDashboard() {
 					placeholder="Search..."
 					className="border-2 lg:w-[500px] w-[400px] px-2 py-2 outline-[#F1C644] font-light"
 				></input>
-				<button onClick={handleSearch} className="border-2">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						className="w-4 h-4"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-						/>
-					</svg>
-				</button>
 			</div>
 
 			<div className="flex flex-row text-center mt-10 gap-8 w-full justify-between">
@@ -296,7 +303,7 @@ export default function CirclesDashboard() {
 						colorScheme="yellow"
 						color="white"
 						className="shadow-sm"
-						onClick={addCircle}
+						onClick={CreateCircle}
 					>
 						Add New
 					</Button>
@@ -312,7 +319,7 @@ export default function CirclesDashboard() {
 
 			<div className="mt-4 border-t-2 w-full">
 				<DataTable
-					value={data}
+					value={GetData()}
 					tableStyle={{ minWidth: "50rem" }}
 					showGridlines
 					stripedRows
@@ -401,24 +408,148 @@ export default function CirclesDashboard() {
 					style={{ width: "50vw" }}
 					onHide={() => setVisible(false)}
 				>
-					<div className="flex flex-col gap-5 m-10">
-						<div className="flex   justify-between">
-							<p>ID</p>
-							<p>{selectedItem.id}</p>
-						</div>
-						<div className="flex   justify-between">
-							<p>Member </p>
-							<p>{selectedItem.members.length}</p>
-						</div>
+					<div>
+						<section>
+							<h3 className="font-bold text-sm">Info</h3>
+							<div className="px-2 flex flex-col gap-2 mt-2">
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="project_id"
+										className="font-bold text-sm text-center"
+									>
+										ID:
+									</label>
+									<InputText
+										id="project_id"
+										placeholder="Project ID"
+										value={selectedItem.id.toString()}
+										disabled
+										className="w-full p-2"
+									/>
+								</span>
 
-						<div className="flex   justify-between">
-							<p>Project</p>
-							<p> {selectedItem.projects.length}</p>
-						</div>
-						<div className="flex   justify-between">
-							<p>Rating </p>
-							<p>{selectedItem.rating}</p>
-						</div>
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="project_id"
+										className="font-bold text-sm text-center"
+									>
+										RATING:
+									</label>
+									<InputText
+										id="project_rating"
+										placeholder="Project Rating"
+										value={selectedItem.rating.toString()}
+										disabled
+										className="w-full p-2"
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="project_id"
+										className="font-bold text-sm text-center"
+									>
+										Lead:
+									</label>
+									{/* TODO: Make sure you can't have the same person as lead and colead. */}
+									<Dropdown
+										value={selectedItem.lead}
+										onChange={(e) =>
+											setSelectedItem((prev) => {
+												return {
+													...prev,
+													lead: {
+														id: e.value.id,
+														code: e.value.code,
+													},
+												};
+											})
+										}
+										options={users.map((user) => ({
+											code: user.id,
+											id: `${user.first_name} ${
+												user.last_name
+													? user.last_name
+													: ""
+											}`,
+										}))}
+										valueTemplate={userOptionTemplate}
+										itemTemplate={selectedUserTemplate}
+										optionLabel="id"
+										placeholder="Select a User"
+										className="w-full md:w-14rem mt-2 border"
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="project_id"
+										className="font-bold text-sm text-center min-w-fit"
+									>
+										Co-Lead:
+									</label>
+									<Dropdown
+										value={selectedItem.colead}
+										onChange={(e) =>
+											setSelectedItem((prev) => {
+												return {
+													...prev,
+													colead: {
+														id: e.value.id,
+														code: e.value.code,
+													},
+												};
+											})
+										}
+										options={users.map((user) => ({
+											code: user.id,
+											id: `${user.first_name} ${
+												user.last_name
+													? user.last_name
+													: ""
+											}`,
+										}))}
+										valueTemplate={userOptionTemplate}
+										itemTemplate={selectedUserTemplate}
+										optionLabel="id"
+										placeholder="Select a User"
+										className="w-full md:w-14rem mt-2 border"
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="project_id"
+										className="font-bold text-sm text-center"
+									>
+										Members:
+									</label>
+									<InputText
+										id="project_rating"
+										placeholder="Project Rating"
+										value={selectedItem.rating.toString()}
+										disabled
+										className="w-full p-2"
+									/>
+								</span>
+
+								<span className="flex flex-row gap-2 items-center">
+									<label
+										htmlFor="project_id"
+										className="font-bold text-sm text-center"
+									>
+										Projects:
+									</label>
+									<InputText
+										id="project_rating"
+										placeholder="Project Rating"
+										value={selectedItem.rating.toString()}
+										disabled
+										className="w-full p-2"
+									/>
+								</span>
+							</div>
+						</section>
 					</div>
 
 					<footer className="flex flex-row gap-6 justify-center mt-4">
