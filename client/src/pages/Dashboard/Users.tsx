@@ -406,7 +406,12 @@ export default function Users() {
 		if (!userDetails) throw new Error("User not found.");
 
 		if (userDetails.confirm_password !== userDetails.password)
-			throw new Error("Passwords do not match.");
+			return toast.current?.show({
+				severity: "warn",
+				summary: "Error...",
+				detail: "Passwords do not match...",
+				life: 3000,
+			});
 
 		toast.current?.show({
 			severity: "info",
