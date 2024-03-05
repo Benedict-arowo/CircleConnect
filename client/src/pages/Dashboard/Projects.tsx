@@ -276,7 +276,7 @@ const Projects = () => {
 				body: {
 					name: editProjectData.name,
 					description: editProjectData.description,
-					circle: editProjectData.circle.id,
+					circleId: editProjectData.circle.id,
 					liveLink: editProjectData.liveLink,
 					github: editProjectData.github,
 					tags: editProjectData.tags?.join("|"),

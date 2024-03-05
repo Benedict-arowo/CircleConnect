@@ -289,6 +289,7 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 		visibility,
 		pictures,
 		pinned,
+		circleId,
 	} = body;
 
 	const project = await prisma.project.findUnique({
@@ -387,6 +388,45 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 	// 	});
 	// }
 
+	if (circleId) {
+		const circle = await prisma.circle.findUnique({
+			where: { id: Number(circleId) },
+			select: {
+				lead: {
+					select: UserSelectClean,
+				},
+				members: {
+					select: UserSelectClean,
+				},
+				colead: {
+					select: UserSelectClean,
+				},
+			},
+		});
+
+		if (!circle)
+			throw new CustomError(
+				"Invalid circleId provided.",
+				StatusCodes.BAD_REQUEST
+			);
+
+		// If the use is an admin, or they're a part of the circle member, lead or colead and have the permission (canAddProjectToCircle)
+		if (
+			!(
+				user.role.isAdmin ||
+				(user.role.canAddProjectToCircle &&
+					circle.lead &&
+					user.id === circle.lead.id) ||
+				(circle.colead && user.id === circle.colead.id) ||
+				circle.members.some((member) => member.id === user.id)
+			)
+		)
+			throw new CustomError(
+				"You do not have permission to assign a project under this circle.",
+				StatusCodes.UNAUTHORIZED
+			);
+	}
+
 	const updatedProject = await prisma.project.update({
 		where: { id },
 		data: {
@@ -400,7 +440,7 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 				: undefined,
 			pictures: pictures ? pictures.split("|") : undefined,
 			pinned: pinned !== undefined ? pinned : undefined,
-			// circleId: circleId ? Number(circleId) : undefined,
+			circleId: circleId ? Number(circleId) : undefined,
 		},
 
 		include: {
