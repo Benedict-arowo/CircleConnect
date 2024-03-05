@@ -10,11 +10,15 @@ import { Alert as AlertType } from "../../types";
 import UseFetch from "../../Components/Fetch";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../slices/userSlice";
+import { UseSetUser } from "../../contexts/UserContext";
+// import { UseSetUser } from "../../contexts/UserContext";
 // import { useDispatch } from "react-redux";
 // import { saveUser } from "./userSlice";
 
 const Login = () => {
 	const dispatch = useDispatch();
+	const SetUser = UseSetUser();
+	// const setUser = UseSetUser();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [formData, setFormData] = useState({
 		email: "",
@@ -44,7 +48,7 @@ const Login = () => {
 		const loginWindow = window.open(
 			GOOGLE_AUTH_URL,
 			"_blank",
-			"width=500,height=600",
+			"width=500,height=600"
 		);
 
 		timer = setInterval(async () => {
@@ -62,7 +66,8 @@ const Login = () => {
 					});
 				} else {
 					if (timer) clearInterval(timer);
-					dispatch(loginUser(User.data));
+					// dispatch(loginUser(User.data));
+					SetUser({ mode: "LOGIN", data: User.data });
 					Navigate("/");
 				}
 			}
@@ -77,7 +82,7 @@ const Login = () => {
 		const loginWindow = window.open(
 			GITHUB_AUTH_URL,
 			"_blank",
-			"width=500,height=600",
+			"width=500,height=600"
 		);
 		timer = setInterval(async () => {
 			if (loginWindow && loginWindow.closed) {
@@ -94,7 +99,8 @@ const Login = () => {
 					});
 				} else {
 					if (timer) clearInterval(timer);
-					dispatch(loginUser(User.data));
+					// dispatch(loginUser(User.data));
+					SetUser({ mode: "LOGIN", data: User.data });
 					Navigate("/");
 				}
 			}
@@ -129,7 +135,12 @@ const Login = () => {
 			}
 
 			// Save user's credentials to session storage
-			dispatch(loginUser(data.data));
+			// dispatch(loginUser(data.data));
+			SetUser({ mode: "LOGIN", data: data.data });
+			// setUser({
+			// 	mode: "LOGIN",
+			// 	data: data.data,
+			// });
 			// No error is found, hence it's successful.
 			setAlert(() => {
 				return {

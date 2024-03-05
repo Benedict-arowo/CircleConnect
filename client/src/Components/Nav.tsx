@@ -29,6 +29,8 @@ import { format } from "timeago.js";
 import { UseSocketContext } from "../contexts/SocketContext";
 import Notify from "./Notify";
 import { Socket } from "socket.io-client";
+import { UseSetUser, UseUser } from "../contexts/UserContext";
+import { LogoutFunc } from "./Fetch/LogoutFunc";
 
 type Props = {
 	className?: string;
@@ -49,8 +51,10 @@ type Notification = {
 const Nav = (props: Props) => {
 	const dispatch = useDispatch();
 	const socket: Socket = UseSocketContext();
+	const setUser = UseSetUser();
 	const { className, type = "dark", useBackground = true } = props;
-	const user = useSelector((state) => state.user);
+	// const user = useSelector((state) => state.user);
+	const user = UseUser();
 	// const { io, connected: socketConnected } = useSelector((state) => state.io);
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [notifications, setNotifications] = useState<Notification>({
@@ -75,10 +79,10 @@ const Nav = (props: Props) => {
 			// Filters the notification by the read status.
 			return {
 				read: data.data.filter(
-					(notification: NotificationType) => notification.is_read,
+					(notification: NotificationType) => notification.is_read
 				),
 				unread: data.data.filter(
-					(notification: NotificationType) => !notification.is_read,
+					(notification: NotificationType) => !notification.is_read
 				),
 			};
 		});
@@ -97,25 +101,6 @@ const Nav = (props: Props) => {
 	useEffect(() => {
 		fetchNotifications();
 	}, []);
-
-	const logoutHandler = async () => {
-		dispatch(logoutUser());
-		onClose();
-		await UseFetch({
-			url: "logout",
-			options: {
-				method: "GET",
-				useServerUrl: true,
-				returnResponse: true,
-			},
-		})
-			.then(({ response }) => {
-				if (!response.ok) throw new Error();
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	};
 
 	const updateNotification = async (id: string, status: boolean) => {
 		const { data, response } = await UseFetch({
@@ -166,8 +151,8 @@ const Nav = (props: Props) => {
 					}`}
 				>
 					<Avatar
-						name={`${user.first_name}`}
-						src={user.profile_picture}
+						name={`${user.info.first_name}`}
+						src={user.info.profile_picture}
 						width="32px"
 						height="32px"
 						className="cursor-pointer"
@@ -389,7 +374,11 @@ const Nav = (props: Props) => {
 								<div className="w-full h-[1px] rounded-md bg-gray-200 my-1"></div>
 
 								<button
-									onClick={logoutHandler}
+									onClick={() => {
+										LogoutFunc();
+										setUser({ mode: "LOGOUT" });
+										onClose();
+									}}
 									className="mt-2 px-2 font-light"
 								>
 									Logout

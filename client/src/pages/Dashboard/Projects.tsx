@@ -14,6 +14,8 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Chips } from "primereact/chips";
 import { Dropdown } from "primereact/dropdown";
 import { CircleData } from "./Circles";
+import { UserTypeClean } from "../../types";
+import { FetchUsers } from "../../Components/Fetch/Users";
 
 interface projectData {
 	id: string;
@@ -70,57 +72,98 @@ interface editProjectData extends projectData {
 	};
 }
 
+type projectDataType = {
+	name: string;
+	description: string;
+	circle: {
+		id?: string;
+		code?: string;
+	};
+	createdBy: {
+		id?: string;
+		code?: string;
+	};
+	liveLink: string;
+	github: string;
+	tags: string[];
+};
+
+const defaultCreateProjectData: projectDataType = {
+	name: "",
+	description: "",
+	circle: {
+		id: "",
+		code: "",
+	},
+	liveLink: "",
+	github: "",
+	createdBy: {
+		id: undefined,
+		code: undefined,
+	},
+	tags: [],
+};
+
+const defaultEditProjectData = {
+	id: "",
+	name: "",
+	description: "",
+	circle: {
+		id: 0,
+		description: "",
+		rating: 0,
+		createdAt: new Date(),
+		code: undefined,
+	},
+	createdAt: new Date(),
+	createdBy: {
+		email: "",
+		id: "",
+		profile_picture: "",
+		first_name: "",
+		last_name: "",
+		role: {
+			id: "",
+			name: "",
+			canCreateCircle: false,
+			canModifyOwnCircle: false,
+			canModifyOtherCircle: false,
+			canDeleteOwnCircle: false,
+			canDeleteOtherCircles: false,
+			canLeaveCircle: false,
+			canJoinCircle: false,
+			canCreateProject: false,
+			canModifyOwnProject: false,
+			canModifyOtherProject: false,
+			canDeleteOwnProject: false,
+			canDeleteOtherProject: false,
+			canAddProjectToCircle: false,
+			canRemoveProjectFromCircle: false,
+			canManageRoles: false,
+			canManageUsers: false,
+			isAdmin: false,
+		},
+	},
+	rating: [],
+	liveLink: "",
+	github: "",
+	tags: [],
+};
+
 const Projects = () => {
 	const [data, setData] = useState<projectData[]>([]);
-	const [editProjectData, setEditProjectData] = useState<editProjectData>({
-		id: "",
-		name: "",
-		description: "",
-		circle: {
-			id: 0,
-			description: "",
-			rating: 0,
-			createdAt: new Date(),
-			code: undefined,
-		},
-		createdAt: new Date(),
-		createdBy: {
-			email: "",
-			id: "",
-			profile_picture: "",
-			first_name: "",
-			last_name: "",
-			role: {
-				id: "",
-				name: "",
-				canCreateCircle: false,
-				canModifyOwnCircle: false,
-				canModifyOtherCircle: false,
-				canDeleteOwnCircle: false,
-				canDeleteOtherCircles: false,
-				canLeaveCircle: false,
-				canJoinCircle: false,
-				canCreateProject: false,
-				canModifyOwnProject: false,
-				canModifyOtherProject: false,
-				canDeleteOwnProject: false,
-				canDeleteOtherProject: false,
-				canAddProjectToCircle: false,
-				canRemoveProjectFromCircle: false,
-				canManageRoles: false,
-				canManageUsers: false,
-				isAdmin: false,
-			},
-		},
-		rating: [],
-		liveLink: "",
-		github: "",
-		tags: [],
-	});
+	const [editProjectData, setEditProjectData] = useState<editProjectData>(
+		defaultEditProjectData
+	);
 	const [search, setSearch] = useState("");
 	const [circles, setCircles] = useState<CircleData[]>([]);
 	const [editDialogIsVisible, setEditDialogIsVisible] = useState(false);
-
+	const [createProjectDialogIsVisible, setCreateProjectDialogIsVisible] =
+		useState(false);
+	const [createProjectData, setCreateProjectData] = useState(
+		defaultCreateProjectData
+	);
+	const [users, setUsers] = useState<UserTypeClean[]>([]);
 	const toast = useRef<Toast | null>(null);
 
 	const fetchProjects = async () => {
@@ -163,8 +206,45 @@ const Projects = () => {
 		(async () => {
 			await fetchProjects();
 			await fetchCircles();
+			await FetchUsers().then((data) => setUsers(data));
 		})();
 	}, []);
+
+	const selectedUserTemplate = (option: { id: string; code: string }) => {
+		const currUser = users.find((user) => user.id === option.code);
+		return (
+			<div className="flex gap-2 items-center">
+				<Avatar
+					label="P"
+					image={currUser?.profile_picture}
+					shape="circle"
+					size="normal"
+				/>
+				<p className="font-medium">{option.id}</p>
+			</div>
+		);
+	};
+
+	const userOptionTemplate = (
+		option: { id: string; code: string },
+		props
+	) => {
+		if (option) {
+			const currUser = users.find((user) => user.id === option.code);
+			return (
+				<div className="flex gap-2 items-center">
+					<Avatar
+						label="P"
+						image={currUser?.profile_picture}
+						shape="circle"
+						size="normal"
+					/>
+					<p className="font-medium">{option.id}</p>
+				</div>
+			);
+		}
+		return <span>{props.placeholder}</span>;
+	};
 
 	const manageProject = (id: string) => {
 		const project = data.find((project) => project.id === id);
@@ -221,12 +301,135 @@ const Projects = () => {
 
 		toast.current?.show({
 			severity: "success",
-			summary: "Role Saved!",
+			summary: "Project Saved!",
 			detail: "Successfully saved changes...",
 			life: 3000,
 		});
 		await fetchProjects();
+
+		setEditDialogIsVisible(false);
+		setEditProjectData(defaultEditProjectData);
 	};
+
+	const DeleteProject = async (projectId: string) => {
+		toast.current?.show({
+			severity: "info",
+			summary: "Loading...",
+			detail: "Deleting project...",
+			life: 3000,
+		});
+
+		const { data, response } = await UseFetch({
+			url: `project/${projectId}`,
+			options: {
+				method: "DELETE",
+				returnResponse: true,
+				useServerUrl: true,
+			},
+		});
+
+		if (!response.ok)
+			// Displays the error message gotten back from the server, and if there isn't one, it uses a generic message.
+			return toast.current?.show({
+				severity: "error",
+				summary: "Oops..",
+				detail: `${
+					data && data.message
+						? data.message
+						: "Error trying to communicate with the server."
+				}`,
+				life: 3000,
+			});
+
+		toast.current?.show({
+			severity: "success",
+			summary: "Project Deleted!",
+			detail: "Successfully deleted project...",
+			life: 3000,
+		});
+
+		await fetchProjects();
+		setEditDialogIsVisible(false);
+	};
+
+	const CreateProject = async () => {
+		toast.current?.show({
+			severity: "info",
+			summary: "Loading...",
+			detail: "Creating project...",
+			life: 3000,
+		});
+
+		const { data, response } = await UseFetch({
+			url: `project`,
+			options: {
+				method: "POST",
+				body: {
+					name: createProjectData.name,
+					description: createProjectData.description,
+					circleId: createProjectData.circle.code,
+					liveLink: createProjectData.liveLink,
+					github: createProjectData.github,
+					tags: createProjectData.tags?.join("|"),
+					createdBy: createProjectData.createdBy.code,
+				},
+				returnResponse: true,
+				useServerUrl: true,
+			},
+		});
+
+		if (!response.ok)
+			// Displays the error message gotten back from the server, and if there isn't one, it uses a generic message.
+			return toast.current?.show({
+				severity: "error",
+				summary: "Oops..",
+				detail: `${
+					data && data.message
+						? data.message
+						: "Error trying to communicate with the server."
+				}`,
+				life: 3000,
+			});
+
+		toast.current?.show({
+			severity: "success",
+			summary: "Project Created!",
+			detail: "Successfully created project...",
+			life: 3000,
+		});
+
+		await fetchProjects();
+		setCreateProjectDialogIsVisible(false);
+		setCreateProjectData(defaultCreateProjectData);
+	};
+
+	/**
+	 * Retrieves filtered data based on the search input.
+	 * If a search query is provided, filters the data based on the following conditions:
+	 * - Matches the name (case-insensitive) or rating (as a string) of each item
+	 * - Matches the ID (as a string) of the circle property of each item, if it exists
+	 * - Matches any tag (case-insensitive) that starts with the search query
+	 * If no search query is provided, returns the original data.
+	 *
+	 * @returns {Array} The filtered data based on the search input.
+	 */
+	const getData = () => {
+		if (search) {
+			return data.filter(
+				(item) =>
+					item.name.toLowerCase().includes(search.toLowerCase()) ||
+					item.rating.toString().includes(search) ||
+					(item.circle &&
+						item.circle.id.toString().includes(search)) ||
+					item.tags.find((tag) =>
+						tag.toLowerCase().startsWith(search.toLowerCase())
+					)
+			);
+		}
+
+		return data;
+	};
+
 	return (
 		<div className="flex-1 w-full px-6 bg-gray-100">
 			<Toast ref={toast} />
@@ -267,8 +470,8 @@ const Projects = () => {
 						Projects ({data.length})
 					</h1>
 					<i
-						// onClick={() => setCreateUserDialog(true)}
-						title="Create a new role."
+						onClick={() => setCreateProjectDialogIsVisible(true)}
+						title="Create a new Project."
 						className="pi pi-plus cursor-pointer shadow-lg hover:scale-105 duration-200 bg-yellow-400 text-white px-2 py-2 rounded-full"
 					></i>
 				</section>
@@ -298,7 +501,7 @@ const Projects = () => {
 
 			<div className="mt-4 border-t-2 w-full">
 				<DataTable
-					value={data}
+					value={getData()}
 					tableStyle={{ minWidth: "50rem" }}
 					showGridlines
 					stripedRows
@@ -405,6 +608,7 @@ const Projects = () => {
 				</DataTable>
 			</div>
 
+			{/* EDIT PROJECT DIALOG */}
 			<Dialog
 				header={`Editing Project - ${editProjectData.name}`}
 				visible={editDialogIsVisible}
@@ -565,15 +769,6 @@ const Projects = () => {
 							/>
 						</span>
 					</section>
-					{/* <section className="mt-3">
-						<h3 className="font-bold text-sm">Permissions</h3>
-						{
-							<DisplayPermissions
-								permissions={editData.permissions}
-								updateFunc={setEditData}
-							/>
-						}
-					</section> */}
 
 					<footer className="flex flex-row gap-6 justify-center mt-4">
 						<button
@@ -595,17 +790,240 @@ const Projects = () => {
 						<button
 							onClick={() => {
 								confirmDialog({
-									message: "Do you want to delete this role?",
+									message:
+										"Do you want to delete this project?",
 									header: "Delete Confirmation",
 									icon: "pi pi-info-circle",
 									defaultFocus: "reject",
 									acceptClassName: "p-button-danger",
-									// accept: () => DeleteRole(editData.id),
+									accept: () =>
+										DeleteProject(editProjectData.id),
 								});
 							}}
 							className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
 						>
-							Delete Role
+							Delete Project
+						</button>
+					</footer>
+				</div>
+			</Dialog>
+
+			{/* CREATE PROJECT DIALOG */}
+			<Dialog
+				header={`Create Project - ${editProjectData.name}`}
+				visible={createProjectDialogIsVisible}
+				style={{ width: "50vw" }}
+				dismissableMask
+				onHide={() => setCreateProjectDialogIsVisible(false)}
+				draggable={false}
+			>
+				<div>
+					<section>
+						<h3 className="font-bold text-sm">Info</h3>
+						<div className="px-2 flex flex-col gap-2 mt-2">
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="project_name"
+									className="font-bold text-sm text-center border-1 border-zinc-300"
+								>
+									Name:
+								</label>
+								<InputText
+									id="project_name"
+									placeholder="Project Name"
+									value={createProjectData.name}
+									className="w-full border p-2"
+									onChange={(e) =>
+										setCreateProjectData((prev) => {
+											return {
+												...prev,
+												name: e.target.value,
+											};
+										})
+									}
+								/>
+							</span>
+
+							<span className="flex flex-col gap-1 justify-start">
+								<label
+									htmlFor="project_description"
+									className="font-bold text-sm border-1 border-zinc-300"
+								>
+									Description:
+								</label>
+								<InputTextarea
+									value={createProjectData.description}
+									className="w-full border p-2"
+									onChange={(e) =>
+										setCreateProjectData((prev) => ({
+											...prev,
+											description: e.target.value,
+										}))
+									}
+									rows={5}
+									cols={30}
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="project_live_link"
+									className="font-bold text-sm border-1 border-zinc-300 min-w-fit"
+								>
+									Live link:
+								</label>
+								<InputText
+									value={createProjectData.liveLink}
+									className="p-2 border w-full"
+									onChange={(e) =>
+										setCreateProjectData((prev) => ({
+											...prev,
+											liveLink: e.target.value,
+										}))
+									}
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="project_github"
+									className="font-bold text-sm border-1 border-zinc-300"
+								>
+									Github:
+								</label>
+								<InputText
+									value={createProjectData.github}
+									className="p-2 border w-full"
+									onChange={(e) =>
+										setCreateProjectData((prev) => ({
+											...prev,
+											github: e.target.value,
+										}))
+									}
+								/>
+							</span>
+
+							<span className="flex flex-row gap-2 items-center">
+								<label
+									htmlFor="project_tags"
+									className="font-bold text-sm border-1 border-zinc-300"
+								>
+									Tags:
+								</label>
+								<Chips
+									value={createProjectData.tags}
+									className="p-2 border "
+									onChange={(e) =>
+										setCreateProjectData((prev) => ({
+											...prev,
+											tags: e.value || [],
+										}))
+									}
+									separator=","
+									max={5}
+								/>
+							</span>
+						</div>
+
+						<span className="flex flex-row gap-2 items-center">
+							<label
+								htmlFor="project_circle"
+								className="font-bold text-sm border-1 border-zinc-300"
+							>
+								Circle:
+							</label>
+							<Dropdown
+								value={createProjectData.circle}
+								onChange={(e) =>
+									setCreateProjectData((prev) => ({
+										...prev,
+										circle: {
+											...prev.circle,
+											id: e.value.id,
+											code: e.value.code,
+										},
+									}))
+								}
+								options={circles.map((circle) => ({
+									code: circle.id,
+									id: circle.id,
+								}))}
+								optionLabel="id"
+								placeholder="Select a Circle"
+								className="w-full md:w-14rem mt-2 border"
+							/>
+						</span>
+
+						<span className="flex flex-row gap-2 items-center">
+							<label
+								htmlFor="created_by"
+								className="font-bold text-sm border-1 border-zinc-300 min-w-fit"
+							>
+								Created By:
+							</label>
+							<Dropdown
+								value={createProjectData.createdBy}
+								onChange={(e) =>
+									setCreateProjectData((prev) => ({
+										...prev,
+										createdBy: {
+											...prev.createdBy,
+											id: e.value.id,
+											code: e.value.code,
+										},
+									}))
+								}
+								options={users.map((user) => ({
+									code: user.id,
+									id: `${user.first_name} ${
+										user.last_name ? user.last_name : ""
+									}`,
+								}))}
+								valueTemplate={userOptionTemplate}
+								itemTemplate={selectedUserTemplate}
+								optionLabel="id"
+								placeholder="Select a User"
+								className="w-full md:w-14rem mt-2 border"
+							/>
+						</span>
+					</section>
+
+					<footer className="flex flex-row gap-6 justify-center mt-4">
+						<button
+							onClick={() =>
+								confirmDialog({
+									message:
+										"Are you sure you want to proceed?",
+									header: "Confirmation",
+									icon: "pi pi-exclamation-triangle",
+									defaultFocus: "accept",
+									accept: CreateProject,
+								})
+							}
+							className="w-fit h-fit bg-green-600 px-4 py-1 text-white rounded-md font-normal"
+						>
+							Save Changes
+						</button>
+						<button
+							onClick={() => {
+								confirmDialog({
+									message:
+										"Do you want to delete this project?",
+									header: "Delete Confirmation",
+									icon: "pi pi-info-circle",
+									defaultFocus: "reject",
+									acceptClassName: "p-button-danger",
+									accept: () => {
+										setCreateProjectDialogIsVisible(false);
+										setCreateProjectData(
+											() => defaultCreateProjectData
+										);
+									},
+								});
+							}}
+							className="w-fit h-fit bg-red-500 px-4 py-1 text-white rounded-md font-normal"
+						>
+							Cancel
 						</button>
 					</footer>
 				</div>

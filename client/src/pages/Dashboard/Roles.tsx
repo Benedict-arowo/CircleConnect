@@ -31,6 +31,7 @@ export type Role = {
 	canRemoveProjectFromCircle: boolean;
 	canManageRoles: boolean;
 	canManageUsers: boolean;
+	canAddUserToProject: boolean;
 	isAdmin: boolean;
 	users: UserTypeClean[];
 };
@@ -55,6 +56,7 @@ type ArrangedRoleData = {
 		canRemoveProjectFromCircle: boolean;
 		canManageRoles: boolean;
 		canManageUsers: boolean;
+		canAddUserToProject: boolean;
 		isAdmin: boolean;
 	};
 	users: UserTypeClean[];
@@ -79,6 +81,7 @@ const defaultRoleData = {
 		canRemoveProjectFromCircle: false,
 		canManageRoles: false,
 		canManageUsers: false,
+		canAddUserToProject: false,
 		isAdmin: false,
 	},
 };
@@ -145,6 +148,7 @@ const Roles = () => {
 					canRemoveProjectFromCircle: role.canRemoveProjectFromCircle,
 					canManageRoles: role.canManageRoles,
 					canManageUsers: role.canManageUsers,
+					canAddUserToProject: role.canAddUserToProject,
 					isAdmin: role.isAdmin,
 				},
 				users: role.users,

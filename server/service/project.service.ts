@@ -35,6 +35,7 @@ export type BodyUserArgs = {
 		pictures?: string;
 		visibility?: string;
 		pinned?: boolean;
+		createdBy?: string;
 	};
 };
 
@@ -170,9 +171,30 @@ export const GetProjectService = async (id: string) => {
 	return project;
 };
 
-export const CreateProjectService = async ({ body, user }: BodyUserArgs) => {
-	const { name, description, tags, github, liveLink, pictures } = body;
+/**
+ * Creates a new project.
+ *
+ * @param body - The request body containing project details.
+ * @param user - The active user making the request.
+ * @returns The created project.
+ * @throws {CustomError} If name or description is not provided, or if the user does not have permission to perform the action.
+ */
 
+export const CreateProjectService = async ({
+	body,
+	user: activeUser,
+}: BodyUserArgs) => {
+	const {
+		name,
+		description,
+		tags,
+		github,
+		liveLink,
+		pictures,
+		createdBy,
+		circleId,
+	} = body;
+	const { role: userRole } = activeUser;
 	if (!name || !description)
 		throw new CustomError(
 			"Name, and Description must be provided.",
@@ -211,13 +233,34 @@ export const CreateProjectService = async ({ body, user }: BodyUserArgs) => {
 	// 		);
 	// }
 
+	if (createdBy) {
+		// Permission checking, admin or can add use to project permission only
+		if (!(userRole.isAdmin || userRole.canAddUserToProject))
+			throw new CustomError(
+				"You do not have permission to perform this action.",
+				StatusCodes.UNAUTHORIZED
+			);
+
+		const user = await prisma.user.findUnique({
+			where: {
+				id: createdBy,
+			},
+		});
+
+		if (!user)
+			throw new CustomError(
+				"User not found.",
+				StatusCodes.INTERNAL_SERVER_ERROR
+			);
+	}
+
 	const project = await prisma.project.create({
 		data: {
 			name,
 			description,
 			tags: tags ? tags.split("|") : undefined,
 			// circleId: circleId ? Number(circleId) : undefined,
-			createdById: user.id,
+			createdById: createdBy ? createdBy : activeUser.id,
 			github: github ? github : undefined,
 			liveLink: liveLink ? liveLink : undefined,
 			pictures: pictures ? pictures.split("|") : undefined,
@@ -226,6 +269,15 @@ export const CreateProjectService = async ({ body, user }: BodyUserArgs) => {
 
 	return project;
 };
+
+/**
+ * Edits a project based on the provided parameters.
+ * @param id - The ID of the project to edit.
+ * @param body - The updated project data.
+ * @param user - The user performing the edit.
+ * @returns The updated project.
+ * @throws CustomError if the project is not found, the user does not have permission, or invalid values are provided.
+ */
 
 export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 	const {
@@ -361,6 +413,13 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 	return updatedProject;
 };
 
+/**
+ * Deletes a project based on the provided ID and user information.
+ *
+ * @param {BodyUserArgs} args - The arguments containing the project ID and user information.
+ * @returns {Promise<number>} - A promise that resolves to 0 if the project is successfully deleted.
+ * @throws {CustomError} - If the project is not found or the user does not have permission to delete the project.
+ */
 export const DeleteProjectService = async ({ id, user }: BodyUserArgs) => {
 	const Project = await prisma.project.findUnique({
 		where: { id },
@@ -369,22 +428,31 @@ export const DeleteProjectService = async ({ id, user }: BodyUserArgs) => {
 	if (!Project)
 		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
 
-	if (
-		!(
-			(!user.role.isAdmin || !user.role.canModifyOtherProject) &&
-			Project.createdById === user.id
-		)
-	)
-		throw new CustomError(
-			"You do not have permission to perform this action.",
-			StatusCodes.UNAUTHORIZED
-		);
+	// if (
+	// 	!(
+	// 		!(user.role.isAdmin || user.role.canModifyOtherProject) &&
+	// 		Project.createdById === user.id
+	// 	)
+	// )
+	// 	throw new CustomError(
+	// 		"You do not have permission to perform this action.",
+	// 		StatusCodes.UNAUTHORIZED
+	// 	);
 
-	if (Project.createdById !== user.id)
-		throw new CustomError(
-			"You do not have permission to delete this project.",
-			StatusCodes.BAD_REQUEST
-		);
+	// If user is not an admin, neither can they modify other projects, then it means they have to be the owner of this project to be able to delete it.
+	if (!(user.role.isAdmin || user.role.canModifyOtherProject)) {
+		if (Project.createdById !== user.id)
+			throw new CustomError(
+				"You do not have permission to perform this action.",
+				StatusCodes.UNAUTHORIZED
+			);
+	}
+
+	// if (Project.createdById !== user.id)
+	// 	throw new CustomError(
+	// 		"You do not have permission to delete this project.",
+	// 		StatusCodes.BAD_REQUEST
+	// 	);
 
 	await prisma.project.delete({ where: { id } });
 	return 0;

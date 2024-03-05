@@ -82,21 +82,21 @@ export const CirclesService = async ({ query }: CirclesServiceArgs) => {
 	if (isNaN(parseInt(limit)))
 		throw new CustomError(
 			"Invalid limit provided",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	if (sortedBy && !sortedByValues.includes(sortedBy)) {
 		// Checks if a valid sorting parameter has been provided.
 		throw new CustomError(
 			"Invalid sorting parameters",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	}
 
 	if (Number(limit) > maxLimit || Number(limit) < minLimit)
 		throw new CustomError(
 			`Invalid limit, must be between ${minLimit} and ${maxLimit}`,
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	const Circles = await prisma.circle.findMany({
@@ -133,7 +133,9 @@ export const CirclesService = async ({ query }: CirclesServiceArgs) => {
 				// TODO: Simplify this code to avoid repetition.
 				select: {
 					description: true,
-					createdBy: true,
+					createdBy: {
+						select: UserSelectClean,
+					},
 					createdAt: true,
 					github: true,
 					id: true,
@@ -221,25 +223,25 @@ export const CreateCircleService = async ({ body }: CreateCircleArgs) => {
 	if (!description)
 		throw new CustomError(
 			"Circle description must be provided.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	if (description.length <= minimumCircleDescriptionLength)
 		throw new CustomError(
 			`Description is too short, it must be at least ${minimumCircleDescriptionLength} characters`,
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	if (!num || isNaN(Number(num)))
 		throw new CustomError(
 			"Circle number must be provided.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	if (Number(num) < 0)
 		throw new CustomError(
 			"Circle number must be greater than zero.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	try {
@@ -254,7 +256,7 @@ export const CreateCircleService = async ({ body }: CreateCircleArgs) => {
 		if (!Circle)
 			throw new CustomError(
 				"Error while trying to create circle",
-				StatusCodes.INTERNAL_SERVER_ERROR,
+				StatusCodes.INTERNAL_SERVER_ERROR
 			);
 
 		return Circle;
@@ -263,12 +265,12 @@ export const CreateCircleService = async ({ body }: CreateCircleArgs) => {
 		if (error.code === "P2002" && error.meta?.target?.includes("id")) {
 			throw new CustomError(
 				"A circle with this number already exists.",
-				StatusCodes.BAD_REQUEST,
+				StatusCodes.BAD_REQUEST
 			);
 		} else {
 			throw new CustomError(
 				error.message,
-				StatusCodes.INTERNAL_SERVER_ERROR,
+				StatusCodes.INTERNAL_SERVER_ERROR
 			);
 		}
 	}
@@ -312,7 +314,7 @@ export const RequestToJoinCircleService = async ({
 	)
 		throw new CustomError(
 			"You're already a member of this circle.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	// Checks if the user trying to join the circle is already a member of the circle.
@@ -323,7 +325,7 @@ export const RequestToJoinCircleService = async ({
 	if (memberExists) {
 		throw new CustomError(
 			"You're already a member of this circle.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	}
 
@@ -335,7 +337,7 @@ export const RequestToJoinCircleService = async ({
 	if (alreadyInRequestList) {
 		throw new CustomError(
 			"You're already in the request list of this circle.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	}
 
@@ -415,7 +417,7 @@ export const RemoveCircleRequestService = async ({
 	if (memberExists) {
 		throw new CustomError(
 			"You're already a member of this circle.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	}
 
@@ -427,7 +429,7 @@ export const RemoveCircleRequestService = async ({
 	if (!inCircleRequestList) {
 		throw new CustomError(
 			"User is not in circle request list.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	}
 
@@ -486,14 +488,14 @@ export const LeaveCircleService = async ({
 	if (!circle.lead)
 		throw new CustomError(
 			ReasonPhrases.INTERNAL_SERVER_ERROR,
-			StatusCodes.INTERNAL_SERVER_ERROR,
+			StatusCodes.INTERNAL_SERVER_ERROR
 		);
 
 	// Make sure it's not the circle lead.
 	if (user.id === circle.lead.id)
 		throw new CustomError(
 			"You may not leave this circle.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	if (circle.colead && circle.colead.id === user.id) {
@@ -505,7 +507,7 @@ export const LeaveCircleService = async ({
 	} else
 		throw new CustomError(
 			"You are not a member of this circle.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	const updatedCircle = await prisma.circle.update({
@@ -632,7 +634,7 @@ export const EditCircleService = async ({
 		)
 			throw new CustomError(
 				"You do not have permission to perform this action.",
-				StatusCodes.UNAUTHORIZED,
+				StatusCodes.UNAUTHORIZED
 			);
 	}
 
@@ -657,13 +659,13 @@ export const EditCircleService = async ({
 		// Checks if the user exists in the circle request
 		// If exists, add them to circle member, and remove them from request list.
 		const userExistsInCircleRequest = circle.requests.find(
-			(member) => member.id === request.userId,
+			(member) => member.id === request.userId
 		);
 
 		if (!userExistsInCircleRequest)
 			throw new CustomError(
 				"User has not requested to join the circle.",
-				StatusCodes.BAD_REQUEST,
+				StatusCodes.BAD_REQUEST
 			);
 		if (request.type === "ACCEPT") {
 			requestDisconnectList.push({ id: request.userId });
@@ -708,27 +710,27 @@ export const EditCircleService = async ({
 		} else
 			throw new CustomError(
 				"User is not a member of this circle.",
-				StatusCodes.BAD_REQUEST,
+				StatusCodes.BAD_REQUEST
 			);
 	}
 
 	if (description && !(description.length > minimumCircleDescriptionLength))
 		throw new CustomError(
 			`Description is too short, it must be at least ${minimumCircleDescriptionLength} characters`,
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	if (manageUser) {
 		if (circle.lead && circle.lead.id === manageUser.userId)
 			throw new CustomError(
 				"You cannot perform this action on yourself.",
-				StatusCodes.BAD_REQUEST,
+				StatusCodes.BAD_REQUEST
 			);
 
 		if (circle.colead && circle.colead.id === user.id)
 			throw new CustomError(
 				"You do not have the permission to perform this operation.",
-				StatusCodes.BAD_REQUEST,
+				StatusCodes.BAD_REQUEST
 			);
 
 		// Checks if the user being managed is a colead, and if not, checks if the user is a member, and if not, an error gets thrown.
@@ -781,12 +783,12 @@ export const EditCircleService = async ({
 			} else if (manageUser.action === "DEMOTE")
 				throw new CustomError(
 					"Circle member cannot be demoted further!",
-					StatusCodes.BAD_REQUEST,
+					StatusCodes.BAD_REQUEST
 				);
 		} else
 			throw new CustomError(
 				"User does not exist as a circle member.",
-				StatusCodes.BAD_REQUEST,
+				StatusCodes.BAD_REQUEST
 			);
 	}
 
@@ -911,6 +913,6 @@ export const DeleteCircleService = async ({
 	} else
 		throw new CustomError(
 			"You are not allowed to delete this circle.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 };
