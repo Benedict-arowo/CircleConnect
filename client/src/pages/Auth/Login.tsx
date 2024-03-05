@@ -10,11 +10,15 @@ import { Alert as AlertType } from "../../types";
 import UseFetch from "../../Components/Fetch";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../slices/userSlice";
+import { UseSetUser } from "../../contexts/UserContext";
+// import { UseSetUser } from "../../contexts/UserContext";
 // import { useDispatch } from "react-redux";
 // import { saveUser } from "./userSlice";
 
 const Login = () => {
 	const dispatch = useDispatch();
+	const SetUser = UseSetUser();
+	// const setUser = UseSetUser();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [formData, setFormData] = useState({
 		email: "",
@@ -29,7 +33,7 @@ const Login = () => {
 
 	const fetchUser = async () => {
 		const { data, response } = await UseFetch({
-			url: "user",
+			url: "activeUser",
 			options: {
 				useServerUrl: true,
 				returnResponse: true,
@@ -62,7 +66,8 @@ const Login = () => {
 					});
 				} else {
 					if (timer) clearInterval(timer);
-					dispatch(loginUser(User.data));
+					// dispatch(loginUser(User.data));
+					SetUser({ mode: "LOGIN", data: User.data });
 					Navigate("/");
 				}
 			}
@@ -94,7 +99,8 @@ const Login = () => {
 					});
 				} else {
 					if (timer) clearInterval(timer);
-					dispatch(loginUser(User.data));
+					// dispatch(loginUser(User.data));
+					SetUser({ mode: "LOGIN", data: User.data });
 					Navigate("/");
 				}
 			}
@@ -129,7 +135,12 @@ const Login = () => {
 			}
 
 			// Save user's credentials to session storage
-			dispatch(loginUser(data.data));
+			// dispatch(loginUser(data.data));
+			SetUser({ mode: "LOGIN", data: data.data });
+			// setUser({
+			// 	mode: "LOGIN",
+			// 	data: data.data,
+			// });
 			// No error is found, hence it's successful.
 			setAlert(() => {
 				return {
@@ -182,7 +193,8 @@ const Login = () => {
 					<fieldset className="flex flex-col gap-1">
 						<label
 							className="text-gray-600 font-light"
-							htmlFor="email_address">
+							htmlFor="email_address"
+						>
 							Email <span className="text-red-500">*</span>
 						</label>
 						<input
@@ -206,7 +218,8 @@ const Login = () => {
 					<fieldset className="flex flex-col gap-1">
 						<label
 							className="text-gray-600 font-light"
-							htmlFor="password">
+							htmlFor="password"
+						>
 							Password <span className="text-red-500">*</span>
 						</label>
 						<input
@@ -230,14 +243,16 @@ const Login = () => {
 					<div className="flex flex-col items-center gap-2">
 						<button
 							type="submit"
-							className="bg-red-500 w-fit text-white px-12 rounded-md py-2 font-light hover:bg-red-400 active:bg-red-700 duration-300">
+							className="bg-red-500 w-fit text-white px-12 rounded-md py-2 font-light hover:bg-red-400 active:bg-red-700 duration-300"
+						>
 							Login
 						</button>
 						<p className="text-gray-500 font-light">
 							Don't have an account?{" "}
 							<a
 								href="./register"
-								className="text-red-500 hover:text-red-300 active:text-red-700 duration-300">
+								className="text-red-500 hover:text-red-300 active:text-red-700 duration-300"
+							>
 								Register here!
 							</a>
 						</p>
@@ -245,7 +260,8 @@ const Login = () => {
 				</form>
 				<section
 					aria-label="Register with other services"
-					className="flex flex-col gap-4 my-8 items-center">
+					className="flex flex-col gap-4 my-8 items-center"
+				>
 					<GoogleButton onClick={handleGoogleAuth} type="light" />
 					<GithubButton onClick={handleGithubAuth} type="light" />
 					{isLoading && <Spinner />}

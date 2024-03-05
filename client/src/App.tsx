@@ -1,25 +1,76 @@
 import { Route, Routes } from "react-router-dom";
-import Index from "./pages/Index";
-import Success from "./pages/Auth/Success";
-import Register from "./pages/Auth/Register";
-import Login from "./pages/Auth/Login";
-import Test from "./pages/Test";
-import Circle from "./pages/Circle";
-import Discover from "./pages/Discover";
+import { Suspense, lazy } from "react";
 
-// TODO: Implement Lazy loading
+import CheckAuth from "./Middlewears/CheckAuth";
+import Loading from "./Components/Loading";
+
+const Index = lazy(() => import("./pages/Index"));
+const Success = lazy(() => import("./pages/Auth/Success"));
+const Register = lazy(() => import("./pages/Auth/Register"));
+const Login = lazy(() => import("./pages/Auth/Login"));
+const Test = lazy(() => import("./pages/Test"));
+const Circle = lazy(() => import("./pages/Circle"));
+const Discover = lazy(() => import("./pages/Discover"));
+const CirclesDashboard = lazy(() => import("./pages/Dashboard/Circles"));
+const Users = lazy(() => import("./pages/Dashboard/Users"));
+const Project = lazy(() => import("./pages/Project"));
+const Roles = lazy(() => import("./pages/Dashboard/Roles"));
+const DashboardSidebar = lazy(() => import("./Components/dashboard_sidebar"));
+const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
+const Projects = lazy(() => import("./pages/Dashboard/Projects"));
+const AdminOnly = lazy(() => import("./Middlewears/AdminOnly"));
+const NoAuth = lazy(() => import("./Middlewears/NoAuth"));
+const Error = lazy(() => import("./pages/Error"));
+
 const App = () => {
 	return (
 		<div className="max-w-screen-2xl mx-auto">
-			<Routes>
-				<Route path="/" element={<Index />} />
-				<Route path="/discover" element={<Discover />} />
-				<Route path="/circle/:id" element={<Circle />} />
-				<Route path="/test" element={<Test />} />
-				<Route path="/login" element={<Login />} />
-				<Route path="/register" element={<Register />} />
-				<Route path="/auth/success" element={<Success />} />
-			</Routes>
+			<CheckAuth>
+				<Suspense fallback={<Loading />}>
+					<Routes>
+						<Route path="/" element={<Index />} />
+						<Route path="/discover" element={<Discover />} />
+						<Route path="/project/:id" element={<Project />} />
+						<Route path="/circle/:id" element={<Circle />} />
+						<Route path="/test" element={<Test />} />
+						<Route path="/error" element={<Error />} />
+						<Route path="/auth/success" element={<Success />} />
+						<Route
+							path="/login"
+							element={
+								<NoAuth>
+									<Login />
+								</NoAuth>
+							}
+						/>
+						<Route
+							path="/register"
+							element={
+								<NoAuth>
+									<Register />
+								</NoAuth>
+							}
+						/>
+						<Route
+							path="/dashboard"
+							element={
+								<AdminOnly>
+									<DashboardSidebar />
+								</AdminOnly>
+							}
+						>
+							<Route path="" element={<Dashboard />} />
+							<Route
+								path="circles"
+								element={<CirclesDashboard />}
+							/>
+							<Route path="users" element={<Users />} />
+							<Route path="roles" element={<Roles />} />
+							<Route path="projects" element={<Projects />} />
+						</Route>
+					</Routes>
+				</Suspense>
+			</CheckAuth>
 		</div>
 	);
 };

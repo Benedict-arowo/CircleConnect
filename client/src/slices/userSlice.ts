@@ -6,6 +6,9 @@ type userState = {
 	last_name: string | null;
 	profile_picture: string | null;
 	email: string | null;
+	role: {
+		name: string;
+	} | null;
 };
 
 type initialState = {
@@ -21,6 +24,7 @@ const initialState: initialState = {
 		last_name: null,
 		profile_picture: null,
 		email: null,
+		role: null,
 	},
 	isLoggedIn: false,
 	status: "pending",
@@ -39,6 +43,7 @@ export const userSlice = createSlice({
 				last_name: payload.payload.last_name,
 				profile_picture: payload.payload.profile_picture,
 				email: payload.payload.email,
+				role: payload.payload.role,
 			};
 		},
 		logoutUser: (state) => {
@@ -47,6 +52,7 @@ export const userSlice = createSlice({
 				first_name: null,
 				last_name: null,
 				profile_picture: null,
+				role: null,
 				email: null,
 			};
 			state.isLoggedIn = false;

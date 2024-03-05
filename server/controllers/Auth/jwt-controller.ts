@@ -5,7 +5,13 @@ import { Response } from "express";
 import prisma from "../../model/db";
 import { Prisma } from "@prisma/client";
 import { findUser } from "../../model/auth";
-import { hash, tokenGenerator, verifyHash } from "../../utils";
+import {
+	ACCESS_TOKEN_VALIDITY_TIME,
+	DEFAULT_MEMBER_ROLE_ID,
+	hash,
+	tokenGenerator,
+	verifyHash,
+} from "../../utils";
 
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
@@ -21,6 +27,15 @@ export const loginJWT = async (req: Req, res: Response) => {
 	}
 	const User = await prisma.user.findUnique({
 		where: { email },
+		select: {
+			id: true,
+			first_name: true,
+			last_name: true,
+			email: true,
+			profile_picture: true,
+			role: true,
+			password: true,
+		},
 	});
 
 	if (!User) {
@@ -39,7 +54,10 @@ export const loginJWT = async (req: Req, res: Response) => {
 	// passwordIsValid = await argon.verify(User.password, password);
 
 	if (passwordIsValid) {
-		const token = await tokenGenerator({ id: User.id }, "1h");
+		const token = await tokenGenerator(
+			{ id: User.id },
+			ACCESS_TOKEN_VALIDITY_TIME
+		);
 		console.log(`TOKEN: ${token}`);
 		return res
 			.cookie("jwtToken", token, { httpOnly: true })
@@ -78,6 +96,7 @@ export const registerJWT = async (req: Req, res: Response) => {
 				first_name,
 				last_name,
 				password: hashedPassword,
+				roleId: DEFAULT_MEMBER_ROLE_ID,
 			},
 		});
 

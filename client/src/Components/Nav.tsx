@@ -29,6 +29,8 @@ import { format } from "timeago.js";
 import { UseSocketContext } from "../contexts/SocketContext";
 import Notify from "./Notify";
 import { Socket } from "socket.io-client";
+import { UseSetUser, UseUser } from "../contexts/UserContext";
+import { LogoutFunc } from "./Fetch/LogoutFunc";
 
 type Props = {
 	className?: string;
@@ -49,8 +51,10 @@ type Notification = {
 const Nav = (props: Props) => {
 	const dispatch = useDispatch();
 	const socket: Socket = UseSocketContext();
+	const setUser = UseSetUser();
 	const { className, type = "dark", useBackground = true } = props;
-	const user = useSelector((state) => state.user);
+	// const user = useSelector((state) => state.user);
+	const user = UseUser();
 	// const { io, connected: socketConnected } = useSelector((state) => state.io);
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const [notifications, setNotifications] = useState<Notification>({
@@ -98,25 +102,6 @@ const Nav = (props: Props) => {
 		fetchNotifications();
 	}, []);
 
-	const logoutHandler = async () => {
-		dispatch(logoutUser());
-		onClose();
-		await UseFetch({
-			url: "logout",
-			options: {
-				method: "GET",
-				useServerUrl: true,
-				returnResponse: true,
-			},
-		})
-			.then(({ response }) => {
-				if (!response.ok) throw new Error();
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	};
-
 	const updateNotification = async (id: string, status: boolean) => {
 		const { data, response } = await UseFetch({
 			url: `notification/${id}/${status ? "markAsUnread" : "markAsRead"}`,
@@ -163,10 +148,11 @@ const Nav = (props: Props) => {
 					key={id}
 					className={`px-2 py-3 flex flex-row gap-3 items-center border-b border-b-slate-200 border-1 hover:bg-slate-100 duration-300 cursor-pointer bg-white ${
 						!is_read ? "bg-red-50" : ""
-					}`}>
+					}`}
+				>
 					<Avatar
-						name={`${user.first_name}`}
-						src={user.profile_picture}
+						name={`${user.info.first_name}`}
+						src={user.info.profile_picture}
 						width="32px"
 						height="32px"
 						className="cursor-pointer"
@@ -180,7 +166,8 @@ const Nav = (props: Props) => {
 							<p className=" ">{format(createdAt)}</p>
 							<button
 								className="hover:underline"
-								onClick={() => updateNotification(id, is_read)}>
+								onClick={() => updateNotification(id, is_read)}
+							>
 								{is_read ? "Unread" : "Mark as read"}
 							</button>
 						</div>
@@ -195,19 +182,22 @@ const Nav = (props: Props) => {
 			<header
 				className={`flex flex-row justify-between py-4 px-8 md:px-8 items-center ${className} ${
 					useBackground && "nav_background"
-				}`}>
+				}`}
+			>
 				<div className="flex-1 sm:flex hidden justify-between mx-auto items-center">
 					<Logo type={type} />
 					<ul
 						className={`flex flex-row gap-6 font-light ${
 							type === "dark" ? "text-black" : "text-white"
-						}`}>
+						}`}
+					>
 						<li className="cursor-pointer text-lg">
 							<NavLink
 								to="/"
 								style={({ isActive }) => {
 									return isActive ? activeStyles : {};
-								}}>
+								}}
+							>
 								Home
 							</NavLink>
 						</li>
@@ -216,7 +206,8 @@ const Nav = (props: Props) => {
 								to="/discover"
 								style={({ isActive }) => {
 									return isActive ? activeStyles : {};
-								}}>
+								}}
+							>
 								Discover
 							</NavLink>
 						</li>
@@ -225,13 +216,15 @@ const Nav = (props: Props) => {
 					<div>
 						{user.isLoggedIn && (
 							<section
-								className={`flex flex-row gap-4 items-center text-black`}>
+								className={`flex flex-row gap-4 items-center text-black`}
+							>
 								<div>
 									<Popover>
 										<PopoverTrigger>
 											<Button
 												variant="unstyled"
-												className="relative">
+												className="relative"
+											>
 												<svg
 													xmlns="http://www.w3.org/2000/svg"
 													fill="none"
@@ -239,7 +232,8 @@ const Nav = (props: Props) => {
 													strokeWidth={1.25}
 													stroke="currentColor"
 													className={`w-6 h-6 cursor-pointer duration-300 active:text-red-300
-													${type === "dark" ? "text-black" : "text-white"}`}>
+													${type === "dark" ? "text-black" : "text-white"}`}
+												>
 													<path
 														strokeLinecap="round"
 														strokeLinejoin="round"
@@ -270,7 +264,8 @@ const Nav = (props: Props) => {
 													</h4>
 													<button
 														onClick={markAllAsRead}
-														className="font-light self-end text-xs text-gray-500">
+														className="font-light self-end text-xs text-gray-500"
+													>
 														Mark all as read
 													</button>
 												</div>
@@ -326,7 +321,8 @@ const Nav = (props: Props) => {
 						isOpen={isOpen}
 						placement="right"
 						onClose={onClose}
-						finalFocusRef={btnRef}>
+						finalFocusRef={btnRef}
+					>
 						<DrawerOverlay />
 						<DrawerContent>
 							<DrawerCloseButton />
@@ -369,12 +365,22 @@ const Nav = (props: Props) => {
 									<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
 										Circle
 									</button>
+									<Link to={"/dashboard"}>
+										<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
+											Dashboard
+										</button>
+									</Link>
 								</section>
 								<div className="w-full h-[1px] rounded-md bg-gray-200 my-1"></div>
 
 								<button
-									onClick={logoutHandler}
-									className="mt-2 px-2 font-light">
+									onClick={() => {
+										LogoutFunc();
+										setUser({ mode: "LOGOUT" });
+										onClose();
+									}}
+									className="mt-2 px-2 font-light"
+								>
 									Logout
 								</button>
 							</DrawerBody>
@@ -393,7 +399,8 @@ const Nav = (props: Props) => {
 						stroke="currentColor"
 						className={`w-6 h-6 ${
 							type === "dark" ? "text-black" : "text-white"
-						}`}>
+						}`}
+					>
 						<path
 							strokeLinecap="round"
 							strokeLinejoin="round"

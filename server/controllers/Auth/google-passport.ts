@@ -1,5 +1,6 @@
 import prisma from "../../model/db";
 import { User } from "../../types";
+import { DEFAULT_MEMBER_ROLE_ID } from "../../utils";
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
@@ -12,6 +13,9 @@ passport.deserializeUser(async (id: string, done: Function) => {
 	try {
 		const user = await prisma.user.findUnique({
 			where: { id },
+			include: {
+				role: true,
+			},
 		});
 
 		if (!user) {
@@ -36,7 +40,7 @@ passport.use(
 			accessToken: string,
 			refreshToken: string,
 			profile: User,
-			done: Function
+			done: Function,
 		) => {
 			// This is where you handle the authenticated user, e.g., store them in your database.
 			// You can customize this part as per your application's requirements.
@@ -73,6 +77,7 @@ passport.use(
 					first_name: profile._json.given_name,
 					last_name: profile._json.family_name,
 					profile_picture: profile._json.picture,
+					roleId: DEFAULT_MEMBER_ROLE_ID,
 					joined: new Date(),
 					last_login: new Date(),
 				},
@@ -80,8 +85,8 @@ passport.use(
 
 			// Log in the new user
 			return done(null, newUser);
-		}
-	)
+		},
+	),
 );
 
 // (async () => {

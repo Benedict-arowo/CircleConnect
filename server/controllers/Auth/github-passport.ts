@@ -1,6 +1,7 @@
 import CustomError from "../../middlewear/CustomError";
 import prisma from "../../model/db";
 import { User } from "../../types";
+import { DEFAULT_MEMBER_ROLE_ID } from "../../utils";
 const passport = require("passport");
 const GithubStrategy = require("passport-github2").Strategy;
 
@@ -13,6 +14,9 @@ passport.deserializeUser(async (id: string, done: Function) => {
 	try {
 		const user = await prisma.user.findUnique({
 			where: { id },
+			include: {
+				role: true,
+			},
 		});
 		if (!user) {
 			return done(null, false); // User not found
@@ -37,7 +41,7 @@ passport.use(
 			accessToken: string,
 			refreshToken: string,
 			profile: User,
-			done: Function
+			done: Function,
 		) {
 			const userEmail = profile.emails[0];
 			console.log(userEmail);
@@ -73,11 +77,12 @@ passport.use(
 						last_name: "",
 						profile_picture: profile.photos[0].value,
 						github_id: profile.id,
+						roleId: DEFAULT_MEMBER_ROLE_ID,
 						last_login: new Date(),
 					},
 				});
 			}
 			return done(null, user);
-		}
-	)
+		},
+	),
 );

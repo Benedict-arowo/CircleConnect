@@ -11,7 +11,7 @@ const ErrorHandler = (
 	err: any,
 	req: Request,
 	res: Response,
-	next: NextFunction
+	next: NextFunction,
 ) => {
 	let { code, message } = err;
 	// If the error is not an instance of the CustomError class meaning it won't have a code property.
@@ -20,13 +20,13 @@ const ErrorHandler = (
 		return res.status(404).json({
 			success: false,
 			message: process.env.DEFAULT_ERROR_MESSAGE,
-			stack: process.env.NODE_ENV === "test" ? err.stack : null,
+			stack: process.env.NODE_ENV === "test" ? err.stack : undefined,
 		});
 	}
 	return res.status(code || 404).json({
 		success: false,
 		message: message || process.env.DEFAULT_ERROR_MESSAGE,
-		stack: process.env.NODE_ENV === "test" ? err.stack : null,
+		stack: process.env.NODE_ENV === "test" ? err.stack : undefined,
 	});
 };
 

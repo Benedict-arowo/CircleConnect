@@ -1,0 +1,389 @@
+tags:
+    - name: Project
+      description: Operations related to Projects
+/projects:
+    get:
+        tags: [Project]
+        summary: Get Projects
+        description: Retrieve a list of projects.
+        parameters:
+            - in: query
+              name: limit
+              description: Limit the number of projects to retrieve.
+              schema:
+                  type: string
+            - in: query
+              name: sortedBy
+              description: Sort projects by specific criteria.
+              schema:
+                  type: string
+            - in: query
+              name: userId
+              description: Filter projects by user ID.
+              schema:
+                  type: string
+            - in: query
+              name: circleId
+              description: Filter projects by circle ID.
+              schema:
+                  type: string
+            - in: query
+              name: pinned
+              description: Filter projects by pinned status.
+              schema:
+                  type: string
+        responses:
+            "200":
+                description: Successful request.
+                content:
+                    application/json:
+                        example:
+                            success: true
+                            data:
+                                - id: 1
+                                  name: "Project 1"
+                                  description: "Description of Project 1"
+                                  circle: { ... }
+                                  createdAt: "2024-02-04T12:00:00Z"
+                                  createdBy: { ... }
+                                  rating: 4.5
+                                  liveLink: "https://example.com"
+                                  github: "https://github.com/example"
+                                  techUsed: ["Tech1", "Tech2"]
+                                - id: 2
+                                  name: "Project 2"
+                                  description: "Description of Project 2"
+                                  circle: { ... }
+                                  createdAt: "2024-02-04T12:30:00Z"
+                                  createdBy: { ... }
+                                  rating: 3.8
+                                  liveLink: "https://example.com"
+                                  github: "https://github.com/example"
+                                  techUsed: ["Tech3", "Tech4"]
+            "400":
+                description: Bad Request.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "Invalid limit provided"
+            "401":
+                description: Unauthorized.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "You do not have permission to perform this action."
+    post:
+        tags: [Project]
+        summary: Create Project
+        description: Create a new project.
+        requestBody:
+            required: true
+            content:
+                application/json:
+                    example:
+                        name: "New Project"
+                        description: "Description of the new project"
+                        circleId: 1
+                        techUsed: ["Tech1", "Tech2"]
+                        github: "https://github.com/new-project"
+                        liveLink: "https://new-project.com"
+                        pictures: ["picture1.jpg", "picture2.jpg"]
+        responses:
+            "200":
+                description: Successful creation.
+                content:
+                    application/json:
+                        example:
+                            success: true
+                            data:
+                                id: 3
+                                name: "New Project"
+                                description: "Description of the new project"
+                                circle: { ... }
+                                createdAt: "2024-02-04T14:00:00Z"
+                                createdBy: { ... }
+                                rating: null
+                                liveLink: "https://new-project.com"
+                                github: "https://github.com/new-project"
+                                techUsed: ["Tech1", "Tech2"]
+            "400":
+                description: Bad Request.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "You do not have permission to perform this action."
+            "401":
+                description: Unauthorized.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "Name, and Description must be provided."
+
+/projects/{id}:
+    get:
+        tags: [Project]
+        summary: Get Project
+        description: Retrieve a project by ID.
+        parameters:
+            - in: path
+              name: id
+              required: true
+              description: ID of the project to retrieve.
+              schema:
+                  type: string
+        responses:
+            "200":
+                description: Successful request.
+                content:
+                    application/json:
+                        example:
+                            success: true
+                            data:
+                                id: 1
+                                name: "Project 1"
+                                description: "Description of Project 1"
+                                circle: { ... }
+                                createdAt: "2024-02-04T12:00:00Z"
+                                createdBy: { ... }
+                                rating: 4.5
+                                liveLink: "https://example.com"
+                                github: "https://github.com/example"
+                                techUsed: ["Tech1", "Tech2"]
+            "400":
+                description: Bad Request.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "An ID must be provided."
+            "404":
+                description: Project not found.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "Project not found."
+    put:
+        tags: [Project]
+        summary: Edit Project
+        description: Edit a project by ID.
+        parameters:
+            - in: path
+              name: id
+              required: true
+              description: ID of the project to edit.
+              schema:
+                  type: string
+        requestBody:
+            required: true
+            content:
+                application/json:
+                    example:
+                        name: "Updated Project"
+                        description: "Updated description of the project"
+                        github: "https://github.com/updated-project"
+                        techUsed: ["Tech1", "Tech2", "Tech3"]
+                        liveLink: "https://updated-project.com"
+                        visibility: "PRIVATE"
+                        pictures:
+                            ["updated-picture1.jpg", "updated-picture2.jpg"]
+                        pinned: true
+        responses:
+            "200":
+                description: Successful edit.
+                content:
+                    application/json:
+                        example:
+                            success: true
+                            data:
+                                id: 1
+                                name: "Updated Project"
+                                description: "Updated description of the project"
+                                circle: { ... }
+                                createdAt: "2024-02-04T12:00:00Z"
+                                createdBy: { ... }
+                                rating: 4.5
+                                liveLink: "https://updated-project.com"
+                                github: "https://github.com/updated-project"
+                                techUsed: ["Tech1", "Tech2", "Tech3"]
+                                visibility: "PRIVATE"
+                                pictures:
+                                    [
+                                        "updated-picture1.jpg",
+                                        "updated-picture2.jpg",
+                                    ]
+                                pinned: true
+            "400":
+                description: Bad Request.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "You do not have permission to perform this action."
+            "401":
+                description: Unauthorized.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "An ID must be provided."
+    delete:
+        tags: [Project]
+        summary: Delete Project
+        description: Delete a project by ID.
+        parameters:
+            - in: path
+              name: id
+              required: true
+              description: ID of the project to delete.
+              schema:
+                  type: string
+        responses:
+            "200":
+                description: Successful deletion.
+                content:
+                    application/json:
+                        example:
+                            success: true
+            "400":
+                description: Bad Request.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "You do not have permission to perform this action."
+            "401":
+                description: Unauthorized.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "An ID must be provided."
+            "404":
+                description: Project not found.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "Project not found."
+
+/projects/{id}/rating:
+    post:
+        tags: [Project]
+        summary: Add Rating to Project
+        description: Add or update a rating for a project.
+        parameters:
+            - in: path
+              name: id
+              required: true
+              description: ID of the project to rate.
+              schema:
+                  type: string
+        requestBody:
+            required: true
+            content:
+                application/json:
+                    example:
+                        rating: 4.7
+        responses:
+            "201":
+                description: Successful rating.
+                content:
+                    application/json:
+                        example:
+                            success: true
+                            data:
+                                projectId: 1
+                                userId: 123
+                                rating: 4.7
+            "400":
+                description: Bad Request.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "You can't rate your own project."
+            "401":
+                description: Unauthorized.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "Rating must be provided."
+            "404":
+                description: Project not found.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "Project not found."
+
+/projects/{id}/add-to-circle:
+    post:
+        tags: [Project]
+        summary: Add Project to Circle
+        description: Add a project to a circle by ID.
+        parameters:
+            - in: path
+              name: id
+              required: true
+              description: ID of the project to add to the circle.
+              schema:
+                  type: string
+        requestBody:
+            required: true
+            content:
+                application/json:
+                    example:
+                        circleId: 1
+        responses:
+            "200":
+                description: Successful addition.
+                content:
+                    application/json:
+                        example:
+                            success: true
+                            data:
+                                id: 1
+                                name: "Project 1"
+                                description: "Description of Project 1"
+                                circle: { ... }
+                                createdAt: "2024-02-04T12:00:00Z"
+                                createdBy: { ... }
+                                rating: 4.5
+                                liveLink: "https://example.com"
+                                github: "https://github.com/example"
+                                techUsed: ["Tech1", "Tech2"]
+                                circleId: 1
+            "400":
+                description: Bad Request.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "You do not have permission to perform this action."
+            "401":
+                description: Unauthorized.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "Circle ID must be provided."
+            "404":
+                description: Project not found.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "Project with a matching ID not found."
+            "500":
+                description: Internal Server Error.
+                content:
+                    application/json:
+                        example:
+                            success: false
+                            error: "Error while trying to add project to circle."
