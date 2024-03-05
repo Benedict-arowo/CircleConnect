@@ -29,9 +29,13 @@ export type Role = {
 	canDeleteOtherProject: boolean;
 	canAddProjectToCircle: boolean;
 	canRemoveProjectFromCircle: boolean;
+	canAddUserToProject: boolean;
 	canManageRoles: boolean;
 	canManageUsers: boolean;
-	canAddUserToProject: boolean;
+	canCreateProjectReviews: boolean;
+	canModifyOwnProjectReviews: boolean;
+	canDeleteOwnProjectReviews: boolean;
+	canManageProjectReviews: boolean;
 	isAdmin: boolean;
 	users: UserTypeClean[];
 };
@@ -54,9 +58,13 @@ type ArrangedRoleData = {
 		canDeleteOtherProject: boolean;
 		canAddProjectToCircle: boolean;
 		canRemoveProjectFromCircle: boolean;
+		canAddUserToProject: boolean;
 		canManageRoles: boolean;
 		canManageUsers: boolean;
-		canAddUserToProject: boolean;
+		canCreateProjectReviews: boolean;
+		canModifyOwnProjectReviews: boolean;
+		canDeleteOwnProjectReviews: boolean;
+		canManageProjectReviews: boolean;
 		isAdmin: boolean;
 	};
 	users: UserTypeClean[];
@@ -79,9 +87,13 @@ const defaultRoleData = {
 		canDeleteOtherProject: false,
 		canAddProjectToCircle: false,
 		canRemoveProjectFromCircle: false,
+		canAddUserToProject: false,
 		canManageRoles: false,
 		canManageUsers: false,
-		canAddUserToProject: false,
+		canCreateProjectReviews: false,
+		canModifyOwnProjectReviews: false,
+		canDeleteOwnProjectReviews: false,
+		canManageProjectReviews: false,
 		isAdmin: false,
 	},
 };
@@ -149,6 +161,10 @@ const Roles = () => {
 					canManageRoles: role.canManageRoles,
 					canManageUsers: role.canManageUsers,
 					canAddUserToProject: role.canAddUserToProject,
+					canCreateProjectReviews: role.canCreateProjectReviews,
+					canDeleteOwnProjectReviews: role.canDeleteOwnProjectReviews,
+					canManageProjectReviews: role.canManageProjectReviews,
+					canModifyOwnProjectReviews: role.canModifyOwnProjectReviews,
 					isAdmin: role.isAdmin,
 				},
 				users: role.users,
