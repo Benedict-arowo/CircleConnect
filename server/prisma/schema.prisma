@@ -33,7 +33,7 @@ model Role {
   canCreateProjectReviews Boolean @default(false)
   canModifyOwnProjectReviews Boolean @default(false)
   canDeleteOwnProjectReviews Boolean @default(false)
-  canManageProjectRevies Boolean @default(false)
+  canManageProjectReviews Boolean @default(false)
 
   isAdmin Boolean @default(false)
   

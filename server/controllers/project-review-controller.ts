@@ -41,6 +41,7 @@ export const createReview = async (req: Req, res: Response) => {
 	const {
 		body: { content },
 		params: { id: projectId },
+		user: { role: userRole },
 	} = req;
 
 	if (!content)
@@ -49,12 +50,18 @@ export const createReview = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	const reviewExists = await prisma.project.findUnique({
+	const project = await prisma.project.findUnique({
 		where: { id: projectId },
 	});
 
-	if (!reviewExists)
+	if (!project)
 		throw new CustomError("Project not found.", StatusCodes.NOT_FOUND);
+
+	if (!(userRole.isAdmin || userRole.canCreateProjectReviews))
+		throw new CustomError(
+			"You do not have permission to create a review.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	const review = await prisma.projectReview.create({
 		data: {
@@ -71,6 +78,7 @@ export const editReview = async (req: Req, res: Response) => {
 	const {
 		body: { content },
 		params: { id: reviewId },
+		user: { role: userRole },
 	} = req;
 
 	if (!content)
@@ -86,7 +94,17 @@ export const editReview = async (req: Req, res: Response) => {
 	if (!review)
 		throw new CustomError("Review not found.", StatusCodes.NOT_FOUND);
 
-	if (review.userId !== req.user.id)
+	// If the user is an admin (userRole.isAdmin).
+	// If the user has the permission to manage project reviews (userRole.canManageProjectReviews).
+	// If the user has the permission to modify their own project reviews (userRole.canModifyOwnProjectReviews) and if the review they are trying to create is indeed their own (review.userId === req.user.id).
+	if (
+		!(
+			userRole.isAdmin ||
+			userRole.canManageProjectReviews ||
+			(userRole.canModifyOwnProjectReviews &&
+				review.userId === req.user.id)
+		)
+	)
 		throw new CustomError(
 			"You do not have permission to modify this review.",
 			StatusCodes.UNAUTHORIZED
@@ -114,6 +132,7 @@ export const editReview = async (req: Req, res: Response) => {
 export const deleteReview = async (req: Req, res: Response) => {
 	const {
 		params: { id: reviewId },
+		user: { role: userRole },
 	} = req;
 
 	const review = await prisma.projectReview.findUnique({
@@ -123,10 +142,21 @@ export const deleteReview = async (req: Req, res: Response) => {
 	if (!review)
 		throw new CustomError("Review not found.", StatusCodes.NOT_FOUND);
 
-	if (review.userId !== req.user.id)
+	// If the user is an admin (userRole.isAdmin).
+	// If the user has the permission to manage project reviews (userRole.canManageProjectReviews).
+	// If the user has the permission to delete their own project reviews (userRole.canDeleteOwnProjectReviews) and if the review they are trying to create is indeed their own (review.userId === req.user.id).
+
+	if (
+		!(
+			userRole.isAdmin ||
+			userRole.canManageProjectReviews ||
+			(userRole.canDeleteOwnProjectReviews &&
+				review.userId === req.user.id)
+		)
+	)
 		throw new CustomError(
-			"You do not have permission to delete this review.",
-			StatusCodes.BAD_REQUEST
+			"You do not have permission to modify this review.",
+			StatusCodes.UNAUTHORIZED
 		);
 
 	await prisma.projectReview.delete({
