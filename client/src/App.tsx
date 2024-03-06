@@ -29,8 +29,8 @@ const App = () => {
 			<CheckAuth>
 				<Suspense fallback={<Loading />}>
 					<Routes>
-						<Route path="" element={<Onboarding />} />
-						<Route path="/home" element={<Index />} />
+						{/* <Route path="" element={<Onboarding />} /> */}
+						<Route path="" element={<Index />} />
 						<Route path="/discover" element={<Discover />} />
 						<Route path="/project/:id" element={<Project />} />
 						<Route path="/circle/:id" element={<Circle />} />
