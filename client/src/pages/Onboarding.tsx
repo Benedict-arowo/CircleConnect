@@ -59,7 +59,7 @@ const Onboarding = () => {
 							Show Off Learning Circle programs and Personal
 							Projects
 						</h1>
-						<img src={heroImg} alt="" />
+						<img src={heroImg} alt="Hero Image" />
 					</div>
 				</div>
 			</header>
