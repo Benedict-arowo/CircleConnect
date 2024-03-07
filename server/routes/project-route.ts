@@ -8,6 +8,7 @@ import {
 	rateProject,
 } from "../controllers/project-controller";
 import isLoggedIn from "../middlewares/isLoggedIn";
+import { validateParamsID } from "../middlewares/validators";
 import wrapper from "../middlewares/wrapper";
 
 const express = require("express");
@@ -20,13 +21,13 @@ projectRouter
 
 projectRouter
 	.route("/:id")
-	.get(wrapper(getProject))
-	.patch(isLoggedIn, wrapper(editProject))
-	.delete(isLoggedIn, wrapper(deleteProject));
+	.get(validateParamsID, wrapper(getProject))
+	.patch(isLoggedIn, validateParamsID, wrapper(editProject))
+	.delete(isLoggedIn, validateParamsID, wrapper(deleteProject));
 
 projectRouter
 	.route("/:id/addToCircle")
-	.patch(isLoggedIn, wrapper(manageProjectCircle));
+	.patch(isLoggedIn, validateParamsID, wrapper(manageProjectCircle));
 // projectRouter
 // 	.route("/:id/removeFromCircle")
 // 	.delete(isLoggedIn, wrapper(removeProjectFromCircle));

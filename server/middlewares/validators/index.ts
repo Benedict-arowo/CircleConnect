@@ -41,4 +41,19 @@ const validateJWTLogin = (req: Request, res: Response, next: NextFunction) => {
 	next();
 };
 
-export { validateJWTRegister, validateJWTLogin };
+const idSchema = Joi.object({
+	id: Joi.string().uuid().required(),
+});
+
+const validateParamsID = (req: Request, res: Response, next: NextFunction) => {
+	const { error } = idSchema.validate(req.params);
+
+	if (error) {
+		const errorMessage = error.details[0].message.replace(/["]/g, "");
+		throw new CustomError(errorMessage, StatusCodes.UNPROCESSABLE_ENTITY);
+	}
+
+	next();
+};
+
+export { validateJWTRegister, validateJWTLogin, validateParamsID };
