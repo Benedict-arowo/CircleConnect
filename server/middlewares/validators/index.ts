@@ -10,6 +10,19 @@ const userRegisterSchema = Joi.object({
 	password: Joi.string().required().min(6),
 });
 
+const userLoginSchema = Joi.object({
+	email: Joi.string().email().required(),
+	password: Joi.string().required().min(6),
+});
+
+const idSchema = Joi.object({
+	id: Joi.string().uuid().required(),
+});
+
+const reviewContentSchema = Joi.object({
+	content: Joi.string().min(10).required(),
+});
+
 const validateJWTRegister = (
 	req: Request,
 	res: Response,
@@ -25,11 +38,6 @@ const validateJWTRegister = (
 	next();
 };
 
-const userLoginSchema = Joi.object({
-	email: Joi.string().email().required(),
-	password: Joi.string().required().min(6),
-});
-
 const validateJWTLogin = (req: Request, res: Response, next: NextFunction) => {
 	const { error } = userLoginSchema.validate(req.body);
 
@@ -40,10 +48,6 @@ const validateJWTLogin = (req: Request, res: Response, next: NextFunction) => {
 
 	next();
 };
-
-const idSchema = Joi.object({
-	id: Joi.string().uuid().required(),
-});
 
 const validateParamsID = (req: Request, res: Response, next: NextFunction) => {
 	const { error } = idSchema.validate(req.params);
@@ -56,4 +60,20 @@ const validateParamsID = (req: Request, res: Response, next: NextFunction) => {
 	next();
 };
 
-export { validateJWTRegister, validateJWTLogin, validateParamsID };
+const validateReview = (req: Request, res: Response, next: NextFunction) => {
+	const { error } = reviewContentSchema.validate(req.body);
+
+	if (error) {
+		const errorMessage = error.details[0].message.replace(/["]/g, "");
+		throw new CustomError(errorMessage, StatusCodes.BAD_REQUEST);
+	}
+
+	next();
+};
+
+export {
+	validateJWTRegister,
+	validateJWTLogin,
+	validateParamsID,
+	validateReview,
+};

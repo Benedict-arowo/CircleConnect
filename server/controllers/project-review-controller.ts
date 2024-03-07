@@ -44,12 +44,6 @@ export const createReview = async (req: Req, res: Response) => {
 		user: { role: userRole },
 	} = req;
 
-	if (!content)
-		throw new CustomError(
-			"Content must be provided.",
-			StatusCodes.BAD_REQUEST
-		);
-
 	const project = await prisma.project.findUnique({
 		where: { id: projectId },
 	});
@@ -67,7 +61,7 @@ export const createReview = async (req: Req, res: Response) => {
 		data: {
 			userId: req.user.id,
 			projectId: projectId,
-			review: content,
+			review: content as string,
 		},
 	});
 
