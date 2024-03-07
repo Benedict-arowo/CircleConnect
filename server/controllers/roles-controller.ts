@@ -2,7 +2,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import prisma from "../model/db";
 import { Req } from "../types";
 import { Response } from "express";
-import CustomError from "../middlewear/CustomError";
+import CustomError from "../middlewares/CustomError";
 import {
 	CreateRoleService,
 	DeleteRoleService,

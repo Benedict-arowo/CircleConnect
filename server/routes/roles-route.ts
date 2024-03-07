@@ -5,8 +5,8 @@ import {
 	getRole,
 	getRoles,
 } from "../controllers/roles-controller";
-import isLoggedIn from "../middlewear/isLoggedIn";
-import wrapper from "../middlewear/wrapper";
+import isLoggedIn from "../middlewares/isLoggedIn";
+import wrapper from "../middlewares/wrapper";
 
 const express = require("express");
 const roleRouter = express.Router();

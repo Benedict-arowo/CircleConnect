@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { Req } from "../types";
 import { Response } from "express";
-import CustomError from "../middlewear/CustomError";
+import CustomError from "../middlewares/CustomError";
 import { MAX_RATING_VALUE } from "../utils";
 import {
 	BodyUserArgs,

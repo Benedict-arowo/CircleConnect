@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import prisma from "../model/db";
 import { Req } from "../types";
 import { Response } from "express";
-import CustomError from "../middlewear/CustomError";
+import CustomError from "../middlewares/CustomError";
 import { UserSelectClean } from "../utils";
 import { Socket } from "socket.io";
 
@@ -35,13 +35,13 @@ export const markAsRead = async (req: Req, res: Response) => {
 	if (notification.is_read)
 		throw new CustomError(
 			"Notification is already read.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	if (notification.userId !== req.user.id)
 		throw new CustomError(
 			"You do not have permission to modify this notification",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	const updatedNotification = await prisma.notification.update({
@@ -69,13 +69,13 @@ export const markAsUnread = async (req: Req, res: Response) => {
 	if (!notification.is_read)
 		throw new CustomError(
 			"Notification is already unread",
-			StatusCodes.BAD_GATEWAY,
+			StatusCodes.BAD_GATEWAY
 		);
 
 	if (notification.userId !== req.user.id)
 		throw new CustomError(
 			"You do not have permission to modify this notification",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	const updatedNotification = await prisma.notification.update({
@@ -99,7 +99,7 @@ export const getNotifications = async (req: Req, res: Response) => {
 	if (status !== undefined && status !== "true" && status !== "false") {
 		throw new CustomError(
 			"Invalid notification status",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 	}
 
@@ -148,7 +148,7 @@ export const getNotification = async (req: Req, res: Response) => {
 	if (notification.user.id !== req.user.id)
 		throw new CustomError(
 			"You're not allowed to view this notification.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	// If the notification is marked as unread, mark it as read.
@@ -183,7 +183,7 @@ export const deleteNotification = async (req: Req, res: Response) => {
 	if (notification.userId !== req.user.id)
 		throw new CustomError(
 			"You do not have permission to delete this notification.",
-			StatusCodes.BAD_REQUEST,
+			StatusCodes.BAD_REQUEST
 		);
 
 	await prisma.notification.delete({ where: { id } });

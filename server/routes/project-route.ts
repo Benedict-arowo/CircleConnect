@@ -7,8 +7,8 @@ import {
 	manageProjectCircle,
 	rateProject,
 } from "../controllers/project-controller";
-import isLoggedIn from "../middlewear/isLoggedIn";
-import wrapper from "../middlewear/wrapper";
+import isLoggedIn from "../middlewares/isLoggedIn";
+import wrapper from "../middlewares/wrapper";
 
 const express = require("express");
 const projectRouter = express.Router();

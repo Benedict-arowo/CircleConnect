@@ -1,5 +1,5 @@
-import wrapper from "../../middlewear/wrapper";
-import isLoggedIn from "../../middlewear/isLoggedIn";
+import wrapper from "../../middlewares/wrapper";
+import isLoggedIn from "../../middlewares/isLoggedIn";
 import logout from "../../controllers/Auth/logout";
 import { Req } from "../../types";
 import { UserSelectFull } from "../../utils";
@@ -23,7 +23,7 @@ router.get(
 		});
 
 		res.status(StatusCodes.OK).json(user);
-	}),
+	})
 );
 
 /**

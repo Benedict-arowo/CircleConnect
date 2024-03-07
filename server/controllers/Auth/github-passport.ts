@@ -1,4 +1,4 @@
-import CustomError from "../../middlewear/CustomError";
+import CustomError from "../../middlewares/CustomError";
 import prisma from "../../model/db";
 import { User } from "../../types";
 import { DEFAULT_MEMBER_ROLE_ID } from "../../utils";
@@ -41,7 +41,7 @@ passport.use(
 			accessToken: string,
 			refreshToken: string,
 			profile: User,
-			done: Function,
+			done: Function
 		) {
 			const userEmail = profile.emails[0];
 			console.log(userEmail);
@@ -83,6 +83,6 @@ passport.use(
 				});
 			}
 			return done(null, user);
-		},
-	),
+		}
+	)
 );
