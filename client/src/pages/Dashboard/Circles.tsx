@@ -83,6 +83,15 @@ export default function CirclesDashboard() {
 		setVisible(true);
 		setSource(
 			users.filter((user) => {
+				// Removes the circle lead, and circle co-lead from the user select list.
+				if (
+					(item.lead && user.id === item.lead.id) ||
+					(item.colead && user.id === item.colead.id)
+				) {
+					return false;
+				}
+
+				// Checks if a member already exists in the circle as a member to avoid having duplicate members.
 				const memberExists = item?.members.some(
 					(member) => member.id === user.id
 				);
