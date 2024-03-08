@@ -8,6 +8,7 @@ import { findUser } from "../../model/auth";
 import {
 	ACCESS_TOKEN_VALIDITY_TIME,
 	DEFAULT_MEMBER_ROLE_ID,
+	JWT_ACCESS_TOKEN_EXPIRY,
 	hash,
 	tokenGenerator,
 	verifyHash,
@@ -60,7 +61,10 @@ export const loginJWT = async (req: Req, res: Response) => {
 		);
 		console.log(`TOKEN: ${token}`);
 		return res
-			.cookie("jwtToken", token, { httpOnly: true })
+			.cookie("jwtToken", token, {
+				maxAge: JWT_ACCESS_TOKEN_EXPIRY,
+				httpOnly: true,
+			})
 			.status(StatusCodes.OK)
 			.json({
 				success: true,
@@ -103,7 +107,10 @@ export const registerJWT = async (req: Req, res: Response) => {
 		const token = await tokenGenerator({ id: User.id }, "1h");
 
 		return res
-			.cookie("jwtToken", token, { httpOnly: true })
+			.cookie("jwtToken", token, {
+				httpOnly: true,
+				maxAge: JWT_ACCESS_TOKEN_EXPIRY,
+			})
 			.status(StatusCodes.CREATED)
 			.json({
 				success: true,
