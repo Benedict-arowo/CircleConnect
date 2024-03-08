@@ -12,11 +12,13 @@ import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { UserTypeClean } from "../../types";
 import { FetchUsers } from "../../Components/Fetch/Users";
+import { PickList } from "primereact/picklist";
 
 type UserType = {
 	id: string;
 	email: string;
 	profile_picture: string;
+	last_name: string;
 	first_name: string;
 	projects: [];
 };
@@ -56,13 +58,60 @@ export default function CirclesDashboard() {
 	const [data, setData] = useState<CircleData[]>([]);
 	const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 	const [visible, setVisible] = useState(false);
+
 	const SelectItem = (item: CircleData) => {
-		setSelectedItem(item);
-		handleOpen();
+		setSelectedItem(() => ({
+			...item,
+			lead: {
+				id: item.lead
+					? `${item.lead.first_name} ${
+							item.lead.last_name ? item.lead.last_name : ""
+					  }`
+					: undefined,
+				code: item.lead ? item.lead.id : undefined,
+			},
+			colead: {
+				id: item.colead
+					? `${item.colead.first_name}  ${
+							item.colead.last_name ? item.colead.last_name : ""
+					  }`
+					: undefined,
+				code: item.colead ? item.colead.id : undefined,
+			},
+		}));
+
+		setVisible(true);
+		setSource(
+			users.filter((user) => {
+				const memberExists = item?.members.some(
+					(member) => member.id === user.id
+				);
+
+				return !memberExists;
+			})
+		);
 	};
+
 	const [users, setUsers] = useState<UserTypeClean[]>([]);
 	const toast = useRef<Toast | null>(null);
 	const [query, setQuery] = useState("");
+	const [source, setSource] = useState([]);
+
+	const itemTemplate = (item) => {
+		return (
+			<div className="flex flex-row flex-wrap p-2 items-center gap-2">
+				<Avatar
+					label={item.first_name[0]}
+					image={item.profile_picture}
+					shape="circle"
+					size="normal"
+				/>
+				<span className="">
+					{item.first_name} {item.last_name}
+				</span>
+			</div>
+		);
+	};
 
 	const fetchCircles = async () => {
 		const { data, response } = await UseFetch({
@@ -86,7 +135,9 @@ export default function CirclesDashboard() {
 	useEffect(() => {
 		(async () => {
 			await fetchCircles();
-			await FetchUsers().then((data) => setUsers(data));
+			await FetchUsers().then((data) => {
+				setUsers(data);
+			});
 		})();
 	}, []);
 
@@ -279,10 +330,6 @@ export default function CirclesDashboard() {
 					project.name.toLowerCase().includes(query.toLowerCase())
 				)
 		);
-	};
-
-	const handleOpen = () => {
-		setVisible(true);
 	};
 
 	return (
@@ -504,11 +551,7 @@ export default function CirclesDashboard() {
 										}
 										options={users.map((user) => ({
 											code: user.id,
-											id: `${user.first_name} ${
-												user.last_name
-													? user.last_name
-													: ""
-											}`,
+											id: `${user.first_name}`,
 										}))}
 										valueTemplate={userOptionTemplate}
 										itemTemplate={selectedUserTemplate}
@@ -518,22 +561,39 @@ export default function CirclesDashboard() {
 									/>
 								</span>
 
-								<span className="flex flex-row gap-2 items-center">
+								<span className="flex flex-col items-start mt-2">
 									<label
 										htmlFor="project_id"
 										className="font-bold text-sm text-center"
 									>
 										Members:
 									</label>
-									<InputText
-										id="project_rating"
-										placeholder="Project Rating"
-										value={selectedItem.rating.toString()}
-										disabled
-										className="w-full p-2"
+									<PickList
+										dataKey="id"
+										source={source}
+										target={selectedItem.members}
+										onChange={(e) => {
+											setSource(e.source);
+											setSelectedItem((prev) => {
+												return {
+													...prev,
+													members: e.target,
+												};
+											});
+										}}
+										itemTemplate={itemTemplate}
+										filter
+										filterBy="first_name"
+										breakpoint="1280px"
+										sourceHeader="Available"
+										targetHeader="Selected"
+										sourceStyle={{ height: "24rem" }}
+										targetStyle={{ height: "24rem" }}
+										sourceFilterPlaceholder="Search by name"
+										targetFilterPlaceholder="Search by name"
 									/>
 								</span>
-
+								{/* 
 								<span className="flex flex-row gap-2 items-center">
 									<label
 										htmlFor="project_id"
@@ -548,7 +608,7 @@ export default function CirclesDashboard() {
 										disabled
 										className="w-full p-2"
 									/>
-								</span>
+								</span> */}
 							</div>
 						</section>
 					</div>
