@@ -9,6 +9,7 @@ import {
 	requestToJoinCircle,
 } from "../controllers/circle-controller";
 import isLoggedIn from "../middlewares/isLoggedIn";
+import { validateCreateCircle } from "../middlewares/validators/circleValidators";
 import wrapper from "../middlewares/wrapper";
 
 const express = require("express");
@@ -17,7 +18,7 @@ const circleRouter = express.Router();
 circleRouter
 	.route("/")
 	.get(wrapper(getCircles))
-	.post(isLoggedIn, wrapper(createCircle));
+	.post(isLoggedIn, validateCreateCircle, wrapper(createCircle));
 
 circleRouter
 	.route("/:id")

@@ -54,7 +54,7 @@ const validateParamsID = (req: Request, res: Response, next: NextFunction) => {
 
 	if (error) {
 		const errorMessage = error.details[0].message.replace(/["]/g, "");
-		throw new CustomError(errorMessage, StatusCodes.UNPROCESSABLE_ENTITY);
+		throw new CustomError(errorMessage, StatusCodes.BAD_REQUEST);
 	}
 
 	next();

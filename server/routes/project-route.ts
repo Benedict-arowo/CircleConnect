@@ -9,6 +9,7 @@ import {
 } from "../controllers/project-controller";
 import isLoggedIn from "../middlewares/isLoggedIn";
 import { validateParamsID } from "../middlewares/validators";
+import { validateCreateCircle } from "../middlewares/validators/circleValidators";
 import wrapper from "../middlewares/wrapper";
 
 const express = require("express");
@@ -17,7 +18,7 @@ const projectRouter = express.Router();
 projectRouter
 	.route("/")
 	.get(wrapper(getProjects))
-	.post(isLoggedIn, wrapper(createProject));
+	.post(isLoggedIn, validateCreateCircle, wrapper(createProject));
 
 projectRouter
 	.route("/:id")

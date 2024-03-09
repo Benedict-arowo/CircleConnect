@@ -217,38 +217,14 @@ export const getCircleService = async (id: string) => {
 };
 
 export const CreateCircleService = async ({ body }: CreateCircleArgs) => {
-	const { circle_num: num, description } = body;
+	const { circle_num, description } = body;
 	// TODO: Option for adding circle lead, co-lead, and members when creating circle.
-
-	if (!description)
-		throw new CustomError(
-			"Circle description must be provided.",
-			StatusCodes.BAD_REQUEST
-		);
-
-	if (description.length <= minimumCircleDescriptionLength)
-		throw new CustomError(
-			`Description is too short, it must be at least ${minimumCircleDescriptionLength} characters`,
-			StatusCodes.BAD_REQUEST
-		);
-
-	if (!num || isNaN(Number(num)))
-		throw new CustomError(
-			"Circle number must be provided.",
-			StatusCodes.BAD_REQUEST
-		);
-
-	if (Number(num) < 0)
-		throw new CustomError(
-			"Circle number must be greater than zero.",
-			StatusCodes.BAD_REQUEST
-		);
 
 	try {
 		const Circle = await prisma.circle.create({
 			data: {
-				description: description,
-				id: Number(num),
+				description: description as string,
+				id: Number(circle_num),
 				// TODO: ability to add a lead, co lead when creating the user
 			},
 		});
