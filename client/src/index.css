@@ -13,7 +13,8 @@ body {
 /* Scrollbar styles */
 /* For Webkit/Blink browsers (Chrome, Safari, Opera) */
 .custom-scroll::-webkit-scrollbar {
-	width: 12px;
+	width: none;
+	scrollbar-width: none;
 }
 
 .custom-scroll::-webkit-scrollbar-thumb {
@@ -29,7 +30,7 @@ body {
 
 /* For Firefox */
 .custom-scroll {
-	scrollbar-width: thin;
+	scrollbar-width: none;
 	scrollbar-color: #684a59 #cbd5e0;
 	/* Tailwind CSS color codes */
 }

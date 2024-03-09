@@ -6,6 +6,7 @@ import CirclesComponent from "../Components/circle_component";
 import ListProjects from "../Components/Circle Page/ListProjects";
 import { Spinner } from "@chakra-ui/react";
 import { CircleType, ProjectsType } from "../Components/types";
+import { Carousel } from "primereact/carousel";
 
 type StateType = {
 	projects: ProjectsType[];
@@ -128,7 +129,7 @@ const Index = () => {
 						...prevState,
 						loading: false,
 					};
-				}),
+				})
 			);
 	}, []);
 
@@ -223,71 +224,8 @@ const Index = () => {
 					{state.projects_err}
 				</div>
 			)}
+
 			<section className="flex flex-col gap-20">
-				{/* <section className="px-16 hidden">
-					<a
-						className="font-light mb-2 text-3xl text-gray-800 "
-						href="#search_results"
-						id="search_results">
-						Search Results
-					</a>
-
-					<div className="px-4 flex flex-col gap-3 my-4">
-						<h3 className="font-light text-3xl text-gray-700">
-							Projects
-						</h3>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-						</section>
-					</div>
-					<div className="px-4 flex flex-col gap-3 my-4">
-						<h3 className="font-light text-3xl text-gray-700">
-							Users
-						</h3>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-						</section>
-					</div>
-					<div className="px-4 flex flex-col gap-3 my-4">
-						<h3 className="font-light text-3xl text-gray-700">
-							Circles
-						</h3>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-						</section>
-					</div>
-				</section> */}
-
 				{state.loading && (
 					<div className="mx-auto">
 						<Spinner
@@ -303,7 +241,7 @@ const Index = () => {
 				{!state.loading && state.projects.length > 0 && (
 					<section className="pl-4 md:pl-16">
 						<a
-							className="font-light mb-2 text-3xl text-gray-800"
+							className="font-bold mb-2 text-3xl text-blue-700"
 							href="#recent_projects"
 							id="recent_projects"
 						>
@@ -322,7 +260,7 @@ const Index = () => {
 				{!state.loading && state.top_projects.length > 0 && (
 					<section className="pl-4 md:pl-16">
 						<a
-							className="font-light mb-2 text-3xl text-gray-800"
+							className="font-bold mb-2 text-3xl text-blue-700"
 							href="#featured_projects"
 							id="featured_projects"
 						>

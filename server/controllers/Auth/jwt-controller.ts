@@ -72,6 +72,7 @@ export const loginJWT = async (req: Req, res: Response) => {
 				data: {
 					...User,
 					password: null,
+					token: token,
 				},
 			});
 	} else {
