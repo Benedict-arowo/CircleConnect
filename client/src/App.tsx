@@ -4,6 +4,7 @@ import { Suspense, lazy } from "react";
 import CheckAuth from "./Middlewears/CheckAuth";
 import Loading from "./Components/Loading";
 import Onboarding from "./pages/Onboarding";
+import Footer from "./Components/Footer";
 
 const Index = lazy(() => import("./pages/Index"));
 const Success = lazy(() => import("./pages/Auth/Success"));
@@ -71,6 +72,7 @@ const App = () => {
 							<Route path="projects" element={<Projects />} />
 						</Route>
 					</Routes>
+					<Footer />
 				</Suspense>
 			</CheckAuth>
 		</div>
