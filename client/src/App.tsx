@@ -25,7 +25,7 @@ const Error = lazy(() => import("./pages/Error"));
 
 const App = () => {
 	return (
-		<div className="max-w-screen-2xl mx-auto">
+		<div className="max-w-screen-2xl mx-auto main--gradient min-h-screen overflow-hidden">
 			<CheckAuth>
 				<Suspense fallback={<Loading />}>
 					<Routes>

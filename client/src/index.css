@@ -47,3 +47,8 @@ body {
 .inputShadow {
 	box-shadow: 0 0 0 0.2rem #c0d0e0;
 }
+
+.main--gradient {
+	background: rgb(254, 245, 234);
+	background: linear-gradient(145deg, rgba(254, 245, 234, 1) 0%, rgba(212, 224, 225, 1) 100%);
+}
