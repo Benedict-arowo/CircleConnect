@@ -43,7 +43,7 @@ const CirclesComponent = (props: Props) => {
 			return (
 				<div
 					key={id}
-					className="snap-normal snap-center w-[300px] h-fit rounded-sm border flex-shrink-0 border-gray-300 drop-shadow-sm flex flex-col gap-2 items-center text-center px-4 py-4 hover:border-gray-500 duration-500 transition-all  cursor-pointer bg-[#B9D6F0]"
+					className="snap-normal snap-center w-[300px] h-full min-h-[310px] max-h-[313px] rounded-sm border flex-shrink-0 border-gray-300 drop-shadow-sm flex flex-col gap-2 items-center text-center px-4 py-4 hover:border-gray-500 duration-500 transition-all  cursor-pointer bg-[#B9D6F0]"
 				>
 					<h3 className="font-extrabold py-2 px-3 bg-blue-700 w-fit h-fit rounded-full text-2xl text-white">
 						{id < 10 ? `0${id}` : id}
