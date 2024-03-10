@@ -67,7 +67,6 @@ const ListProjects = ({
 			github,
 			liveLink,
 		} = project;
-		console.log(project);
 		// let averageRating = 0;
 
 		// // If displayStars is set to true, it calculates the average rating of each project.
