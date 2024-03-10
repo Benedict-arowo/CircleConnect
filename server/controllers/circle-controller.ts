@@ -22,11 +22,6 @@ export const getCircles = async (req: Req, res: Response) => {
 export const getCircle = async (req: Req, res: Response) => {
 	const { id } = req.params;
 
-	if (!id)
-		throw new CustomError(
-			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST
-		);
 	const Circle = await getCircleService(id);
 	res.status(StatusCodes.OK).json({ success: true, data: Circle });
 };
@@ -52,12 +47,6 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 		params: { id: circleId },
 		user: { role: userRole },
 	} = req;
-
-	if (!circleId)
-		throw new CustomError(
-			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST
-		);
 
 	if (!(userRole.canJoinCircle || userRole.isAdmin))
 		throw new CustomError(
@@ -85,12 +74,6 @@ export const removeCircleRequest = async (req: Req, res: Response) => {
 		params: { id: circleId },
 		user: { role: userRole },
 	} = req;
-
-	if (!circleId)
-		throw new CustomError(
-			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST
-		);
 
 	if (!userRole.canLeaveCircle)
 		throw new CustomError(

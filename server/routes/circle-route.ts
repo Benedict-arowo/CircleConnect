@@ -9,7 +9,10 @@ import {
 	requestToJoinCircle,
 } from "../controllers/circle-controller";
 import isLoggedIn from "../middlewares/isLoggedIn";
-import { validateCreateCircle } from "../middlewares/validators/circleValidators";
+import {
+	validateCircleId,
+	validateCreateCircle,
+} from "../middlewares/validators/circleValidators";
 import wrapper from "../middlewares/wrapper";
 
 const express = require("express");
@@ -22,18 +25,20 @@ circleRouter
 
 circleRouter
 	.route("/:id")
-	.get(wrapper(getCircle))
-	.patch(isLoggedIn, wrapper(editCircle))
-	.delete(isLoggedIn, wrapper(deleteCircle));
+	.get(validateCircleId, wrapper(getCircle))
+	.patch(isLoggedIn, validateCircleId, wrapper(editCircle))
+	.delete(isLoggedIn, validateCircleId, wrapper(deleteCircle));
 
-circleRouter.route("/:id/leave").patch(isLoggedIn, wrapper(leaveCircle));
+circleRouter
+	.route("/:id/leave")
+	.patch(isLoggedIn, validateCircleId, wrapper(leaveCircle));
 
 circleRouter
 	.route("/request/join/:id")
-	.post(isLoggedIn, wrapper(requestToJoinCircle));
+	.post(isLoggedIn, validateCircleId, wrapper(requestToJoinCircle));
 
 circleRouter
 	.route("/request/leave/:id")
-	.post(isLoggedIn, wrapper(removeCircleRequest));
+	.post(isLoggedIn, validateCircleId, wrapper(removeCircleRequest));
 
 export default circleRouter;
