@@ -1,8 +1,8 @@
-const Github = () => {
+const Github = ({ size = 38 }) => {
 	return (
 		<svg
-			width="38"
-			height="38"
+			width={size}
+			height={size}
 			viewBox="0 0 38 38"
 			fill="none"
 			xmlns="http://www.w3.org/2000/svg"

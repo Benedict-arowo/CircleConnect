@@ -1,19 +1,7 @@
-import {
-	Avatar,
-	Button,
-	Popover,
-	PopoverArrow,
-	PopoverBody,
-	PopoverCloseButton,
-	PopoverContent,
-	PopoverHeader,
-	PopoverTrigger,
-	useDisclosure,
-} from "@chakra-ui/react";
+import { Avatar, useDisclosure } from "@chakra-ui/react";
 import { Link, NavLink } from "react-router-dom";
 import UseFetch from "./Fetch";
-import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../slices/userSlice";
+import { useDispatch } from "react-redux";
 import {
 	Drawer,
 	DrawerBody,
@@ -419,24 +407,39 @@ const Nav = (props: Props) => {
 				</div>
 
 				{/* Mobile Screens */}
-				<div className="flex flex-row justify-between items-center w-full sm:hidden">
+				<div className="flex flex-row justify-between items-center w-full sm:hidden pl-3">
 					{/* <Logo type={type} /> */}
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						strokeWidth={1.5}
-						stroke="currentColor"
-						className={`w-6 h-6 ${
-							type === "dark" ? "text-black" : "text-white"
-						}`}
-					>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-						/>
-					</svg>
+					<Logo width={128} />
+					<div className="flex flex-row gap-1 items-center">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							strokeWidth={1.5}
+							stroke="currentColor"
+							className={`w-6 h-6 text-black`}
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+							/>
+						</svg>
+						<button>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								className="w-12 h-12 text-blue-800 drop-shadow-md"
+							>
+								<path
+									fillRule="evenodd"
+									d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
+									clipRule="evenodd"
+								/>
+							</svg>
+						</button>
+					</div>
 				</div>
 			</header>
 		</>

@@ -6,7 +6,6 @@ import ListProjects from "../Components/Circle Page/ListProjects";
 import { Spinner } from "@chakra-ui/react";
 import { CircleType, ProjectsType } from "../Components/types";
 import Hero from "../assets/Hero.png";
-import Footer from "../Components/Footer";
 import UserDisplay from "../Components/UserDisplay";
 
 type StateType = {
@@ -30,7 +29,7 @@ const Index = () => {
 		loading: true,
 	});
 
-	const [search, setSearch] = useState("");
+	// const [search, setSearch] = useState("");
 
 	const fetchTopCircles = async ({ limit = 5 }) => {
 		const { data, response } = await UseFetch({
@@ -111,9 +110,9 @@ const Index = () => {
 		});
 	};
 
-	const searchHandler = () => {
-		if (!search) return;
-	};
+	// const searchHandler = () => {
+	// 	if (!search) return;
+	// };
 
 	useEffect(() => {
 		// State is initialized to loading by default, and once it makes all the fetch requests, it sents the loading state to false.
@@ -135,12 +134,12 @@ const Index = () => {
 	}, []);
 
 	return (
-		<main className="mb-20 relative ">
+		<main className="mb-20 relative">
 			<Nav type="light" useBackground={false} className="" />
-			<div className="relative px-12 mt-6 mb-16">
+			<div className="relative px-4 md:px-12 mt-6 mb-16">
 				<img className="w-screen h-[350px] object-cover" src={Hero} />
 				<div className="absolute inset-0 grid place-content-center overflow-hidden">
-					<p className="text-white text-5xl max-w-[85%] md:max-w-[80%] mx-auto font-bold md:text-7xl">
+					<p className="text-white text-4xl max-w-[85%] md:max-w-[80%] mx-auto font-bold md:text-7xl">
 						"Every project is an adventure, Enjoy the ride."
 					</p>
 				</div>
@@ -176,9 +175,9 @@ const Index = () => {
 				)}
 
 				{!state.loading && state.projects.length > 0 && (
-					<section className="pl-4 md:pl-16">
+					<section className="sm:px-4 md:px-16 md:pr-0">
 						<a
-							className="font-bold text-5xl text-blue-700"
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
 							href="#recent_projects"
 							id="recent_projects"
 						>
@@ -195,9 +194,9 @@ const Index = () => {
 				)}
 
 				{!state.loading && state.top_projects.length > 0 && (
-					<section className="pl-4 md:pl-16">
+					<section className="sm:px-4 md:px-16 md:pr-0">
 						<a
-							className="font-bold text-5xl text-blue-700"
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
 							href="#featured_projects"
 							id="featured_projects"
 						>
@@ -214,25 +213,33 @@ const Index = () => {
 				)}
 
 				{!state.loading && state.top_circles.length > 0 && (
-					<section className="px-4 md:px-16">
+					<section className="sm:px-4 md:px-16 md:pr-0">
 						<a
-							className="font-bold text-5xl text-blue-700"
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
 							href="#featured_projects"
 							id="featured_projects"
 						>
 							Top Users
 						</a>
-						<div className="flex flex-row gap-8 flex-wrap justify-center pt-6">
-							<UserDisplay users={[{}, {}, {}, {}, {}]} />
-						</div>
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
+							<UserDisplay
+								users={[
+									{ first_name: "John Doe" },
+									{ first_name: "John Doe" },
+									{ first_name: "John Doe" },
+									{ first_name: "John Doe" },
+									{ first_name: "John Doe" },
+								]}
+							/>
+						</section>
 					</section>
 				)}
 
 				{/* TODO: Use actual top circle data */}
 				{!state.loading && state.top_projects.length > 0 && (
-					<section className="pl-4 md:pl-16">
+					<section className="sm:px-4 md:px-16 md:pr-0">
 						<a
-							className="font-bold text-5xl text-blue-700"
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
 							href="#featured_projects"
 							id="featured_projects"
 						>
@@ -249,17 +256,17 @@ const Index = () => {
 				)}
 
 				{!state.loading && state.top_circles.length > 0 && (
-					<section className="px-4 md:px-16">
+					<section className="sm:px-4 md:px-16 md:pr-0">
 						<a
-							className="font-light mb-4 text-5xl text-gray-800"
-							href="#circles"
-							id="circles"
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
+							href="#featured_projects"
+							id="featured_projects"
 						>
 							Top Circles
 						</a>
-						<div className="flex flex-row gap-8 flex-wrap justify-center pt-4">
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
 							<CirclesComponent circles={state.top_circles} />
-						</div>
+						</section>
 					</section>
 				)}
 			</section>

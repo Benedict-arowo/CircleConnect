@@ -1,17 +1,6 @@
-import StarRatings from "react-star-ratings";
 import { CircleType, ProjectsType } from "../types";
-import {
-	Popover,
-	PopoverTrigger,
-	PopoverContent,
-	PopoverHeader,
-	PopoverBody,
-	PopoverArrow,
-	PopoverCloseButton,
-} from "@chakra-ui/react";
-import { useSelector } from "react-redux";
 import { makeReq } from "../../pages/Circle";
-import { format } from "timeago.js";
+import RightArrow from "../Icons/RightArrow";
 
 type Props = {
 	displayStars?: boolean;
@@ -39,7 +28,7 @@ type Props = {
 };
 
 const ListProjects = ({
-	displayStars = false,
+	// displayStars = false,
 	projects,
 	circle,
 	showManageMenu = false,
@@ -48,7 +37,7 @@ const ListProjects = ({
 	fetchCircle,
 	makeReq,
 }: Props) => {
-	const User = useSelector((state) => state.user);
+	// const User = useSelector((state) => state.user);
 
 	// Makes sure the user gives all needed parameters when showManageMenu is set to true.
 
@@ -71,27 +60,27 @@ const ListProjects = ({
 			tags,
 			description,
 			id,
-			createdBy,
-			pinned,
-			rating,
-			createdAt,
+			// createdBy,
+			// pinned,
+			// rating,
+			// createdAt,
 			github,
 			liveLink,
 		} = project;
 		console.log(project);
-		let averageRating = 0;
+		// let averageRating = 0;
 
-		// If displayStars is set to true, it calculates the average rating of each project.
-		if (displayStars) {
-			if (rating.length > 0) {
-				const totalRating = rating.reduce(
-					(accumulator, currentValue) =>
-						accumulator + currentValue.rating,
-					0
-				);
-				averageRating = totalRating / rating.length;
-			} else averageRating = 0;
-		}
+		// // If displayStars is set to true, it calculates the average rating of each project.
+		// if (displayStars) {
+		// 	if (rating.length > 0) {
+		// 		const totalRating = rating.reduce(
+		// 			(accumulator, currentValue) =>
+		// 				accumulator + currentValue.rating,
+		// 			0
+		// 		);
+		// 		averageRating = totalRating / rating.length;
+		// 	} else averageRating = 0;
+		// }
 
 		return (
 			<article
@@ -343,20 +332,7 @@ const ListProjects = ({
 								href={liveLink}
 							>
 								Live Link
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									strokeWidth={1.5}
-									stroke="currentColor"
-									className="w-6 h-6"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
-									/>
-								</svg>
+								<RightArrow />
 							</a>
 						</button>
 					)}
@@ -367,20 +343,7 @@ const ListProjects = ({
 								href={github}
 							>
 								Github Repo
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									strokeWidth={1.5}
-									stroke="currentColor"
-									className="w-6 h-6"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
-									/>
-								</svg>
+								<RightArrow />
 							</a>
 						</button>
 					)}
