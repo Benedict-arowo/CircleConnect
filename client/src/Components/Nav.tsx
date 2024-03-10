@@ -425,20 +425,29 @@ const Nav = (props: Props) => {
 								d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
 							/>
 						</svg>
-						<button>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								viewBox="0 0 24 24"
-								fill="currentColor"
-								className="w-12 h-12 text-blue-800 drop-shadow-md"
-							>
-								<path
-									fillRule="evenodd"
-									d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
-									clipRule="evenodd"
-								/>
-							</svg>
-						</button>
+						{user.isLoggedIn && (
+							<button>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="currentColor"
+									className="w-12 h-12 text-blue-800 drop-shadow-md"
+								>
+									<path
+										fillRule="evenodd"
+										d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
+										clipRule="evenodd"
+									/>
+								</svg>
+							</button>
+						)}
+						{!user.isLoggedIn && (
+							<Link to={"/login"}>
+								<button className="px-4 py-2 border border-blue-800 text-blue-700 rounded-md font-medium">
+									Login
+								</button>
+							</Link>
+						)}
 					</div>
 				</div>
 			</header>
