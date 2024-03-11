@@ -3,7 +3,6 @@ import { Suspense, lazy } from "react";
 
 import CheckAuth from "./Middlewears/CheckAuth";
 import Loading from "./Components/Loading";
-import Onboarding from "./pages/Onboarding";
 import Footer from "./Components/Footer";
 
 const Index = lazy(() => import("./pages/Index"));
@@ -23,6 +22,7 @@ const Projects = lazy(() => import("./pages/Dashboard/Projects"));
 const AdminOnly = lazy(() => import("./Middlewears/AdminOnly"));
 const NoAuth = lazy(() => import("./Middlewears/NoAuth"));
 const Error = lazy(() => import("./pages/Error"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 
 const App = () => {
 	return (
@@ -30,7 +30,7 @@ const App = () => {
 			<CheckAuth>
 				<Suspense fallback={<Loading />}>
 					<Routes>
-						{/* <Route path="" element={<Onboarding />} /> */}
+						<Route path="onboarding" element={<Onboarding />} />
 						<Route path="" element={<Index />} />
 						<Route path="/discover" element={<Discover />} />
 						<Route path="/project/:id" element={<Project />} />
