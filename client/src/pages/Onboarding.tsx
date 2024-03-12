@@ -40,46 +40,52 @@ const Onboarding = () => {
 		<div className="w-full min-h-screen">
 			<Nav type="light" useBackground={false} className="" />
 
-			<main className="px-4 sm:px-8 md:px-16 mt-2 mb-16">
+			<main className="px-0 xs:px-8 md:px-16 mt-2 mb-16">
 				<section className="w-full relative">
-					<div className="relative z-0 lg:h-[575px]">
+					<div className="relative z-0 h-fit lg:h-[575px]">
 						<img
 							className="w-full h-full object-cover aspect-auto"
 							src={banner}
 							alt="Hero Background"
 						/>
 						<div className="bg-black opacity-30 w-full inset-0 h-full absolute"></div>
-						<div className="absolute inset-0 text-white px-12 pt-12 lg:px-20 lg:pt-24">
-							<h1 className="text-2xl md:text-5xl lg:text-6xl font-extrabold max-w-[95%] lg:max-w-[80%]">
+						<div className="absolute inset-0 p-6 text-white sm:px-12 sm:pt-12 lg:px-20 lg:pt-24">
+							<h1 className="text-base xs:text-2xl md:text-5xl lg:text-6xl font-extrabold max-w-[100%] xs:max-w-[95%] lg:max-w-[80%]">
 								Show Off Learning Circle programs and Personal
 								Projects.
 							</h1>
-							<div className="flex flex-row justify-between md:block">
-								<button className="bg-blue-700 px-5 py-2 flex flex-row gap-2 text-sm md:text-base rounded-md mt-4 lg:mt-8">
+							<div className="flex flex-row justify-between xs:block">
+								<button className="bg-blue-700 xs:px-5 xs:py-2 flex flex-row gap-2 text-xs xs:text-sm md:text-base rounded-md mt-4 lg:mt-8 items-center px-2">
 									View Top Project <RightArrow />
 								</button>
 
 								<div className="flex flex-row gap-3 mt-5 lg:mt-6">
-									<LinkedIn size={22} className="" />
+									<LinkedIn
+										// size={22}
+										className="w-[24px] h-[24px] lg:w-[32px] lg:h-[32px]"
+									/>
 									<Github
 										color="#fff"
-										size={26}
-										className=""
+										// size={26}
+										className="w-[24px] h-[24px] lg:w-[40px] lg:h-[40px]"
 									/>
-									<X size={20} className="" />
+									<X
+										// size={20}
+										className="w-[24px] h-[24px] lg:w-[32px] lg:h-[32px]"
+									/>
 								</div>
 							</div>
 						</div>
-						<div className="w-full flex justify-center absolute -bottom-14">
+						<div className="w-full flex justify-center absolute -bottom-11 sm:-bottom-14">
 							<div className="bg-white px-16 py-4 rounded-2xl text-3xl flex flex-row gap-8 items-center shadow">
 								<img
 									src={AltSchool}
-									className="object-cover h-fit w-[130px] aspect-auto"
+									className="object-cover h-fit sm:w-[130px] aspect-auto w-[64px]"
 									alt=""
 								/>
 								<img
 									src={TalentQL}
-									className="object-cover h-fit w-[130px] aspect-auto"
+									className="object-cover h-fit sm:w-[130px] aspect-auto w-[64px]"
 									alt=""
 								/>
 							</div>
