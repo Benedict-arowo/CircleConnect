@@ -59,22 +59,46 @@ export const loginJWT = async (req: Req, res: Response) => {
 			{ id: User.id },
 			ACCESS_TOKEN_VALIDITY_TIME
 		);
-		console.log(`TOKEN: ${token}`);
-		return res
-			.cookie("jwtToken", token, {
-				maxAge: JWT_ACCESS_TOKEN_EXPIRY,
-				httpOnly: true,
-			})
-			.status(StatusCodes.OK)
-			.json({
-				success: true,
-				message: "Successfully logged in.",
-				data: {
-					...User,
-					password: null,
-					token: token,
-				},
-			});
+
+		if (process.env.NODE_ENV?.toString() === "PRODUCTION") {
+			return res
+				.cookie("jwtToken", token, {
+					maxAge: JWT_ACCESS_TOKEN_EXPIRY,
+					httpOnly: true,
+					secure: true,
+					sameSite: "none",
+					path: "/",
+				})
+				.status(StatusCodes.OK)
+				.json({
+					success: true,
+					message: "Successfully logged in.",
+					data: {
+						...User,
+						password: null,
+						token: token,
+					},
+				});
+		} else {
+			return res
+				.cookie("jwtToken", token, {
+					maxAge: JWT_ACCESS_TOKEN_EXPIRY,
+					httpOnly: true,
+					secure: true,
+					path: "/",
+					sameSite: "lax",
+				})
+				.status(StatusCodes.OK)
+				.json({
+					success: true,
+					message: "Successfully logged in.",
+					data: {
+						...User,
+						password: null,
+						token: token,
+					},
+				});
+		}
 	} else {
 		throw new CustomError(
 			"Invalid password provided.",
@@ -107,21 +131,42 @@ export const registerJWT = async (req: Req, res: Response) => {
 
 		const token = await tokenGenerator({ id: User.id }, "1h");
 
-		return res
-			.cookie("jwtToken", token, {
-				httpOnly: true,
-				maxAge: JWT_ACCESS_TOKEN_EXPIRY,
-			})
-			.status(StatusCodes.CREATED)
-			.json({
-				success: true,
-				message: "Successfully registered user.",
-				data: {
-					...User,
-					password: undefined,
-					token: token,
-				},
-			});
+		if (process.env.NODE_ENV?.toString() === "PRODUCTION") {
+			return res
+				.cookie("jwtToken", token, {
+					httpOnly: true,
+					maxAge: JWT_ACCESS_TOKEN_EXPIRY,
+					secure: true,
+					path: "/",
+					sameSite: "none",
+				})
+				.status(StatusCodes.CREATED)
+				.json({
+					success: true,
+					message: "Successfully registered user.",
+					data: {
+						...User,
+						password: undefined,
+						token: token,
+					},
+				});
+		} else {
+			return res
+				.cookie("jwtToken", token, {
+					httpOnly: true,
+					maxAge: JWT_ACCESS_TOKEN_EXPIRY,
+				})
+				.status(StatusCodes.CREATED)
+				.json({
+					success: true,
+					message: "Successfully registered user.",
+					data: {
+						...User,
+						password: undefined,
+						token: token,
+					},
+				});
+		}
 	} catch (e: any) {
 		if (e instanceof Prisma.PrismaClientKnownRequestError) {
 			// IF the error is coming from prisma, and that it's a unique field error...
