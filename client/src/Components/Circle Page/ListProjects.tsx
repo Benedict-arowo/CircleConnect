@@ -55,36 +55,12 @@ const ListProjects = ({
 		throw new Error("Invalid arguments passed to ListProjects.");
 
 	return projects.map((project) => {
-		const {
-			name,
-			tags,
-			description,
-			id,
-			// createdBy,
-			// pinned,
-			// rating,
-			// createdAt,
-			github,
-			liveLink,
-		} = project;
-		// let averageRating = 0;
-
-		// // If displayStars is set to true, it calculates the average rating of each project.
-		// if (displayStars) {
-		// 	if (rating.length > 0) {
-		// 		const totalRating = rating.reduce(
-		// 			(accumulator, currentValue) =>
-		// 				accumulator + currentValue.rating,
-		// 			0
-		// 		);
-		// 		averageRating = totalRating / rating.length;
-		// 	} else averageRating = 0;
-		// }
+		const { name, tags, description, id, github, liveLink } = project;
 
 		return (
 			<article
 				key={id}
-				className="w-[350px] max-h-[520px] min-h-[500px] flex flex-col border flex-shrink-0 border-gray-300 pt-4 pb-2 px-4 snap-normal snap-center bg-[#B9D6F0] gap-3 rounded-md drop-shadow-sm"
+				className="w-[350px] max-h-[520px] min-h-[500px] flex flex-col border flex-shrink-0 border-gray-300 pt-4 pb-2 px-4 snap-normal snap-center bg-[#B9D6F0] gap-3 rounded-md drop-shadow-sm relative"
 			>
 				<img
 					src="https://images.unsplash.com/photo-1561210596-383464a42be3?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -308,24 +284,11 @@ const ListProjects = ({
 							</div>
 						)}
 					</div>
-					{/* 
-					{displayStars && (
-						<div className="mx-auto">
-							<StarRatings
-								rating={averageRating}
-								starRatedColor="red"
-								numberOfStars={5}
-								name="rating"
-								starDimension="16px"
-								starSpacing="15px"
-							/>
-						</div>
-					)} */}
 				</div>
 
-				<div className="flex flex-row gap-2 h-full">
+				<div className="flex flex-row gap-2">
 					{liveLink && (
-						<button className="bg-blue-700 text-white px-4 py-1 rounded-md">
+						<button className="bg-blue-700 text-white px-4 py-1 rounded-md hover:scale-95 transition-all duration-300">
 							<a
 								className="flex flex-row h-fit gap-1"
 								href={liveLink}
@@ -336,7 +299,7 @@ const ListProjects = ({
 						</button>
 					)}
 					{github && (
-						<button className="text-blue-700 border border-blue-500 px-2 py-1 h-fit rounded-md text-md ">
+						<button className="text-blue-700 border border-blue-500 px-2 py-1 h-fit rounded-md text-md  hover:scale-95 transition-all duration-300">
 							<a
 								className="flex flex-row items-center gap-1"
 								href={github}
