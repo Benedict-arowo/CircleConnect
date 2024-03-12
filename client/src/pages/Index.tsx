@@ -136,10 +136,10 @@ const Index = () => {
 	return (
 		<main className="mb-20 relative">
 			<Nav type="light" useBackground={false} className="" />
-			<div className="relative px-4 md:px-12 mt-6 mb-16">
+			<div className="relative sm:px-4 md:px-12 mt-6 mb-16">
 				<img className="w-screen h-[350px] object-cover" src={Hero} />
 				<div className="absolute inset-0 grid place-content-center overflow-hidden">
-					<p className="text-white text-4xl max-w-[85%] md:max-w-[80%] mx-auto font-bold md:text-7xl">
+					<p className="text-white text-5xl max-w-[85%] md:max-w-[80%] mx-auto font-bold md:text-7xl">
 						"Every project is an adventure, Enjoy the ride."
 					</p>
 				</div>

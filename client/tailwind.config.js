@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 import colors from "tailwindcss/colors";
+import defaultTheme from "tailwindcss/defaultTheme";
 
 export default {
 	content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
@@ -20,6 +21,10 @@ export default {
 					950: "#0f2c5c",
 				},
 			},
+		},
+		screens: {
+			xs: "475px",
+			...defaultTheme.screens,
 		},
 	},
 	plugins: [],
