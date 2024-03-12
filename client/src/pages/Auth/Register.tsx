@@ -157,7 +157,7 @@ const Register = () => {
 					</button>
 				</section>
 
-				<div className=" rounded-3xl   bg-blue-100 w-80  lg:w-96 shadow-t-3xl ">
+				<div className=" rounded-3xl   bg-[#B9D6F0] w-80  lg:w-96 shadow-t-3xl ">
 				<form onSubmit={SubmitForm} className="flex flex-col gap-4 items-center ">
 					{alert.status !== null && (
 						<Alert status={alert.status}>
