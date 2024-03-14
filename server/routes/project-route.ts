@@ -8,9 +8,13 @@ import {
 	rateProject,
 } from "../controllers/project-controller";
 import isLoggedIn from "../middlewares/isLoggedIn";
-import { validateParamsID } from "../middlewares/validators";
-import { validateCreateCircle } from "../middlewares/validators/circleValidators";
+import { validateBody } from "../middlewares/validators";
+import {
+	circleIdSchema,
+	circleSchema,
+} from "../middlewares/validators/schema/circle";
 import wrapper from "../middlewares/wrapper";
+import { validateParams } from "./../middlewares/validators/index";
 
 const express = require("express");
 const projectRouter = express.Router();
@@ -18,17 +22,21 @@ const projectRouter = express.Router();
 projectRouter
 	.route("/")
 	.get(wrapper(getProjects))
-	.post(isLoggedIn, validateCreateCircle, wrapper(createProject));
+	.post(isLoggedIn, validateBody(circleSchema), wrapper(createProject));
 
 projectRouter
 	.route("/:id")
-	.get(validateParamsID, wrapper(getProject))
-	.patch(isLoggedIn, validateParamsID, wrapper(editProject))
-	.delete(isLoggedIn, validateParamsID, wrapper(deleteProject));
+	.get(validateParams(circleIdSchema), wrapper(getProject))
+	.patch(isLoggedIn, validateParams(circleIdSchema), wrapper(editProject))
+	.delete(isLoggedIn, validateParams(circleIdSchema), wrapper(deleteProject));
 
 projectRouter
 	.route("/:id/addToCircle")
-	.patch(isLoggedIn, validateParamsID, wrapper(manageProjectCircle));
+	.patch(
+		isLoggedIn,
+		validateParams(circleIdSchema),
+		wrapper(manageProjectCircle)
+	);
 // projectRouter
 // 	.route("/:id/removeFromCircle")
 // 	.delete(isLoggedIn, wrapper(removeProjectFromCircle));

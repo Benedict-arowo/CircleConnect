@@ -5,7 +5,12 @@ import {
 	getReviews,
 } from "../controllers/project-review-controller";
 import isLoggedIn from "../middlewares/isLoggedIn";
-import { validateParamsID, validateReview } from "../middlewares/validators";
+import {
+	idSchema,
+	validateBody,
+	validateParams,
+} from "../middlewares/validators";
+import { reviewSchema } from "../middlewares/validators/schema/review";
 import wrapper from "../middlewares/wrapper";
 
 const express = require("express");
@@ -13,9 +18,19 @@ const projectReviewsRouter = express.Router();
 
 projectReviewsRouter
 	.route("/:id")
-	.get(validateParamsID, wrapper(getReviews))
-	.post(isLoggedIn, validateParamsID, validateReview, wrapper(createReview))
-	.patch(isLoggedIn, validateParamsID, validateReview, wrapper(editReview))
-	.delete(isLoggedIn, validateParamsID, wrapper(deleteReview));
+	.get(validateParams(idSchema), wrapper(getReviews))
+	.post(
+		isLoggedIn,
+		validateParams(idSchema),
+		validateBody(reviewSchema),
+		wrapper(createReview)
+	)
+	.patch(
+		isLoggedIn,
+		validateParams(idSchema),
+		validateBody(reviewSchema),
+		wrapper(editReview)
+	)
+	.delete(isLoggedIn, validateParams(idSchema), wrapper(deleteReview));
 
 export default projectReviewsRouter;

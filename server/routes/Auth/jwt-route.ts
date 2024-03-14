@@ -1,11 +1,12 @@
 import { Response } from "express";
 import { Req } from "../../types";
 import wrapper from "../../middlewares/wrapper";
-import { loginJWT, registerJWT } from "../../controllers/Auth/jwt-controller";
+import { loginJWT, registerJWT } from "../../controllers/auth/jwt-controller";
+import { validateBody } from "../../middlewares/validators";
 import {
-	validateJWTLogin,
-	validateJWTRegister,
-} from "../../middlewares/validators";
+	userRegisterSchema,
+	userLoginSchema,
+} from "../../middlewares/validators/schema/auth";
 
 const express = require("express");
 const jwtRouter = express.Router();
@@ -19,9 +20,13 @@ jwtRouter.get(
 	}
 );
 
-jwtRouter.post("/login", validateJWTLogin, wrapper(loginJWT));
+jwtRouter.post("/login", validateBody(userLoginSchema), wrapper(loginJWT));
 
-jwtRouter.post("/register", validateJWTRegister, wrapper(registerJWT));
+jwtRouter.post(
+	"/register",
+	validateBody(userRegisterSchema),
+	wrapper(registerJWT)
+);
 
 jwtRouter.get(
 	"/callback",
