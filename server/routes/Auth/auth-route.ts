@@ -1,6 +1,6 @@
 import wrapper from "../../middlewares/wrapper";
 import isLoggedIn from "../../middlewares/isLoggedIn";
-import logout from "../../controllers/auth/logout";
+import logout from "../../controllers/Auth/logout";
 import { Req } from "../../types";
 import { UserSelectFull } from "../../utils";
 import { Response } from "express";

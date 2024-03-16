@@ -1,8 +1,8 @@
 import { Application } from "express";
-import authRouter from "./auth/auth-route";
-import githubRouter from "./auth/github-route";
-import googleRouter from "./auth/google-route";
-import jwtRouter from "./auth/jwt-route";
+import authRouter from "./Auth/auth-route";
+import githubRouter from "./Auth/github-route";
+import googleRouter from "./Auth/google-route";
+import jwtRouter from "./Auth/jwt-route";
 import circleRouter from "./circle-route";
 import notificationRouter from "./notification-route";
 import projectReviewsRouter from "./project-reviews";
@@ -13,8 +13,8 @@ import userRouter from "./user-route";
 export const applyRoutes = (app: Application) => {
 	app.use("/auth/google", googleRouter);
 	app.use("/auth/github", githubRouter);
-
 	app.use("/auth/jwt", jwtRouter);
+
 	app.use("/", authRouter);
 	app.use("/role", roleRouter);
 	app.use("/user", userRouter);

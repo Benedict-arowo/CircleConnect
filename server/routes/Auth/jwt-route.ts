@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { Req } from "../../types";
 import wrapper from "../../middlewares/wrapper";
-import { loginJWT, registerJWT } from "../../controllers/auth/jwt-controller";
+import { loginJWT, registerJWT } from "../../controllers/Auth/jwt-controller";
 import { validateBody } from "../../middlewares/validators";
 import {
 	userRegisterSchema,
