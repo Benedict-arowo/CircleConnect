@@ -1,5 +1,5 @@
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
-import CustomError from "../middlewear/CustomError";
+import CustomError from "../middlewares/CustomError";
 import prisma from "../model/db";
 
 export type Permission =
