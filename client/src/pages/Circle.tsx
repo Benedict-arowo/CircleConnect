@@ -220,7 +220,7 @@ const Circle = () => {
 				} else if (
 					data.members.some(
 						(members: CircleMemberType) =>
-							members.id === User.info.id,
+							members.id === User.info.id
 					)
 				) {
 					setState(() => {
@@ -234,8 +234,7 @@ const Circle = () => {
 					});
 				} else if (
 					data.requests.some(
-						(member: CircleMemberType) =>
-							member.id === User.info.id,
+						(member: CircleMemberType) => member.id === User.info.id
 					)
 				) {
 					setState(() => {
@@ -263,7 +262,7 @@ const Circle = () => {
 				setErr(() =>
 					err.message === "Failed to fetch"
 						? "Error trying to communicate with the server."
-						: err.message,
+						: err.message
 				);
 			});
 	};
@@ -446,7 +445,7 @@ const Circle = () => {
 	// console.log(circle);
 	return (
 		<main>
-			<Nav className="mb-8" useBackground={false} />
+			<Nav className="" useBackground={false} />
 			{isLoading && <Spinner />}
 			{err && <div>{err}</div>}
 			{!isLoading &&
@@ -456,7 +455,7 @@ const Circle = () => {
 					<div className="px-4 py-8 md:px-16">
 						<header className="flex flex-col gap-4">
 							<section className="flex flex-row justify-between items-center">
-								<h1 className="font-semibold text-3xl text-gray-800">
+								<h1 className="font-bold text-3xl text-blue-700">
 									Circle #{circle.id}
 								</h1>
 
@@ -533,7 +532,7 @@ const Circle = () => {
 									</div>
 								)}
 							</section>
-							<p className="h-[100px]">{circle.description}</p>
+							<p className="">{circle.description}</p>
 							<div className={`flex flex-row justify-between`}>
 								<div className="flex flex-row gap-3">
 									{state.isOwner && (
@@ -607,7 +606,7 @@ const Circle = () => {
 																	() => {
 																		onClose();
 																		Navigate(
-																			"/",
+																			"/"
 																		);
 																	},
 															}),
@@ -630,7 +629,7 @@ const Circle = () => {
 						<section className="mt-16">
 							<div className="flex flex-row gap-2 items-center">
 								<a
-									className="font-light mb-2 text-3xl text-gray-800"
+									className="font-semibold mb-2 text-3xl text-neutral-800"
 									href="#members"
 									id="members"
 								>
@@ -672,7 +671,7 @@ const Circle = () => {
 									showManageMenu={true}
 									projects={circle.projects.filter(
 										(project) =>
-											project.pinned ? true : false,
+											project.pinned ? true : false
 									)}
 									circle={circle}
 									makeReq={makeReq}
@@ -696,7 +695,7 @@ const Circle = () => {
 									showManageMenu={true}
 									projects={circle.projects.filter(
 										(project) =>
-											!project.pinned ? true : false,
+											!project.pinned ? true : false
 									)}
 									setAlertState={setAlertState}
 									makeReq={makeReq}
@@ -721,7 +720,7 @@ const Circle = () => {
 											className="relative"
 											onClick={() =>
 												setShowRequests(
-													(prevState) => !prevState,
+													(prevState) => !prevState
 												)
 											}
 										>
@@ -823,11 +822,11 @@ const Circle = () => {
 																									"Successfully promoted user.",
 																								successFunc:
 																									fetchCircle,
-																							},
+																							}
 																						),
 																				header: "Promote user",
 																			};
-																		},
+																		}
 																	);
 																	onOpen();
 																}}
@@ -870,11 +869,11 @@ const Circle = () => {
 																									"Successfully demoted user.",
 																								successFunc:
 																									fetchCircle,
-																							},
+																							}
 																						),
 																				header: "Demote user",
 																			};
-																		},
+																		}
 																	);
 																	onOpen();
 																}}
@@ -923,11 +922,11 @@ const Circle = () => {
 																									"Successfully removed user from circle.",
 																								successFunc:
 																									fetchCircle,
-																							},
+																							}
 																						),
 																				header: "Remove user",
 																			};
-																		},
+																		}
 																	);
 																	onOpen();
 																}}
@@ -1006,7 +1005,7 @@ const Circle = () => {
 											value={description}
 											onChange={(e) =>
 												setDescription(
-													() => e.target.value,
+													() => e.target.value
 												)
 											}
 										/>
@@ -1026,7 +1025,7 @@ const Circle = () => {
 														settingsDrawerOnClose();
 														fetchCircle();
 														setDescription(
-															() => "",
+															() => ""
 														);
 													},
 												});
@@ -1068,7 +1067,7 @@ const Circle = () => {
 														circle.projects.find(
 															(project) =>
 																project.id ===
-																projectId,
+																projectId
 														);
 													return (
 														<div
@@ -1097,7 +1096,7 @@ const Circle = () => {
 																					"Successfully added the project.",
 																				successFunc:
 																					fetchCircle,
-																			},
+																			}
 																		)
 																	}
 																>
@@ -1124,7 +1123,7 @@ const Circle = () => {
 																					"Successfully removed the project.",
 																				successFunc:
 																					fetchCircle,
-																			},
+																			}
 																		)
 																	}
 																>
@@ -1133,7 +1132,7 @@ const Circle = () => {
 															)}
 														</div>
 													);
-												},
+												}
 											)}
 									</div>
 								</DrawerBody>
