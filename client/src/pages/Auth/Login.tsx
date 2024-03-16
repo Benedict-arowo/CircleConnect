@@ -225,7 +225,7 @@ const Login = () => {
 								}
 								id="email_address"
 								placeholder="user@sample.com"
-								className="h-full w-full border-b  border-neutral-800 bg-slate-900 pt-3 pb-1.5 text-sm outline-none transition-all px-2"
+								className="h-full w-full border-b border-neutral-800 pt-3 pb-1.5 text-sm outline-none transition-all px-2"
 							/>
 						</fieldset>
 
@@ -250,7 +250,7 @@ const Login = () => {
 									})
 								}
 								placeholder="***********"
-								className="h-full w-full border-b  border-neutral-800 bg-black pt-3 pb-1.5 text-sm outline-none transition-all px-2"
+								className="h-full w-full border-b border-neutral-800 pt-3 pb-1.5 text-sm outline-none transition-all px-2"
 							/>
 						</fieldset>
 
