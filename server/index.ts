@@ -38,7 +38,10 @@ const makeApp = (
 	const io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap> =
 		new Server(server, {
 			cors: {
-				origin: "https://circle-connect-ruddy.vercel.app",
+				origin: [
+					"https://circle-connect-ruddy.vercel.app",
+					"http://localhost:5173",
+				],
 				credentials: true,
 			},
 		});
