@@ -1,7 +1,7 @@
 import { Avatar, useDisclosure } from "@chakra-ui/react";
 import { Link, NavLink } from "react-router-dom";
 import UseFetch from "./Fetch";
-import { useDispatch } from "react-redux";
+// import { useDispatch } from "react-redux";
 import {
 	Drawer,
 	DrawerBody,
@@ -38,7 +38,7 @@ type Notification = {
 };
 
 const Nav = (props: Props) => {
-	const dispatch = useDispatch();
+	// const dispatch = useDispatch();
 	const socket: Socket = UseSocketContext();
 	const setUser = UseSetUser();
 	const { className, type = "dark", useBackground = true } = props;
@@ -184,37 +184,28 @@ const Nav = (props: Props) => {
 					>
 						<li className="cursor-pointer text-lg">
 							<NavLink
-								to="/project"
-								style={({ isActive }) => {
-									return isActive ? activeStyles : {};
-								}}
-								className="text-neutral-700 text-lg font-normal"
-							>
-								Projects
-							</NavLink>
-						</li>
-						<li className="cursor-pointer text-lg">
-							<NavLink
 								to="/discover"
 								style={({ isActive }) => {
 									return isActive ? activeStyles : {};
 								}}
 								className="text-neutral-700 text-lg font-normal"
 							>
-								Circle
+								Discover
 							</NavLink>
 						</li>
-						<li className="cursor-pointer text-lg">
-							<NavLink
-								to="/profile"
-								style={({ isActive }) => {
-									return isActive ? activeStyles : {};
-								}}
-								className="text-neutral-700 text-lg font-normal"
-							>
-								My profile
-							</NavLink>
-						</li>
+						{user.isLoggedIn && (
+							<li className="cursor-pointer text-lg">
+								<NavLink
+									to="/profile"
+									style={({ isActive }) => {
+										return isActive ? activeStyles : {};
+									}}
+									className="text-neutral-700 text-lg font-normal"
+								>
+									Profile
+								</NavLink>
+							</li>
+						)}
 					</ul>
 
 					<div>

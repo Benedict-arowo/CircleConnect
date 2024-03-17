@@ -34,6 +34,7 @@ export const UserSelectMinimized = {
 			id: true,
 			circleId: true,
 			name: true,
+			tags: true,
 		},
 	},
 	role: {
