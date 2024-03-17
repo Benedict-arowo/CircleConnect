@@ -55,18 +55,29 @@ const ListProjects = ({
 		throw new Error("Invalid arguments passed to ListProjects.");
 
 	return projects.map((project) => {
-		const { name, tags, description, id, github, liveLink } = project;
+		const {
+			name,
+			tags,
+			description,
+			id,
+			github,
+			liveLink,
+			circle,
+			createdBy,
+		} = project;
 
 		return (
 			<article
 				key={id}
 				className="w-[350px] max-h-[520px] min-h-[500px] flex flex-col border flex-shrink-0 border-gray-300 pt-4 pb-2 px-4 snap-normal snap-center bg-[#B9D6F0] gap-3 rounded-md drop-shadow-sm relative"
 			>
-				<img
-					src="https://images.unsplash.com/photo-1561210596-383464a42be3?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-					alt="Project Banner Picture"
-					className="object-cover h-[250px]  rounded-md"
-				/>
+				<a className="w-full h-[250px]" href={`/project/${id}`}>
+					<img
+						src="https://images.unsplash.com/photo-1561210596-383464a42be3?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+						alt="Project Banner Picture"
+						className="object-cover h-full w-full rounded-md"
+					/>
+				</a>
 				<div className="flex-1 flex flex-col justify-between">
 					<div>
 						<h3 className="text-2xl font-bold cursor-pointer">
@@ -261,7 +272,17 @@ const ListProjects = ({
 						<section className="mt-1">
 							<div className="flex flex-row gap-1">
 								<h4 className="font-medium">Owner (s):</h4>
-								<p>Circle 31</p>
+								{circle && (
+									<a href={`/circle/${circle.id}`}>
+										Circle {circle.id}
+									</a>
+								)}
+								{!circle && (
+									<a href={`/user/${id}`}>
+										{createdBy.first_name}{" "}
+										{createdBy.last_name}
+									</a>
+								)}
 							</div>
 							<div className="flex flex-row gap-1">
 								<h4 className="font-medium">Track:</h4>

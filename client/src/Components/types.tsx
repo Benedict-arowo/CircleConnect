@@ -6,6 +6,7 @@ export type CircleMemberType = {
 	id: string;
 	profile_picture: string;
 	first_name: string;
+	last_name: string;
 };
 
 export type CircleRatingType = {
@@ -28,7 +29,7 @@ export type ProjectsType = {
 		user: UserType;
 		project: ProjectsType;
 	}[];
-	techUsed: string[];
+	tags: string[];
 	pinned: boolean;
 	id: string;
 };
