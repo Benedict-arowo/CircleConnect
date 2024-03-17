@@ -1,11 +1,14 @@
 import { CircleType, ProjectsType } from "../types";
 import { makeReq } from "../../pages/Circle";
 import RightArrow from "../Icons/RightArrow";
+import { UserTypeClean } from "../../types";
 
 type Props = {
 	displayStars?: boolean;
 	projects: ProjectsType[];
 	circle?: CircleType;
+	user?: UserTypeClean;
+	isOwner?: boolean;
 	showManageMenu?: boolean;
 	setAlertState?: React.Dispatch<
 		React.SetStateAction<{
@@ -31,6 +34,8 @@ const ListProjects = ({
 	// displayStars = false,
 	projects,
 	circle,
+	isOwner,
+	user,
 	showManageMenu = false,
 	setAlertState,
 	onOpen,
@@ -279,8 +284,12 @@ const ListProjects = ({
 								)}
 								{!circle && (
 									<a href={`/user/${id}`}>
-										{createdBy.first_name}{" "}
-										{createdBy.last_name}
+										{isOwner && user
+											? user.first_name
+											: createdBy.first_name}{" "}
+										{isOwner && user
+											? user.last_name
+											: createdBy.last_name}
 									</a>
 								)}
 							</div>

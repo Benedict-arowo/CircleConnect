@@ -4,6 +4,7 @@ import { Suspense, lazy } from "react";
 import CheckAuth from "./Middlewears/CheckAuth";
 import Loading from "./Components/Loading";
 import Footer from "./Components/Footer";
+import Profile from "./pages/Profile";
 
 const Index = lazy(() => import("./pages/Index"));
 const Success = lazy(() => import("./pages/Auth/Success"));
@@ -33,6 +34,7 @@ const App = () => {
 						<Route path="onboarding" element={<Onboarding />} />
 						<Route path="" element={<Index />} />
 						<Route path="/discover" element={<Discover />} />
+						<Route path="/profile" element={<Profile />} />
 						<Route path="/project/:id" element={<Project />} />
 						<Route path="/circle/:id" element={<Circle />} />
 						<Route path="/test" element={<Test />} />
