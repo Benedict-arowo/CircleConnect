@@ -138,7 +138,7 @@ const Circle = () => {
 						key={circleMember.id}
 						title={circleMember.first_name}
 						className=""
-						href={`../user/${circleMember.id}`}
+						href={`/profile/${circleMember.id}`}
 					>
 						{/* <Avatar
 							size={"2xl"}
@@ -456,10 +456,12 @@ const Circle = () => {
 									</h1>
 								</div>
 							</div>
-							<button className="bg-blue-700 text-white font-light px-6 py-2 rounded-md w-fit self-end">
-								Join Circle
-							</button>
-							<section className="flex flex-row justify-between items-center">
+							{User.isLoggedIn && (
+								<button className="bg-blue-700 text-white font-light px-6 py-2 rounded-md w-fit self-end">
+									Join Circle
+								</button>
+							)}
+							<section className="flex flex-row justify-between items-center pt-4">
 								<h1 className="font-bold text-6xl text-blue-700">
 									Circle #{circle.id}
 								</h1>

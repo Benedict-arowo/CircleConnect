@@ -19,6 +19,8 @@ import { Socket } from "socket.io-client";
 import { UseSetUser, UseUser } from "../contexts/UserContext";
 import { LogoutFunc } from "./Fetch/LogoutFunc";
 import Logo from "./Icons/Logo";
+import { Dialog } from "primereact/dialog";
+import AddProject from "./AddProject";
 
 type Props = {
 	className?: string;
@@ -51,6 +53,7 @@ const Nav = (props: Props) => {
 		read: [],
 	});
 	const btnRef = useRef();
+	const [dialogIsVisible, setDialogIsVisible] = useState(false);
 
 	const fetchNotifications = async () => {
 		const { data, response } = await UseFetch({
@@ -307,6 +310,7 @@ const Nav = (props: Props) => {
 										viewBox="0 0 24 24"
 										fill="currentColor"
 										className="w-16 h-16 text-blue-800 drop-shadow-md"
+										onClick={() => setDialogIsVisible(true)}
 									>
 										<path
 											fillRule="evenodd"
@@ -325,7 +329,7 @@ const Nav = (props: Props) => {
 							</Link>
 						)}
 					</div>
-
+					{/* 
 					<Drawer
 						isOpen={isOpen}
 						placement="right"
@@ -394,7 +398,7 @@ const Nav = (props: Props) => {
 								</button>
 							</DrawerBody>
 						</DrawerContent>
-					</Drawer>
+					</Drawer> */}
 				</div>
 
 				{/* Mobile Screens */}
@@ -427,6 +431,24 @@ const Nav = (props: Props) => {
 						)}
 					</div>
 				</div>
+
+				<Dialog
+					visible={dialogIsVisible}
+					draggable={false}
+					onHide={() => setDialogIsVisible(false)}
+					closable={false}
+					closeOnEscape={true}
+					showHeader={false}
+					style={{
+						width: "100%",
+						maxWidth: "400px",
+					}}
+					contentClassName="p-0 rounded-t-3xl rounded-b-2xl"
+					dismissableMask
+					blockScroll
+				>
+					<AddProject />
+				</Dialog>
 			</header>
 		</>
 	);
