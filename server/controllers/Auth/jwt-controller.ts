@@ -12,6 +12,10 @@ import {
 	tokenGenerator,
 	verifyHash,
 } from "../../utils";
+import {
+	changePasswordService,
+	forgotPasswordService,
+} from "../../service/user.service";
 
 const argon = require("argon2");
 const jwt = require("jsonwebtoken");
@@ -128,3 +132,34 @@ export const registerJWT = async (req: Req, res: Response) => {
 		}
 	}
 };
+
+export const changePassword = async (req: Req, res: Response) => {
+	const success = await changePasswordService(req.user.id, req.body);
+	if (!success) {
+		throw new CustomError(
+			"Password is incorrect",
+			StatusCodes.UNAUTHORIZED
+		);
+	}
+	res.status(200).json({
+		success: true,
+		message: "Password changed successfully",
+	});
+};
+
+export const forgotPassword = async (req: Req, res: Response) => {
+	const { email } = req.body;
+	const success = await forgotPasswordService(email as string);
+	if (!success) {
+		throw new CustomError(
+			"Password is incorrect",
+			StatusCodes.UNAUTHORIZED
+		);
+	}
+	res.status(200).json({
+		success: true,
+		message: "Password changed successfully",
+	});
+};
+
+export const resetPassword = async (req: Req, res: Response) => {};

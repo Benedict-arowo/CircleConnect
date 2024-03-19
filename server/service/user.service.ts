@@ -7,6 +7,8 @@ import {
 	TRACK_LIST,
 	TrackType,
 	hash,
+	tokenGenerator,
+	verifyHash,
 } from "../utils";
 import prisma from "../model/db";
 import { User } from "../types";
@@ -286,3 +288,160 @@ export const DeleteUserService = async (id: string) => {
 
 	return 0;
 };
+
+export const changePasswordService = async (
+	id: string,
+	payload: {
+		oldPassword: string;
+		newPassword: string;
+	}
+): Promise<Boolean> => {
+	const { oldPassword, newPassword } = payload;
+
+	const user = await prisma.user.findUnique({
+		where: { id },
+	});
+
+	if (!user || !user.password) {
+		throw new CustomError("User not found", StatusCodes.NOT_FOUND);
+	}
+
+	const passwordIsValid = await verifyHash(user.password, oldPassword);
+	if (passwordIsValid) {
+		const hashedPassword = await hash(newPassword);
+		const updatedUser = await prisma.user.update({
+			where: { id },
+			data: { password: hashedPassword },
+		});
+		return updatedUser && true;
+	}
+	return false;
+};
+
+export const forgotPasswordService = async (
+	email: string
+): Promise<Boolean> => {
+	const user = await prisma.user.findUnique({
+		where: { email },
+	});
+
+	if (!user || !user.password) {
+		// Oauth users do not have password
+		throw new CustomError("User not found", StatusCodes.NOT_FOUND);
+	}
+	const res = tokenGenerator(
+		{ id: user.id, firstName: user.first_name, email: user.email },
+		"10m"
+	);
+	console.log(res);
+	// Call MAIL service and send RESET code
+	// to user's email address
+
+	if (true) {
+		return true;
+	}
+	return false;
+};
+
+export const resetPasswordService = async (
+	id: string,
+	payload: {
+		token: string;
+		newPassword: string;
+	}
+): Promise<Boolean> => {
+	const { token, newPassword } = payload;
+
+	const user = await prisma.user.findUnique({
+		where: { id },
+	});
+
+	if (!user || !user.password) {
+		throw new CustomError("User not found", StatusCodes.NOT_FOUND);
+	}
+
+	const hashedPassword = await hash(newPassword);
+	const updatedUser = await prisma.user.update({
+		where: { id },
+		data: { password: hashedPassword },
+	});
+	return updatedUser && true;
+};
+
+interface IUser {
+	id: string;
+	first_name: string;
+	last_name: string;
+	email: string;
+	password?: string;
+	roleId: string;
+	school: string;
+	profile_picture: string;
+	track: string;
+}
+class UserService {
+	private async findUserById(id: string) {
+		const user = await prisma.user.findUnique({
+			where: { id },
+		});
+		if (!user) {
+			throw new CustomError("User not found", StatusCodes.NOT_FOUND);
+		}
+		return user;
+	}
+
+	private async findUserByEmail(email: string) {
+		const user = await prisma.user.findUnique({
+			where: { email },
+		});
+		if (!user) {
+			throw new CustomError("User not found", StatusCodes.NOT_FOUND);
+		}
+		return user;
+	}
+
+	public async createUser(payload: IUser) {
+		const userExists = await this.findUserByEmail(payload.email as string);
+		if (userExists) {
+			throw new CustomError("User already exists", StatusCodes.CONFLICT);
+		}
+		const hashedPassword = await hash(payload.password);
+		const user = await prisma.user.create({
+			data: { ...(payload as any), password: hashedPassword },
+			select: {
+				id: true,
+				email: true,
+				profile_picture: true,
+				first_name: true,
+				last_name: true,
+				projects: {
+					select: {
+						id: true,
+						name: true,
+						circle: true,
+					},
+				},
+				role: {
+					select: {
+						id: true,
+						name: true,
+					},
+				},
+				track: true,
+				school: true,
+				coleadOf: true,
+				leadOf: true,
+				memberOf: true,
+				joined: true,
+				createdAt: true,
+				pendingRequest: true,
+				projectRatings: true,
+			},
+		});
+		return user;
+	}
+}
+
+const userService = new UserService();
+
+export default userService;

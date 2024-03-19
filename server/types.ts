@@ -80,6 +80,8 @@ export interface Req extends Request {
 		pinned?: boolean;
 		github?: string;
 		liveLink?: string;
+		oldPassword: string;
+		newPassword: string;
 		tags?: string[];
 		roleId?: string;
 		school?: string;

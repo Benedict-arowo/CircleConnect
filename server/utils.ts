@@ -18,6 +18,8 @@ export const tokenGenerator = async (
 	return await jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
 };
 
+export const generateOTP = async () => {};
+
 export const hash = async (value: any) => {
 	const hashedValue = await argon.hash(value);
 	return hashedValue;
