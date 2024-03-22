@@ -9,6 +9,7 @@ import projectReviewsRouter from "./project-reviews";
 import projectRouter from "./project-route";
 import roleRouter from "./roles-route";
 import userRouter from "./user-route";
+import auth from "./auth-route";
 
 export const applyRoutes = (app: Application) => {
 	app.use("/auth/google", googleRouter);
@@ -16,6 +17,7 @@ export const applyRoutes = (app: Application) => {
 
 	app.use("/auth/jwt", jwtRouter);
 	app.use("/", authRouter);
+	app.use("/auth", auth);
 	app.use("/role", roleRouter);
 	app.use("/user", userRouter);
 	app.use("/circle", circleRouter);

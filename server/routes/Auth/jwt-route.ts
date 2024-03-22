@@ -1,22 +1,12 @@
 import { Response } from "express";
 import { Req } from "../../types";
 import wrapper from "../../middlewares/wrapper";
-import {
-	changePassword,
-	forgotPassword,
-	loginJWT,
-	registerJWT,
-	resetPassword,
-} from "../../controllers/auth/jwt-controller";
+import { loginJWT, registerJWT } from "../../controllers/auth/jwt-controller";
 import { validateBody } from "../../middlewares/validators";
 import {
 	userRegisterSchema,
 	userLoginSchema,
-	changePasswordSchema,
-	resetPasswordSchema,
-	forgotPasswordSchema,
 } from "../../middlewares/validators/schema/auth";
-import isLoggedIn from "../../middlewares/isLoggedIn";
 
 const express = require("express");
 const jwtRouter = express.Router();
@@ -47,27 +37,6 @@ jwtRouter.get(
 		// Successful authentication, redirect home.
 		res.redirect(process.env.SIGN_IN_SUCCESSFULL_ROUTE as string);
 	}
-);
-
-jwtRouter.post(
-	"/change-password",
-	isLoggedIn,
-	validateBody(changePasswordSchema),
-	wrapper(changePassword)
-);
-
-jwtRouter.post(
-	"/forgot-password",
-	isLoggedIn,
-	validateBody(forgotPasswordSchema),
-	wrapper(forgotPassword)
-);
-
-jwtRouter.post(
-	"/reset-password",
-	isLoggedIn,
-	validateBody(resetPasswordSchema),
-	wrapper(resetPassword)
 );
 
 export default jwtRouter;

@@ -1,6 +1,7 @@
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import CustomError from "../middlewares/CustomError";
 import {
+	ACCESS_TOKEN_VALIDITY_TIME,
 	DEFAULT_MEMBER_ROLE_ID,
 	MIN_PASSWORD_LENGTH,
 	SCHOOL_LIST,
@@ -9,9 +10,12 @@ import {
 	hash,
 	tokenGenerator,
 	verifyHash,
+	verifyToken,
 } from "../utils";
 import prisma from "../model/db";
 import { User } from "../types";
+import mailService from "./messaging.service";
+import { User as PUser } from "@prisma/client";
 
 type UserArgs = {
 	body: {
@@ -384,7 +388,8 @@ class UserService {
 		const user = await prisma.user.findUnique({
 			where: { id },
 		});
-		if (!user) {
+		if (!user || !user.password) {
+			// Oauth users do not have password
 			throw new CustomError("User not found", StatusCodes.NOT_FOUND);
 		}
 		return user;
@@ -394,10 +399,19 @@ class UserService {
 		const user = await prisma.user.findUnique({
 			where: { email },
 		});
-		if (!user) {
+		if (!user || !user.password) {
+			// Oauth users do not have password
 			throw new CustomError("User not found", StatusCodes.NOT_FOUND);
 		}
 		return user;
+	}
+
+	private async updateUser(id: string, updateFields: Partial<PUser>) {
+		const updatedUser = await prisma.user.update({
+			where: { id },
+			data: updateFields as any,
+		});
+		return updatedUser;
 	}
 
 	public async createUser(payload: IUser) {
@@ -406,8 +420,13 @@ class UserService {
 			throw new CustomError("User already exists", StatusCodes.CONFLICT);
 		}
 		const hashedPassword = await hash(payload.password);
+		console.log({ ...payload });
 		const user = await prisma.user.create({
-			data: { ...(payload as any), password: hashedPassword },
+			data: {
+				...(payload as any),
+				roleId: DEFAULT_MEMBER_ROLE_ID,
+				password: hashedPassword,
+			},
 			select: {
 				id: true,
 				email: true,
@@ -438,7 +457,104 @@ class UserService {
 				projectRatings: true,
 			},
 		});
-		return user;
+		console.log("The created user is ", user);
+		const token = await tokenGenerator({ id: user.id }, "1h");
+		return { token, user };
+	}
+
+	public async login(email: string, password: string) {
+		const user = await this.findUserByEmail(email);
+
+		const isValidPassword = await verifyHash(
+			user.password as string,
+			password
+		);
+		if (!isValidPassword) {
+			throw new CustomError(
+				"Invalid login credentials",
+				StatusCodes.UNAUTHORIZED
+			);
+		}
+
+		// Update last_login after successful password verification
+		await prisma.user.update({
+			where: { id: user.id },
+			data: { last_login: new Date() },
+		});
+
+		const token = await tokenGenerator(
+			{ id: user.id },
+			ACCESS_TOKEN_VALIDITY_TIME
+		);
+		return { token, user };
+	}
+
+	public async changePassword(
+		id: string,
+		payload: {
+			oldPassword: string;
+			newPassword: string;
+		}
+	): Promise<Boolean> {
+		const { oldPassword, newPassword } = payload;
+
+		const user = await this.findUserById(id);
+
+		const passwordIsValid = await verifyHash(
+			user.password as string,
+			oldPassword
+		);
+		if (passwordIsValid) {
+			const hashedPassword = await hash(newPassword);
+			const updatedUser = await this.updateUser(id, {
+				password: hashedPassword,
+			});
+			return updatedUser && true;
+		}
+		return false;
+	}
+
+	public async forgotPassword(email: string): Promise<Boolean> {
+		const user = await this.findUserByEmail(email);
+		const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+		const token = await tokenGenerator(
+			{
+				id: user.id,
+				code,
+			},
+			"10m"
+		);
+		// const resetLink = `http://localhost:8000/auth/reset-password?token=${token}`;
+		console.log(token);
+		// Call MAIL service and send RESET code to user's email address
+		await mailService.sendResetPasswordEmail(
+			user.email,
+			user.first_name,
+			code
+		);
+		return token;
+	}
+
+	public async resetPassword(payload: {
+		token: string;
+		otpCode: string;
+		newPassword: string;
+	}) {
+		const { token, otpCode, newPassword } = payload;
+		const decodedToken = await verifyToken(token);
+
+		const { id, code } = decodedToken;
+
+		console.log(`Verified token`, id, code);
+		if (code === otpCode) {
+			const hashedPassword: string = await hash(newPassword);
+			const updatedUser = await this.updateUser(id, {
+				password: hashedPassword,
+			});
+			return updatedUser && true;
+		}
+		throw new CustomError("Incorrect OTP code", StatusCodes.FORBIDDEN);
 	}
 }
 
