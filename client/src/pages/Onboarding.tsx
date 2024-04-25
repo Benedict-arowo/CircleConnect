@@ -9,6 +9,8 @@ import AltSchool from "../assets/AltSchool.png";
 import ListProjects from "../Components/Circle Page/ListProjects";
 import { useEffect, useState } from "react";
 import UseFetch from "../Components/Fetch";
+import ListCollaborators from "../Components/OnBoarding/ListCollaborators";
+import Logo from "../Components/Icons/Logo";
 
 const Onboarding = () => {
 	const [topProjects, setTopProjects] = useState([]);
@@ -26,7 +28,6 @@ const Onboarding = () => {
 			});
 
 			if (!response.ok) {
-				setTopProjects([]);
 				setIsLoading(false);
 				throw new Error("Error fetching projects...");
 			}
@@ -38,7 +39,43 @@ const Onboarding = () => {
 
 	return (
 		<div className="w-full min-h-screen">
-			<Nav type="light" useBackground={false} className="" />
+			{/* <Nav type="light" useBackground={false} className="" /> */}
+			<nav className=" px-8 flex-1 sm:flex hidden justify-between items-center my-4">
+				<Logo />
+
+				<ul className="flex flex-row gap-6 font-light">
+					<li className="cursor-pointer text-lg">
+						<a
+							href="#about"
+							className="text-neutral-700 text-lg font-normal"
+						>
+							About
+						</a>
+					</li>
+					<li className="cursor-pointer text-lg">
+						<a
+							href="#top_projects"
+							className="text-neutral-700 text-lg font-normal"
+						>
+							Top Project
+						</a>
+					</li>
+					<li className="cursor-pointer text-lg">
+						<a
+							href="#collaborators"
+							className="text-neutral-700 text-lg font-normal"
+						>
+							Collaborators
+						</a>
+					</li>
+				</ul>
+
+				<button className="bg-blue-700 px-4 py-2 rounded-md text-white">
+					<a className="flex flex-row gap-2" href="/">
+						Get Started <RightArrow />
+					</a>
+				</button>
+			</nav>
 
 			<main className="px-0 xs:px-8 md:px-16 mt-2 mb-16">
 				<section className="w-full relative">
@@ -56,7 +93,12 @@ const Onboarding = () => {
 							</h1>
 							<div className="flex flex-row justify-between xs:block">
 								<button className="bg-blue-700 xs:px-5 xs:py-2 flex flex-row gap-2 text-xs xs:text-sm md:text-base rounded-md mt-4 lg:mt-8 items-center px-2">
-									View Top Project <RightArrow />
+									<a
+										className="flex flex-row gap-2"
+										href="#top_projects"
+									>
+										View Top Project <RightArrow />
+									</a>
 								</button>
 
 								<div className="flex flex-row gap-3 mt-5 lg:mt-6">
@@ -167,11 +209,7 @@ const Onboarding = () => {
 						Collaborators
 					</a>
 					<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
-						<ListProjects
-							displayStars={true}
-							projects={[]}
-							showManageMenu={false}
-						/>
+						<ListCollaborators />
 					</section>
 				</section>
 			</main>
