@@ -42,17 +42,17 @@ type Notification = {
 const Nav = (props: Props) => {
 	// const dispatch = useDispatch();
 	const socket: Socket = UseSocketContext();
-	const setUser = UseSetUser();
+	// const setUser = UseSetUser();
 	const { className, type = "dark", useBackground = true } = props;
 	// const user = useSelector((state) => state.user);
 	const user = UseUser();
 	// const { io, connected: socketConnected } = useSelector((state) => state.io);
-	const { isOpen, onOpen, onClose } = useDisclosure();
+	// const { isOpen, onOpen, onClose } = useDisclosure();
 	const [notifications, setNotifications] = useState<Notification>({
 		unread: [],
 		read: [],
 	});
-	const btnRef = useRef();
+	// const btnRef = useRef();
 	const [dialogIsVisible, setDialogIsVisible] = useState(false);
 
 	const fetchNotifications = async () => {

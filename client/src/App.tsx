@@ -10,7 +10,7 @@ const Index = lazy(() => import("./pages/Index"));
 const Success = lazy(() => import("./pages/Auth/Success"));
 const Register = lazy(() => import("./pages/Auth/Register"));
 const Login = lazy(() => import("./pages/Auth/Login"));
-const Test = lazy(() => import("./pages/Test"));
+// const Test = lazy(() => import("./pages/Test"));
 const Circle = lazy(() => import("./pages/Circle"));
 const Discover = lazy(() => import("./pages/Discover"));
 const CirclesDashboard = lazy(() => import("./pages/Dashboard/Circles"));
@@ -38,7 +38,7 @@ const App = () => {
 						<Route path="/profile/:id" element={<Profile />} />
 						<Route path="/project/:id" element={<Project />} />
 						<Route path="/circle/:id" element={<Circle />} />
-						<Route path="/test" element={<Test />} />
+						{/* <Route path="/test" element={<Test />} /> */}
 						<Route path="/error" element={<Error />} />
 						<Route path="/auth/success" element={<Success />} />
 						<Route
