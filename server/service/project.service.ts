@@ -29,7 +29,7 @@ export type BodyUserArgs = {
 		name?: string;
 		description?: string;
 		circleId?: string;
-		tags?: string;
+		tags?: string[];
 		github?: string;
 		liveLink?: string;
 		pictures?: string;
@@ -258,7 +258,7 @@ export const CreateProjectService = async ({
 		data: {
 			name,
 			description,
-			tags: tags ? tags.split("|") : undefined,
+			tags: tags && tags,
 			// circleId: circleId ? Number(circleId) : undefined,
 			createdById: createdBy ? createdBy : activeUser.id,
 			github: github ? github : undefined,
