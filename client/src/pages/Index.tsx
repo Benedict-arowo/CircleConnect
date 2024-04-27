@@ -16,6 +16,8 @@ type StateType = {
 	top_projects_err: undefined | string;
 	projects_err: undefined | string;
 	loading: boolean;
+	top_users: UserType[];
+	top_users_err: undefined | string;
 };
 
 const Index = () => {
@@ -27,6 +29,8 @@ const Index = () => {
 		top_projects_err: undefined,
 		projects_err: undefined,
 		loading: true,
+		top_users: [],
+		top_users_err: undefined,
 	});
 
 	// const [search, setSearch] = useState("");
@@ -110,6 +114,34 @@ const Index = () => {
 		});
 	};
 
+	const fetchTopUsers = async ({ limit = 5 }) => {
+		const { data, response } = await UseFetch({
+			url: `user?limit=${limit}&sortedBy=rating-asc`,
+			options: {
+				useServerUrl: true,
+				returnResponse: true,
+				method: "GET",
+			},
+		});
+
+		if (!response.ok)
+			setState((prevState) => {
+				return {
+					...prevState,
+					top_users_err: "Error trying to fetch top projects.",
+				};
+			});
+
+		setState((prevState) => {
+			return {
+				...prevState,
+				top_users: data.data,
+			};
+		});
+
+		console.log(data, response);
+	};
+
 	// const searchHandler = () => {
 	// 	if (!search) return;
 	// };
@@ -122,6 +154,9 @@ const Index = () => {
 			})
 			.then(() => {
 				fetchTopProjects({ limit: 5 });
+			})
+			.then(() => {
+				fetchTopUsers({ limit: 5 });
 			})
 			.finally(() =>
 				setState((prevState) => {
@@ -222,15 +257,7 @@ const Index = () => {
 							Top Users
 						</a>
 						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
-							<UserDisplay
-								users={[
-									{ first_name: "John Doe" },
-									{ first_name: "John Doe" },
-									{ first_name: "John Doe" },
-									{ first_name: "John Doe" },
-									{ first_name: "John Doe" },
-								]}
-							/>
+							<UserDisplay users={state.top_users} />
 						</section>
 					</section>
 				)}
