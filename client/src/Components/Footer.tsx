@@ -5,7 +5,7 @@ import X from "./Icons/X";
 
 const Footer = () => {
 	return (
-		<div className="flex flex-row items-center px-8 pb-4 gap-8 md:px-16 py-8 text-neutral-700 bg-[#9EB3C7]">
+		<div className="flex flex-row items-center mt-8 px-8 pb-4 gap-8 md:px-16 py-8 text-neutral-700 bg-[#9EB3C7]">
 			{/* LOGO */}
 			<Logo width={80} />
 			<section className="w-full">

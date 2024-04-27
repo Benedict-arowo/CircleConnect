@@ -462,7 +462,7 @@ const Circle = () => {
 								</button>
 							)}
 							<section className="flex flex-row justify-between items-center pt-4">
-								<h1 className="font-bold text-6xl text-blue-700">
+								<h1 className="cursor-default font-bold text-6xl text-blue-700">
 									Circle #{circle.id}
 								</h1>
 
@@ -543,50 +543,54 @@ const Circle = () => {
 								{circle.description}
 							</p>
 						</header>
-						<section className="mt-16 pr-0 px-4 md:px-16">
-							<div className="flex flex-row gap-2 items-center">
-								<a
-									className="font-bold mb-2 text-4xl text-neutral-700"
-									href="#members"
-									id="members"
-								>
-									Members
-								</a>
-							</div>
-							<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4 pr:0">
-								<DisplayMembers
-									members={[
-										circle.lead,
-										circle.colead,
-										...circle.members,
-									]}
-								/>
+						{circle.members.length > 0 && (
+							<section className="mt-16 pr-0 px-4 md:px-16">
+								<div className="flex flex-row gap-2 items-center">
+									<a
+										className="font-bold mb-2 text-4xl text-neutral-700"
+										href="#members"
+										id="members"
+									>
+										Members
+									</a>
+								</div>
+								<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4 pr:0">
+									<DisplayMembers
+										members={[
+											circle.lead,
+											circle.colead,
+											...circle.members,
+										]}
+									/>
+								</section>
 							</section>
-						</section>
+						)}
 
-						<section className="mt-16 pr-0 px-4 md:px-16">
-							<a
-								className="font-bold mb-2 text-4xl text-gray-800"
-								href="#projects"
-								id="projects"
-							>
-								Projects
-							</a>
-							<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
-								<ListProjects
-									showManageMenu={true}
-									projects={circle.projects.filter(
-										(project) =>
-											!project.pinned ? true : false
-									)}
-									setAlertState={setAlertState}
-									makeReq={makeReq}
-									fetchCircle={fetchCircle}
-									circle={circle}
-									onOpen={onOpen}
-								/>
+						{circle.projects.length > 0 && (
+							<section className="mt-16 pr-0 px-4 md:px-16">
+								<a
+									className="font-bold mb-2 text-4xl text-gray-800"
+									href="#projects"
+									id="projects"
+								>
+									Projects
+								</a>
+								<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
+									<ListProjects
+										showManageMenu={true}
+										projects={circle.projects.filter(
+											(project) =>
+												!project.pinned ? true : false
+										)}
+										setAlertState={setAlertState}
+										makeReq={makeReq}
+										fetchCircle={fetchCircle}
+										circle={circle}
+										onOpen={onOpen}
+									/>
+								</section>
 							</section>
-						</section>
+						)}
 
 						{/* Alert Dialog */}
 						{alertState.header && (
