@@ -185,8 +185,8 @@ const Nav = (props: Props) => {
 							type === "dark" ? "text-black" : "text-white"
 						}`}
 					>
-						<li className="cursor-pointer text-lg">
-							<NavLink
+						{/* <li className="cursor-pointer text-lg"> */}
+						{/* <NavLink
 								to="/discover"
 								style={({ isActive }) => {
 									return isActive ? activeStyles : {};
@@ -194,6 +194,28 @@ const Nav = (props: Props) => {
 								className="text-neutral-700 text-lg font-normal"
 							>
 								Discover
+							</NavLink> */}
+						{/* </li> */}
+						<li className="cursor-pointer text-lg">
+							<NavLink
+								to="/projects"
+								style={({ isActive }) => {
+									return isActive ? activeStyles : {};
+								}}
+								className="text-neutral-700 text-lg font-normal"
+							>
+								Projects
+							</NavLink>
+						</li>
+						<li>
+							<NavLink
+								to="/circles"
+								style={({ isActive }) => {
+									return isActive ? activeStyles : {};
+								}}
+								className="text-neutral-700 text-lg font-normal"
+							>
+								Circles
 							</NavLink>
 						</li>
 						{user.isLoggedIn && (

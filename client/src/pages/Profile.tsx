@@ -6,8 +6,9 @@ import { UseUser } from "../contexts/UserContext";
 import UseFetch from "../Components/Fetch";
 import { useEffect, useState } from "react";
 import ListProjects from "../Components/Circle Page/ListProjects";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { UserType } from "../types";
+import { FetchUsers } from "../Components/Fetch/Users";
 
 const Profile = () => {
 	const { id } = useParams();
@@ -16,9 +17,15 @@ const Profile = () => {
 		undefined
 	);
 	const [isLoading, setIsLoading] = useState(true);
+	const Navigate = useNavigate();
 
 	const fetchUserDetails = async () => {
 		setIsLoading(true);
+
+		if (!id && !user.info.id) {
+			Navigate("/404", { replace: true });
+		}
+
 		const { response, data } = await UseFetch({
 			url: `user/${id ? id : user.info.id}`,
 			options: {
@@ -91,7 +98,7 @@ const Profile = () => {
 									<span>@</span>
 									<a
 										className="font-medium text-blue-700 hover:underline"
-										href={`/circle/Circle${fectchedUser.leadOf.id}`}
+										href={`/circle/${fectchedUser.leadOf.id}`}
 									>
 										Circle#{fectchedUser.leadOf.id}
 									</a>
@@ -105,7 +112,7 @@ const Profile = () => {
 									<span>@</span>
 									<a
 										className="font-medium text-blue-700 hover:underline"
-										href={`/circle/Circle${fectchedUser.coleadOf.id}`}
+										href={`/circle/${fectchedUser.coleadOf.id}`}
 									>
 										Circle#{fectchedUser.coleadOf.id}
 									</a>
@@ -119,16 +126,19 @@ const Profile = () => {
 									<span>@</span>
 									<a
 										className="font-medium text-blue-700 hover:underline"
-										href={`/circle/Circle${fectchedUser.memberOf.id}`}
+										href={`/circle/${fectchedUser.memberOf.id}`}
 									>
 										Circle#{fectchedUser.memberOf.id}
 									</a>
 								</div>
 							)}
 
-							<button className="bg-transparent border border-blue-400 text-blue-700 px-6 py-2 rounded-md mt-2">
-								Edit
-							</button>
+							{user.info.id &&
+								user.info.id === fectchedUser.id && (
+									<button className="bg-transparent border border-blue-400 text-blue-700 px-6 py-2 rounded-md mt-2">
+										Edit
+									</button>
+								)}
 						</section>
 
 						<section className="mt-12 md:pr-0">
@@ -137,7 +147,10 @@ const Profile = () => {
 								href="#top_projects"
 								id="top_projects"
 							>
-								My Projects
+								{user.info.id &&
+								user.info.id === fectchedUser.id
+									? "My Projects"
+									: `${fectchedUser.first_name}'s Projects`}
 							</a>
 							{fectchedUser.projects && (
 								<section className="flex flex-row justify-evenly flex-wrap gap-4 h-fit pt-6 pb-7 px-4">

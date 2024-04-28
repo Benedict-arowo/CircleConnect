@@ -298,13 +298,6 @@ const Login = () => {
 								className="w-6 mb-8"
 							/>
 						</button>
-						{/* <button onClick={handleGithubAuth}>
-							<img
-								src={linkedinicon}
-								alt="github"
-								className="w-5 mb-8"
-							/>
-						</button> */}
 						{isLoading && <Spinner />}
 					</section>
 				</div>

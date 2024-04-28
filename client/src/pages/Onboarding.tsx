@@ -40,7 +40,7 @@ const Onboarding = () => {
 	return (
 		<div className="w-full min-h-screen">
 			{/* <Nav type="light" useBackground={false} className="" /> */}
-			<nav className=" px-8 flex-1 sm:flex hidden justify-between items-center my-4">
+			<nav className=" px-8 flex-1 sm:flex hidden justify-between items-center mt-4 mb-8">
 				<Logo />
 
 				<ul className="flex flex-row gap-6 font-light">
@@ -81,7 +81,7 @@ const Onboarding = () => {
 				<section className="w-full relative">
 					<div className="relative z-0 h-fit lg:h-[575px]">
 						<img
-							className="w-full h-full object-cover aspect-auto"
+							className="w-full h-full  object-cover aspect-auto"
 							src={banner}
 							alt="Hero Background"
 						/>

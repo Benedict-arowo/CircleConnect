@@ -1,4 +1,5 @@
 // export const SERVER_URL = "http://localhost:8000";
+// export const SERVER_URL = "http://192.168.0.167:8000";
 export const SERVER_URL = "https://circleconnect-backend.onrender.com";
 export const GOOGLE_AUTH_URL = `${SERVER_URL}/auth/google`;
 export const GITHUB_AUTH_URL = `${SERVER_URL}/auth/github`;
@@ -11,7 +12,7 @@ export const COLLABORATORS = [
 		description:
 			"Eager to collaborate & create successful digital products..",
 		github: "https://www.behance.net/chuksomeifeukwu",
-		image: "",
+		image: "https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 		linkedin: "https://www.linkedin.com/in/chuks-omeifeukwu-17938b272/",
 		twitter: "https://twitter.com/Fhatboy_UI",
 	},
@@ -21,7 +22,8 @@ export const COLLABORATORS = [
 		description:
 			"This project has a perfect mix of fun, learning, and challenge. . It's been a practical, hands-on way to grow my skills, making every day a chance to discover something new and exciting in the world of development.",
 		github: "https://github.com/holabayor",
-		image: "https://avatars.githubusercontent.com/u/39333226?s=400&u=5f98d25772d3675c0b5a894f4cdeedf66aaa6568&v=4",
+		// image: "https://avatars.githubusercontent.com/u/39333226?s=400&u=5f98d25772d3675c0b5a894f4cdeedf66aaa6568&v=4",
+		image: "https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 		linkedin: "https://linkedin.com/in/laoj",
 	},
 	{

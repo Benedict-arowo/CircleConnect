@@ -11,9 +11,17 @@ const Footer = () => {
 			<section className="w-full">
 				<div className="flex flex-row justify-between w-full items-center gap-3">
 					<ul className="flex flex-col md:flex-row gap-2 md:gap-10 text-xs md:text-base">
-						<li className="cursor-pointer">About</li>
-						<li className="cursor-pointer">Top Projects</li>
-						<li className="cursor-pointer">Collaborators</li>
+						<li className="cursor-pointer">
+							<a href="/onboarding#about">About</a>
+						</li>
+						<li className="cursor-pointer">
+							<a href="/onboarding#top_projects">Top Projects</a>
+						</li>
+						<li className="cursor-pointer">
+							<a href="/onboarding#collaborators">
+								Collaborators
+							</a>
+						</li>
 					</ul>
 					<div className="flex flex-col sm:gap-3 gap-1 sm:flex-row">
 						<X size={24} />
