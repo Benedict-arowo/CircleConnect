@@ -37,6 +37,10 @@ export const getUser = async (req: Req, res: Response) => {
 					id: true,
 					name: true,
 					circle: true,
+					tags: true,
+					description: true,
+					github: true,
+					liveLink: true,
 				},
 			},
 			role: {

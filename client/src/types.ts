@@ -1,3 +1,5 @@
+import { ProjectsType } from "./Components/types";
+
 export type Alert = {
 	status: null | "success" | "error";
 	description: string | null;
@@ -12,9 +14,15 @@ export type UserType = {
 	id: string;
 	profile_picture: string;
 	first_name: string;
+	last_name: string;
 	circles: CircleType[];
-	projects: string;
+	projects: ProjectsType[];
 	ratings: string;
+	track: string;
+	school: string;
+	leadOf: UserType;
+	memberOf: UserType;
+	coleadOf: UserType;
 };
 
 export type UserTypeClean = {

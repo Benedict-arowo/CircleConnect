@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import banner from "../assets/desola-lanre-ologun-IgUR1iX0mqM-unsplash.jpg";
 import Nav from "../Components/Nav";
 import UseFetch from "../Components/Fetch";
 import CirclesComponent from "../Components/circle_component";
 import ListProjects from "../Components/Circle Page/ListProjects";
 import { Spinner } from "@chakra-ui/react";
 import { CircleType, ProjectsType } from "../Components/types";
+import Hero from "../assets/Hero.png";
+import UserDisplay from "../Components/UserDisplay";
 
 type StateType = {
 	projects: ProjectsType[];
@@ -15,6 +16,8 @@ type StateType = {
 	top_projects_err: undefined | string;
 	projects_err: undefined | string;
 	loading: boolean;
+	top_users: UserType[];
+	top_users_err: undefined | string;
 };
 
 const Index = () => {
@@ -26,9 +29,11 @@ const Index = () => {
 		top_projects_err: undefined,
 		projects_err: undefined,
 		loading: true,
+		top_users: [],
+		top_users_err: undefined,
 	});
 
-	const [search, setSearch] = useState("");
+	// const [search, setSearch] = useState("");
 
 	const fetchTopCircles = async ({ limit = 5 }) => {
 		const { data, response } = await UseFetch({
@@ -109,9 +114,37 @@ const Index = () => {
 		});
 	};
 
-	const searchHandler = () => {
-		if (!search) return;
+	const fetchTopUsers = async ({ limit = 5 }) => {
+		const { data, response } = await UseFetch({
+			url: `user?limit=${limit}&sortedBy=rating-asc`,
+			options: {
+				useServerUrl: true,
+				returnResponse: true,
+				method: "GET",
+			},
+		});
+
+		if (!response.ok)
+			setState((prevState) => {
+				return {
+					...prevState,
+					top_users_err: "Error trying to fetch top projects.",
+				};
+			});
+
+		setState((prevState) => {
+			return {
+				...prevState,
+				top_users: data.data,
+			};
+		});
+
+		console.log(data, response);
 	};
+
+	// const searchHandler = () => {
+	// 	if (!search) return;
+	// };
 
 	useEffect(() => {
 		// State is initialized to loading by default, and once it makes all the fetch requests, it sents the loading state to false.
@@ -122,90 +155,29 @@ const Index = () => {
 			.then(() => {
 				fetchTopProjects({ limit: 5 });
 			})
+			.then(() => {
+				fetchTopUsers({ limit: 5 });
+			})
 			.finally(() =>
 				setState((prevState) => {
 					return {
 						...prevState,
 						loading: false,
 					};
-				}),
+				})
 			);
 	}, []);
 
 	return (
-		<main className="mb-4 relative">
-			<div className="w-full h-[450px] relative mb-24">
-				<Nav
-					type="light"
-					useBackground={false}
-					className="absolute z-20 left-0 right-0"
-				/>
-				<img
-					className="w-full h-full object-cover"
-					src={banner}
-					alt="Banner"
-				/>
-
-				<div className="top-0 left-0 right-0 bottom-0 absolute z-10 bg-opacity-70 bg-black">
-					{" "}
+		<main className="mb-20 relative">
+			<Nav type="light" useBackground={false} className="" />
+			<div className="relative sm:px-4 md:px-12 mt-6 mb-16">
+				<img className="w-screen h-[350px] object-cover" src={Hero} />
+				<div className="absolute inset-0 grid place-content-center overflow-hidden">
+					<p className="text-white text-5xl max-w-[85%] md:max-w-[80%] mx-auto font-bold md:text-7xl">
+						"Every project is an adventure, Enjoy the ride."
+					</p>
 				</div>
-				{/* HERO SECTION */}
-				<section className="absolute left-8 right-8 bottom-0 mb-28 z-10 flex flex-col items-center text-white">
-					<div className="w-full md:w-[700px] border border-white flex flex-row gap-0 items-center px-2 rounded-md">
-						<input
-							type="text"
-							name="q"
-							id="q"
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
-							placeholder="google clone"
-							className="py-2 w-full mx-auto outline-none bg-transparent font-light"
-						/>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							strokeWidth={1.5}
-							stroke="currentColor"
-							onClick={searchHandler}
-							className="w-6 h-6 cursor-pointer"
-						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-							/>
-						</svg>
-					</div>
-					<div className="flex flex-row gap-6">
-						<div className="font-light flex flex-row flex-wrap justify-center gap-2">
-							<span
-								className="cursor-pointer hover:underline"
-								onClick={() => setSearch("google clone")}
-							>
-								google clone
-							</span>
-							<span
-								className="cursor-pointer hover:underline"
-								onClick={() => setSearch("slack clone")}
-							>
-								slack clone
-							</span>
-							<span
-								className="cursor-pointer hover:underline"
-								onClick={() => setSearch("facebook clone")}
-							>
-								facebook clone
-							</span>
-							<span
-								className="cursor-pointer hover:underline"
-								onClick={() => setSearch("tiktok clone")}
-							>
-								tiktok clone
-							</span>
-						</div>
-					</div>
-				</section>
 			</div>
 
 			{state.top_circles_err && (
@@ -223,71 +195,8 @@ const Index = () => {
 					{state.projects_err}
 				</div>
 			)}
-			<section className="flex flex-col gap-20">
-				{/* <section className="px-16 hidden">
-					<a
-						className="font-light mb-2 text-3xl text-gray-800 "
-						href="#search_results"
-						id="search_results">
-						Search Results
-					</a>
 
-					<div className="px-4 flex flex-col gap-3 my-4">
-						<h3 className="font-light text-3xl text-gray-700">
-							Projects
-						</h3>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-						</section>
-					</div>
-					<div className="px-4 flex flex-col gap-3 my-4">
-						<h3 className="font-light text-3xl text-gray-700">
-							Users
-						</h3>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-						</section>
-					</div>
-					<div className="px-4 flex flex-col gap-3 my-4">
-						<h3 className="font-light text-3xl text-gray-700">
-							Circles
-						</h3>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-2 pb-7 px-8">
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-							<Project />
-						</section>
-					</div>
-				</section> */}
-
+			<section className="flex flex-col gap-10">
 				{state.loading && (
 					<div className="mx-auto">
 						<Spinner
@@ -301,15 +210,15 @@ const Index = () => {
 				)}
 
 				{!state.loading && state.projects.length > 0 && (
-					<section className="pl-4 md:pl-16">
+					<section className="sm:px-4 md:px-16 md:pr-0">
 						<a
-							className="font-light mb-2 text-3xl text-gray-800"
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
 							href="#recent_projects"
 							id="recent_projects"
 						>
 							Recent Projects
 						</a>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-4 pb-7 px-8">
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
 							<ListProjects
 								displayStars={false}
 								projects={state.projects}
@@ -320,15 +229,15 @@ const Index = () => {
 				)}
 
 				{!state.loading && state.top_projects.length > 0 && (
-					<section className="pl-4 md:pl-16">
+					<section className="sm:px-4 md:px-16 md:pr-0">
 						<a
-							className="font-light mb-2 text-3xl text-gray-800"
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
 							href="#featured_projects"
 							id="featured_projects"
 						>
 							Top Projects
 						</a>
-						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-4 pb-7 px-8">
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
 							<ListProjects
 								displayStars={true}
 								projects={state.top_projects}
@@ -339,17 +248,52 @@ const Index = () => {
 				)}
 
 				{!state.loading && state.top_circles.length > 0 && (
-					<section className="px-4 md:px-16">
+					<section className="sm:px-4 md:px-16 md:pr-0">
 						<a
-							className="font-light mb-2 text-3xl text-gray-800"
-							href="#circles"
-							id="circles"
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
+							href="#featured_projects"
+							id="featured_projects"
+						>
+							Top Users
+						</a>
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
+							<UserDisplay users={state.top_users} />
+						</section>
+					</section>
+				)}
+
+				{/* TODO: Use actual top circle data */}
+				{!state.loading && state.top_projects.length > 0 && (
+					<section className="sm:px-4 md:px-16 md:pr-0">
+						<a
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
+							href="#featured_projects"
+							id="featured_projects"
+						>
+							Top Circle Projects
+						</a>
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
+							<ListProjects
+								displayStars={true}
+								projects={state.top_projects}
+								showManageMenu={false}
+							/>
+						</section>
+					</section>
+				)}
+
+				{!state.loading && state.top_circles.length > 0 && (
+					<section className="sm:px-4 md:px-16 md:pr-0">
+						<a
+							className="font-bold text-3xl px-2 sm:px-0 md:text-5xl text-blue-700"
+							href="#featured_projects"
+							id="featured_projects"
 						>
 							Top Circles
 						</a>
-						<div className="flex flex-row gap-8 flex-wrap justify-center pt-4">
+						<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4">
 							<CirclesComponent circles={state.top_circles} />
-						</div>
+						</section>
 					</section>
 				)}
 			</section>

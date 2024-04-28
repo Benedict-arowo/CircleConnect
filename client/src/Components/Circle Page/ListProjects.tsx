@@ -1,22 +1,14 @@
-import StarRatings from "react-star-ratings";
 import { CircleType, ProjectsType } from "../types";
-import {
-	Popover,
-	PopoverTrigger,
-	PopoverContent,
-	PopoverHeader,
-	PopoverBody,
-	PopoverArrow,
-	PopoverCloseButton,
-} from "@chakra-ui/react";
-import { useSelector } from "react-redux";
 import { makeReq } from "../../pages/Circle";
-import { format } from "timeago.js";
+import RightArrow from "../Icons/RightArrow";
+import { UserTypeClean } from "../../types";
 
 type Props = {
 	displayStars?: boolean;
 	projects: ProjectsType[];
 	circle?: CircleType;
+	user?: UserTypeClean;
+	isOwner?: boolean;
 	showManageMenu?: boolean;
 	setAlertState?: React.Dispatch<
 		React.SetStateAction<{
@@ -39,16 +31,18 @@ type Props = {
 };
 
 const ListProjects = ({
-	displayStars = false,
+	// displayStars = false,
 	projects,
 	circle,
+	isOwner,
+	user,
 	showManageMenu = false,
 	setAlertState,
 	onOpen,
 	fetchCircle,
 	makeReq,
 }: Props) => {
-	const User = useSelector((state) => state.user);
+	// const User = useSelector((state) => state.user);
 
 	// Makes sure the user gives all needed parameters when showManageMenu is set to true.
 
@@ -65,42 +59,42 @@ const ListProjects = ({
 	)
 		throw new Error("Invalid arguments passed to ListProjects.");
 
-	return projects.map(
-		({
+	return projects.map((project) => {
+		const {
 			name,
 			tags,
 			description,
 			id,
+			github,
+			liveLink,
+			circle,
 			createdBy,
-			pinned,
-			rating,
-			createdAt,
-		}) => {
-			let averageRating = 0;
+		} = project;
 
-			// If displayStars is set to true, it calculates the average rating of each project.
-			if (displayStars) {
-				if (rating.length > 0) {
-					const totalRating = rating.reduce(
-						(accumulator, currentValue) =>
-							accumulator + currentValue.rating,
-						0,
-					);
-					averageRating = totalRating / rating.length;
-				} else averageRating = 0;
-			}
-
-			return (
-				<a href={`/project/${id}`} className="cursor-pointer">
-					<article
-						key={id}
-						className="w-[400px] relative h-fit border flex-shrink-0 border-gray-300 pt-4 pb-2 flex flex-col gap-4 px-4 snap-normal snap-center"
-					>
-						<h3 className="text-2xl text-center font-semibold cursor-pointer">
-							<a href={`/project/${id}`}>{name}</a>
+		return (
+			<article
+				key={id}
+				className="w-[350px] max-h-[520px] min-h-[500px] flex flex-col border flex-shrink-0 border-gray-300 pt-4 pb-2 px-4 snap-normal snap-center bg-[#B9D6F0] gap-3 rounded-md drop-shadow-sm relative"
+			>
+				<a className="w-full h-[250px]" href={`/project/${id}`}>
+					<img
+						src="https://images.unsplash.com/photo-1561210596-383464a42be3?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+						alt="Project Banner Picture"
+						className="object-cover h-full w-full rounded-md"
+					/>
+				</a>
+				<div className="flex-1 flex flex-col justify-between">
+					<div>
+						<h3 className="text-2xl font-bold cursor-pointer">
+							<a
+								className="text-blue-700 font-semibold"
+								href={`/project/${id}`}
+							>
+								{name}
+							</a>
 						</h3>
 
-						{showManageMenu &&
+						{/* {showManageMenu &&
 							User.isLoggedIn &&
 							(User.info.id === createdBy.id ||
 								circle.lead.id === User.info.id ||
@@ -258,10 +252,10 @@ const ListProjects = ({
 																							"Successfully deleted the project.",
 																						successFunc:
 																							fetchCircle,
-																					},
+																					}
 																				),
 																	};
-																},
+																}
 															);
 															onOpen();
 														}}
@@ -274,19 +268,44 @@ const ListProjects = ({
 										</PopoverBody>
 									</PopoverContent>
 								</Popover>
-							)}
+							)} */}
 
-						<p className="text-center font-light min-h-[160px] cursor-pointer">
+						<p className="text-left font-normal cursor-pointer mt-1 line-clamp-3 text-neutral-800 text-sm">
 							{description}
 						</p>
 
+						<section className="mt-1">
+							<div className="flex flex-row gap-1">
+								<h4 className="font-medium">Owner (s):</h4>
+								{circle && (
+									<a href={`/circle/${circle.id}`}>
+										Circle {circle.id}
+									</a>
+								)}
+								{!circle && (
+									<a href={`/user/${id}`}>
+										{isOwner && user
+											? user.first_name
+											: createdBy.first_name}{" "}
+										{isOwner && user
+											? user.last_name
+											: createdBy.last_name}
+									</a>
+								)}
+							</div>
+							<div className="flex flex-row gap-1">
+								<h4 className="font-medium">Track:</h4>
+								<p>Frontend (Fall Session)</p>
+							</div>
+						</section>
+
 						{tags.length > 0 && (
-							<div className="flex flex-row flex-wrap w-full gap-2 justify-center">
+							<div className="flex flex-row flex-wrap w-full gap-2 justify-center mt-1">
 								{tags.slice(0, 3).map((tag: string) => {
 									return (
 										<span
 											key={tag}
-											className="bg-red-500 uppercase text-white px-2 py-1 text-sm font-light cursor-pointer rounded-sm"
+											className="bg-white uppercase text-neutral-700 px-2 py-1 text-sm font-light cursor-pointer rounded-md"
 										>
 											{tag}
 										</span>
@@ -294,33 +313,36 @@ const ListProjects = ({
 								})}
 							</div>
 						)}
+					</div>
+				</div>
 
-						{displayStars && (
-							<div className="mx-auto">
-								<StarRatings
-									rating={averageRating}
-									starRatedColor="red"
-									numberOfStars={5}
-									name="rating"
-									starDimension="16px"
-									starSpacing="15px"
-								/>
-							</div>
-						)}
-
-						<footer className="flex flex-row justify-between">
-							<span className="font-light text-sm text-gray-500 cursor-default">
-								{format(createdAt)}
-							</span>
-							<a href="" className="text-red-500 hover:underline">
-								@{createdBy.first_name}
+				<div className="flex flex-row gap-2">
+					{liveLink && (
+						<button className="bg-blue-700 text-white px-4 py-1 rounded-md hover:scale-95 transition-all duration-300">
+							<a
+								className="flex flex-row h-fit gap-1"
+								href={liveLink}
+							>
+								Live Link
+								<RightArrow />
 							</a>
-						</footer>
-					</article>
-				</a>
-			);
-		},
-	);
+						</button>
+					)}
+					{github && (
+						<button className="text-blue-700 border border-blue-500 px-2 py-1 h-fit rounded-md text-md  hover:scale-95 transition-all duration-300">
+							<a
+								className="flex flex-row items-center gap-1"
+								href={github}
+							>
+								Github Repo
+								<RightArrow />
+							</a>
+						</button>
+					)}
+				</div>
+			</article>
+		);
+	});
 };
 
 export default ListProjects;
