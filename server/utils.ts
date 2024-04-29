@@ -45,9 +45,6 @@ export const UserSelectMinimized = {
 	},
 	track: true,
 	school: true,
-	coleadOf: true,
-	leadOf: true,
-	memberOf: true,
 	joined: true,
 	createdAt: true,
 };

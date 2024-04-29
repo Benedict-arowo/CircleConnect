@@ -19,7 +19,6 @@ const jwt = require("jsonwebtoken");
 
 export const loginJWT = async (req: Req, res: Response) => {
 	const { email, password } = req.body;
-
 	if (!email || !password) {
 		throw new CustomError(
 			"Email, and password must be provided.",
@@ -84,9 +83,9 @@ export const loginJWT = async (req: Req, res: Response) => {
 				.cookie("jwtToken", token, {
 					maxAge: JWT_ACCESS_TOKEN_EXPIRY,
 					httpOnly: true,
-					secure: true,
+					secure: false,
 					path: "/",
-					sameSite: "lax",
+					sameSite: "strict",
 				})
 				.status(StatusCodes.OK)
 				.json({
