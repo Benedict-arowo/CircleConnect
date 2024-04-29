@@ -12,6 +12,7 @@ type CirclesServiceArgs = {
 	query: {
 		limit?: string;
 		sortedBy?: string;
+		page?: string;
 	};
 };
 
@@ -73,7 +74,7 @@ export const calAverageRating = async (id: number) => {
 };
 
 export const CirclesService = async ({ query }: CirclesServiceArgs) => {
-	const { limit = "10", sortedBy } = query;
+	const { limit = "10", sortedBy, page = "1" } = query;
 	const sortedByValues = ["num-asc", "num-desc", "rating-asc", "rating-desc"];
 	const maxLimit = 25;
 	const minLimit = 1;
@@ -148,6 +149,7 @@ export const CirclesService = async ({ query }: CirclesServiceArgs) => {
 			createdAt: true,
 		},
 		take: limit ? parseInt(limit) : undefined,
+		skip: (parseInt(page) - 1) * parseInt(limit),
 	});
 
 	return Circles;

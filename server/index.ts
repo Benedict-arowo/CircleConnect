@@ -41,6 +41,7 @@ const makeApp = (
 				origin: [
 					"https://circle-connect-ruddy.vercel.app",
 					"http://localhost:5173",
+					"http://192.168.0.167:5173",
 				],
 				credentials: true,
 			},

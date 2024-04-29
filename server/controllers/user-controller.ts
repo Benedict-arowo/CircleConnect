@@ -51,7 +51,12 @@ export const getUser = async (req: Req, res: Response) => {
 			},
 			track: true,
 			school: true,
-
+			circle: {
+				select: {
+					circle: true,
+					role: true,
+				},
+			},
 			joined: true,
 			createdAt: true,
 			projectRatings: true,
