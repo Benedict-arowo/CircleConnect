@@ -92,7 +92,7 @@ export const removeCircleRequest = async (req: Req, res: Response) => {
 			StatusCodes.BAD_REQUEST
 		);
 
-	if (!userRole.canLeaveCircle)
+	if (!userRole.isAdmin && !userRole.canLeaveCircle)
 		throw new CustomError(
 			"You do not have permission to perform this action.",
 			StatusCodes.BAD_REQUEST
