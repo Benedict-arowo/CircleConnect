@@ -1,13 +1,11 @@
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
 import prisma from "../model/db";
 import {
 	UserSelectClean,
-	UserSelectFull,
 	UserSelectMinimized,
 	minimumCircleDescriptionLength,
 } from "../utils";
-import { Prisma } from "@prisma/client";
 import { User } from "../types";
 
 type CirclesServiceArgs = {
@@ -22,6 +20,7 @@ type CreateCircleArgs = {
 		circle_num?: number;
 		description?: string;
 	};
+	user: User;
 };
 
 type CircleRequestServiceArgs = {
@@ -198,9 +197,16 @@ export const getCircleService = async (id: string) => {
 	return Circle;
 };
 
-export const CreateCircleService = async ({ body }: CreateCircleArgs) => {
+export const CreateCircleService = async ({ body, user }: CreateCircleArgs) => {
 	const { circle_num: num, description } = body;
 	// TODO: Option for adding circle lead, co-lead, and members when creating circle.
+
+	// Either the user role has the permission to create a circle or the user's role has isAdmin permission.
+	if (!(user.role.canCreateCircle || user.role.isAdmin))
+		throw new CustomError(
+			"You do not have permission to create circles.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	if (!description)
 		throw new CustomError(
@@ -263,6 +269,12 @@ export const RequestToJoinCircleService = async ({
 	user,
 }: CircleRequestServiceArgs) => {
 	const { id: userId, role: userRole } = user;
+
+	if (!(userRole.canJoinCircle || userRole.isAdmin))
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	const circle = await prisma.circle.findUnique({
 		where: {
@@ -356,7 +368,13 @@ export const RemoveCircleRequestService = async ({
 	circleId,
 	user,
 }: CircleRequestServiceArgs) => {
-	const { id: userId } = user;
+	const { id: userId, role: userRole } = user;
+
+	if (!userRole.isAdmin && !userRole.canLeaveCircle)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.BAD_REQUEST
+		);
 
 	const circle = await prisma.circle.findUnique({
 		where: {
@@ -432,6 +450,15 @@ export const LeaveCircleService = async ({
 	circleId,
 	user,
 }: CircleRequestServiceArgs) => {
+	const { role: userRole } = user;
+
+	// User must have permission to leave a circle, or be an admin to be able to leave circle.
+	if (!(userRole.canLeaveCircle || userRole.isAdmin))
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
+
 	const circle = await prisma.circle.findUnique({
 		where: {
 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
@@ -534,6 +561,19 @@ export const EditCircleService = async ({
 		role: "LEADER" | "COLEADER" | "MEMBER" | "PENDING";
 	}[] = [];
 	const notificationList = [];
+	const { role: userRole } = user;
+
+	if (
+		!(
+			userRole.canModifyOwnCircle ||
+			userRole.canModifyOtherCircle ||
+			userRole.isAdmin
+		)
+	)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	const circle = await prisma.circle.findUnique({
 		where: {
@@ -860,6 +900,20 @@ export const DeleteCircleService = async ({
 	circleId,
 	user,
 }: CircleRequestServiceArgs) => {
+	const { role: userRole } = user;
+
+	if (
+		!(
+			userRole.canDeleteOwnCircle ||
+			userRole.canDeleteOtherCircles ||
+			userRole.isAdmin
+		)
+	)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
+
 	const circle = await prisma.circle.findUnique({
 		where: {
 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
