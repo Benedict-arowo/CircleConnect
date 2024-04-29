@@ -15,7 +15,13 @@ export type UserType = {
 	profile_picture: string;
 	first_name: string;
 	last_name: string;
-	circles: CircleType[];
+	circle: {
+		role: "LEADER" | "COLEADER" | "MEMBER" | "PENDING";
+		circle: {
+			id: string;
+			description: string;
+		};
+	};
 	projects: ProjectsType[];
 	ratings: string;
 	track: string;

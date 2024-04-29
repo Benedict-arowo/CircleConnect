@@ -11,32 +11,29 @@ const CirclesComponent = (props: Props) => {
 	const { circles } = props;
 	const Component = () =>
 		circles.map((circle) => {
-			const { id, description, members, lead, colead } = circle;
-			// TODO: Only show 5 members maximum
-			const MembersList = [lead, colead, ...members].slice(0, 5);
-			const Members = () =>
-				MembersList.map((member) => {
-					if (member) {
-						const profile_picture = member.profile_picture;
-						const first_name = member.first_name;
-						const last_name = member.last_name;
+			const { id, description, members } = circle;
 
-						return (
-							<Avatar
-								key={member.id}
-								image={profile_picture}
-								label={`${first_name[0]}${
-									last_name ? last_name[0] : ""
-								}`}
-								className="text-white bg-blue-900"
-								size="normal"
-								shape="circle"
-								title={`${first_name} ${
-									last_name ? last_name : ""
-								}`}
-							/>
-						);
-					}
+			const Members = () =>
+				members.slice(0, 5).map((member) => {
+					const profile_picture = member.user.profile_picture;
+					const first_name = member.user.first_name;
+					const last_name = member.user.last_name;
+
+					return (
+						<Avatar
+							key={member.user.id}
+							image={profile_picture}
+							label={`${first_name[0]}${
+								last_name ? last_name[0] : ""
+							}`}
+							className="text-white bg-blue-900"
+							size="normal"
+							shape="circle"
+							title={`${first_name} ${
+								last_name ? last_name : ""
+							}`}
+						/>
+					);
 				});
 
 			return (

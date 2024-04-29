@@ -138,8 +138,6 @@ const Index = () => {
 				top_users: data.data,
 			};
 		});
-
-		console.log(data, response);
 	};
 
 	// const searchHandler = () => {
