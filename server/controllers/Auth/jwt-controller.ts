@@ -35,6 +35,7 @@ export const loginJWT = async (req: Req, res: Response) => {
 			profile_picture: true,
 			role: true,
 			password: true,
+			circle: true,
 		},
 	});
 

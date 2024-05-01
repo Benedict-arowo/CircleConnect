@@ -31,6 +31,7 @@ passport.use(
 					where: { id },
 					include: {
 						role: true,
+						circle: true,
 					},
 				});
 
@@ -42,6 +43,6 @@ passport.use(
 			} catch (error) {
 				return done(error);
 			}
-		},
-	),
+		}
+	)
 );

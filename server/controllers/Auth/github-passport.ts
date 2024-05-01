@@ -16,6 +16,7 @@ passport.deserializeUser(async (id: string, done: Function) => {
 			where: { id },
 			include: {
 				role: true,
+				circle: true,
 			},
 		});
 		if (!user) {
