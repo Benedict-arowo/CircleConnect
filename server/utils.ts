@@ -56,6 +56,7 @@ export const UserSelectClean = {
 	first_name: true,
 	last_name: true,
 	role: true,
+	circle: true,
 };
 
 export const UserSelectFull = {

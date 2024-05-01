@@ -29,6 +29,32 @@ export type UserType = {
 	leadOf: UserType;
 	memberOf: UserType;
 	coleadOf: UserType;
+	role: {
+		id: string;
+		name: string;
+		canCreateCircle: boolean;
+		canModifyOwnCircle: boolean;
+		canModifyOtherCircle: boolean;
+		canDeleteOwnCircle: boolean;
+		canDeleteOtherCircles: boolean;
+		canLeaveCircle: boolean;
+		canJoinCircle: boolean;
+		canCreateProject: boolean;
+		canModifyOwnProject: boolean;
+		canModifyOtherProject: boolean;
+		canDeleteOwnProject: boolean;
+		canDeleteOtherProject: boolean;
+		canAddProjectToCircle: boolean;
+		canRemoveProjectFromCircle: boolean;
+		canAddUserToProject: boolean;
+		canManageRoles: boolean;
+		canManageUsers: boolean;
+		canCreateProjectReviews: boolean;
+		canModifyOwnProjectReviews: boolean;
+		canDeleteOwnProjectReviews: boolean;
+		canManageProjectReviews: boolean;
+		isAdmin: boolean;
+	};
 };
 
 export type UserTypeClean = {

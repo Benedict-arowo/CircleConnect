@@ -23,6 +23,9 @@ export type User = {
 	github_id: string;
 	emails: [{ value: string }];
 	role: Prisma.RoleCreateInput;
+	circle: {
+		circleId: string;
+	};
 	// role: {
 	// 	id: string;
 	// 	name: string;

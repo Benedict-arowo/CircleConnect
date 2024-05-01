@@ -5,6 +5,16 @@ export const GOOGLE_AUTH_URL = `${SERVER_URL}/auth/google`;
 export const GITHUB_AUTH_URL = `${SERVER_URL}/auth/github`;
 export const DEFAULT_MEMBER_ROLE_ID = "c53fc77e-cb8b-4c05-ae3f-3cdb0bd7fc60";
 
+export const GET_ROLE_COLOR = (role: "LEADER" | "COLEADER" | "MEMBER") => {
+	switch (role) {
+		case "LEADER":
+			return "bg-red-800";
+		case "COLEADER":
+			return "bg-blue-500";
+		case "MEMBER":
+			return "bg-gray-500";
+	}
+};
 export const COLLABORATORS = [
 	{
 		name: "Chuks Omeifeukwu",
