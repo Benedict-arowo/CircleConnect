@@ -219,7 +219,7 @@ const Circle = () => {
 							isMember: false,
 							isOwner: false,
 							isColead: false,
-							isRequesting: false,
+							isRequesting: true,
 							isVisitor: true,
 						};
 					});
@@ -414,8 +414,6 @@ const Circle = () => {
 		// UserProjects();
 		setIsLoading(() => false);
 	}, [id]);
-
-	// console.log(circle);
 	return (
 		<main>
 			<Nav className="" useBackground={false} />
@@ -441,53 +439,41 @@ const Circle = () => {
 									</h1>
 								</div>
 							</div>
-							{user.isLoggedIn && state.isVisitor && (
-								<button className="bg-blue-700 text-white font-light px-6 py-2 rounded-md w-fit self-end">
-									Join Circle
-								</button>
-							)}
-							<section className="flex flex-row justify-between items-center pt-4">
-								<h1 className="cursor-default font-bold text-6xl text-blue-700">
-									Circle #{circle.id}
-								</h1>
+							{!state.isMember &&
+								!state.isRequesting &&
+								user.info.role &&
+								user.info.role.canJoinCircle && (
+									<button
+										onClick={() =>
+											makeReq({
+												url: `circle/request/join/${circle.id}`,
+												method: "POST",
+												loadingMsg:
+													"Please wait while we try to join the circle.",
+												successMsg:
+													"Successfully requested to join the circle.",
+												successFunc: fetchCircle,
+											})
+										}
+										className="bg-blue-700 text-white font-light px-6 py-2 rounded-md w-fit self-end"
+									>
+										Join Circle
+									</button>
+								)}
 
-								{user.isLoggedIn && (
-									<div className="flex flex-row justify-end gap-3">
-										{state.isMember && !state.isOwner && (
-											<button
-												onClick={() => {
-													setAlertState(() => {
-														return {
-															body: "Are you sure you want to leave this circle? You can't undo this action afterwards.",
-															doneText:
-																"Leave Circle",
-															header: "Leave Circle",
-															doneFunc: () =>
-																makeReq({
-																	url: `circle/${circle.id}/leave`,
-																	method: "PATCH",
-																	loadingMsg:
-																		"Please wait while we try to leave the circle.",
-																	successMsg:
-																		"Successfully left circle.",
-																	successFunc:
-																		fetchCircle,
-																}),
-														};
-													});
-													onOpen();
-												}}
-												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1"
-											>
-												LEAVE CIRCLE
-											</button>
-										)}
-										{!state.isMember &&
-											!state.isRequesting && (
-												<button
-													onClick={() =>
+							{state.isRequesting &&
+								user.info.role &&
+								user.info.role.canLeaveCircle && (
+									<button
+										onClick={() => {
+											setAlertState(() => {
+												return {
+													body: "Are you sure you want you don't want to join this circle? You can't undo this action afterwards.",
+													doneText: "Cancel Request",
+													header: "Circle Request Cancellation",
+													doneFunc: () =>
 														makeReq({
-															url: `circle/request/join/${circle.id}`,
+															url: `circle/request/leave/${circle.id}`,
 															method: "POST",
 															loadingMsg:
 																"Please wait while we try to join the circle.",
@@ -495,34 +481,51 @@ const Circle = () => {
 																"Successfully requested to join the circle.",
 															successFunc:
 																fetchCircle,
-														})
-													}
-													className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1"
-												>
-													REQUEST TO JOIN
-												</button>
-											)}
-										{state.isRequesting && (
-											<button
-												onClick={() =>
-													makeReq({
-														url: `circle/request/leave/${circle.id}`,
-														method: "POST",
-														loadingMsg:
-															"Please wait while we try to leave the circle request.",
-														successMsg:
-															"Successfully left circle request.",
-														successFunc:
-															fetchCircle,
-													})
-												}
-												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1"
-											>
-												CANCEL JOIN REQUEST
-											</button>
-										)}
-									</div>
+														}),
+												};
+											});
+											onOpen();
+										}}
+										className="bg-blue-700 text-white font-light px-6 py-2 rounded-md w-fit self-end"
+									>
+										Cancel Join Request
+									</button>
 								)}
+
+							{state.isMember &&
+								user.info.role &&
+								user.info.role.canLeaveCircle && (
+									<button
+										onClick={() => {
+											setAlertState(() => {
+												return {
+													body: "Are you sure you want to leave this circle? You can't undo this action afterwards.",
+													doneText: "Leave Circle",
+													header: "Leave Circle",
+													doneFunc: () =>
+														makeReq({
+															url: `circle/${circle.id}/leave`,
+															method: "PATCH",
+															loadingMsg:
+																"Please wait while we try to remove you from the circle.",
+															successMsg:
+																"Successfully removed you from the circle.",
+															successFunc:
+																fetchCircle,
+														}),
+												};
+											});
+											onOpen();
+										}}
+										className="bg-slate-500 text-white font-light px-6 py-2 rounded-md w-fit self-end"
+									>
+										Leave Circle
+									</button>
+								)}
+							<section className="flex flex-row justify-between items-center pt-4">
+								<h1 className="cursor-default font-bold text-6xl text-blue-700">
+									Circle #{circle.id}
+								</h1>
 							</section>
 							<p className="lg:max-w-[95%]">
 								{circle.description}
@@ -540,7 +543,12 @@ const Circle = () => {
 									</a>
 								</div>
 								<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4 pr:0">
-									<DisplayMembers members={circle.members} />
+									<DisplayMembers
+										members={circle.members.filter(
+											(member) =>
+												member.role !== "PENDING"
+										)}
+									/>
 								</section>
 							</section>
 						)}

@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { GetActiveUser } from "../Components/Fetch/ActiveUser";
 import { UseSetUser } from "../contexts/UserContext";
 import Loading from "../Components/Loading";
 
-const CheckAuth = ({ children }) => {
+import { ReactNode } from "react";
+
+const CheckAuth = ({ children }: { children: ReactNode }) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const setUser = UseSetUser();
 
@@ -18,6 +20,7 @@ const CheckAuth = ({ children }) => {
 						profile_picture: user.profile_picture,
 						email: user.email,
 						role: user.role,
+						circle: user.circle,
 					};
 
 					if (user) {

@@ -16,6 +16,7 @@ import linkedinicon from "../../assets/Group.png";
 import Twitter from "../../assets/akar-icons_x-fill.png";
 import googlelogo from "../../assets/Logo-google-icon-PNG.png";
 import LoginIllustration from "../../assets/Login Illustration 2.png";
+import { error } from "console";
 // import { UseSetUser } from "../../contexts/UserContext";
 // import { useDispatch } from "react-redux";
 // import { saveUser } from "./userSlice";
@@ -141,6 +142,7 @@ const Login = () => {
 
 			// Save user's credentials to session storage
 			// dispatch(loginUser(data.data));
+
 			SetUser({ mode: "LOGIN", data: data.data });
 			// setUser({
 			// 	mode: "LOGIN",
