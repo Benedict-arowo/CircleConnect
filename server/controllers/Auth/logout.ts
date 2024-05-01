@@ -1,6 +1,6 @@
 import { NextFunction, Response } from "express";
 import { Req } from "../../types";
-import CustomError from "../../middlewear/CustomError";
+import CustomError from "../../middlewares/CustomError";
 import { StatusCodes } from "http-status-codes";
 
 export default (req: Req, res: Response, next: NextFunction) => {

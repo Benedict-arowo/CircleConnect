@@ -1,3 +1,4 @@
+import CustomError from "./middlewares/CustomError";
 import { User } from "./types";
 
 const argon = require("argon2");
@@ -16,6 +17,14 @@ export const tokenGenerator = async (
 	expiresIn: string | number
 ) => {
 	return await jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+};
+
+export const verifyToken = async (token: string) => {
+	try {
+		return await jwt.verify(token, process.env.JWT_SECRET);
+	} catch (error) {
+		throw new CustomError("Invalid or expired token", 403);
+	}
 };
 
 export const hash = async (value: any) => {

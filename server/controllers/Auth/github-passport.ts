@@ -1,4 +1,4 @@
-import CustomError from "../../middlewear/CustomError";
+import CustomError from "../../middlewares/CustomError";
 import prisma from "../../model/db";
 import { User } from "../../types";
 import { DEFAULT_MEMBER_ROLE_ID } from "../../utils";

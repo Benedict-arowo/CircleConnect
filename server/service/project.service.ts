@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import prisma from "../model/db";
-import CustomError from "../middlewear/CustomError";
+import CustomError from "../middlewares/CustomError";
 import { UserSelectClean, UserSelectMinimized } from "../utils";
 import { User } from "../types";
 import { calAverageRating } from "./circle.service";

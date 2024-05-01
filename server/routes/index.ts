@@ -1,0 +1,43 @@
+import { Application } from "express";
+import authRouter from "./auth/auth-route";
+import githubRouter from "./auth/github-route";
+import googleRouter from "./auth/google-route";
+import jwtRouter from "./auth/jwt-route";
+import circleRouter from "./circle-route";
+import notificationRouter from "./notification-route";
+import projectReviewsRouter from "./project-reviews";
+import projectRouter from "./project-route";
+import roleRouter from "./roles-route";
+import userRouter from "./user-route";
+import auth from "./auth-route";
+
+// export const applyRoutes = (app: Application) => {
+// 	app.use("/auth/google", googleRouter);
+// 	app.use("/auth/github", githubRouter);
+
+// 	app.use("/auth/jwt", jwtRouter);
+// 	app.use("/", authRouter);
+// 	app.use("/auth", auth);
+// 	app.use("/role", roleRouter);
+// 	app.use("/user", userRouter);
+// 	app.use("/circle", circleRouter);
+// 	app.use("/project", projectRouter);
+// 	app.use("/reviews", projectReviewsRouter);
+// 	app.use("/notification", notificationRouter);
+// };
+
+// PROPOSED REVISED ROUTES
+
+export const applyRoutes = (app: Application) => {
+	app.use("/auth/google", googleRouter);
+	app.use("/auth/github", githubRouter);
+
+	app.use("/auth", auth);
+	app.use("/", authRouter);
+	app.use("/roles", roleRouter);
+	app.use("/users", userRouter);
+	app.use("/circles", circleRouter);
+	app.use("/projects", projectRouter);
+	app.use("/reviews", projectReviewsRouter);
+	app.use("/notifications", notificationRouter);
+};

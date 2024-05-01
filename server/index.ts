@@ -1,22 +1,14 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express, { Express } from "express";
 import morgan from "morgan";
-import ErrorHandler from "./middlewear/ErrorHandler";
-import authRouter from "./routes/Auth/auth-route";
-import googleRouter from "./routes/Auth/google-route";
-import githubRouter from "./routes/Auth/github-route";
-import jwtRouter from "./routes/Auth/jwt-route";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
-import dotenv from "dotenv";
-import circleRouter from "./routes/circle-route";
-import projectRouter from "./routes/project-route";
-import notificationRouter from "./routes/notification-route";
-import { Server, Socket } from "socket.io";
-import socketMiddleware from "./middlewear/Socket";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import roleRouter from "./routes/roles-route";
-import userRouter from "./routes/user-route";
-import projectReviewsRouter from "./routes/project-reviews";
+import { Server, Socket } from "socket.io";
+import ErrorHandler from "./middlewares/ErrorHandler";
+import socketMiddleware from "./middlewares/Socket";
+import { applyRoutes } from "./routes";
 const http = require("http");
 const cors = require("cors");
 const passport = require("passport");
@@ -26,8 +18,6 @@ const pgSession = require("connect-pg-simple")(session);
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const { instrument } = require("@socket.io/admin-ui");
-
-dotenv.config();
 
 const makeApp = (
 	database: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>
@@ -134,17 +124,9 @@ const makeApp = (
 		swaggerUi.serve,
 		swaggerUi.setup(specs, { explorer: true })
 	);
-	app.use("/auth/google", googleRouter);
-	app.use("/auth/github", githubRouter);
 
-	app.use("/auth/jwt", jwtRouter);
-	app.use("/", authRouter);
-	app.use("/role", roleRouter);
-	app.use("/user", userRouter);
-	app.use("/circle", circleRouter);
-	app.use("/project", projectRouter);
-	app.use("/reviews", projectReviewsRouter);
-	app.use("/notification", notificationRouter);
+	// Use the applyRoute function to attach all the routes to the application
+	applyRoutes(app);
 
 	app.use(ErrorHandler);
 

@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { Req } from "../types";
 import { StatusCodes } from "http-status-codes";
-import CustomError from "../middlewear/CustomError";
+import CustomError from "../middlewares/CustomError";
 import {
 	CirclesService,
 	CreateCircleService,
