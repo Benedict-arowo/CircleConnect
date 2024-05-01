@@ -186,28 +186,31 @@ const Nav = (props: Props) => {
 								Discover
 							</NavLink> */}
 						{/* </li> */}
-						<li className="cursor-pointer text-lg">
-							<NavLink
-								to="/projects"
-								style={({ isActive }) => {
-									return isActive ? activeStyles : {};
-								}}
-								className="text-neutral-700 text-lg font-normal"
-							>
-								Projects
-							</NavLink>
-						</li>
+
 						<li>
 							<NavLink
-								to="/circles"
+								to="/discover"
 								style={({ isActive }) => {
 									return isActive ? activeStyles : {};
 								}}
 								className="text-neutral-700 text-lg font-normal"
 							>
-								Circles
+								Discover
 							</NavLink>
 						</li>
+						{user.isLoggedIn && user.info.circle && (
+							<li>
+								<NavLink
+									to={`/circle/${user.info.circle.circleId}`}
+									style={({ isActive }) => {
+										return isActive ? activeStyles : {};
+									}}
+									className="text-neutral-700 text-lg font-normal"
+								>
+									My Circle
+								</NavLink>
+							</li>
+						)}
 						{user.isLoggedIn && (
 							<li className="cursor-pointer text-lg">
 								<NavLink

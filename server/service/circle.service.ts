@@ -272,6 +272,12 @@ export const RequestToJoinCircleService = async ({
 }: CircleRequestServiceArgs) => {
 	const { id: userId, role: userRole } = user;
 
+	if (user.circle)
+		throw new CustomError(
+			"You're already a member of a circle, leave the circle before trying to join another circle.",
+			StatusCodes.BAD_REQUEST
+		);
+
 	if (!(userRole.canJoinCircle || userRole.isAdmin))
 		throw new CustomError(
 			"You do not have permission to perform this action.",

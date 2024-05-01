@@ -201,37 +201,36 @@ export const CreateProjectService = async ({
 			StatusCodes.BAD_REQUEST
 		);
 
-	// // Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
-	// if (circleId) {
-	// 	const circle = await prisma.circle.findUnique({
-	// 		where: {
-	// 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
-	// 		},
-	// 		select: {
-	// 			members: true,
-	// 			colead: true,
-	// 			lead: true,
-	// 		},
-	// 	});
+	// Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
+	if (circleId) {
+		const circle = await prisma.circle.findUnique({
+			where: {
+				id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+			},
+			select: {
+				members: {
+					select: {
+						role: true,
+						user: {
+							select: UserSelectMinimized,
+						},
+					},
+				},
+			},
+		});
 
-	// 	if (!circle)
-	// 		throw new CustomError(
-	// 			"Invalid circle provided.",
-	// 			StatusCodes.BAD_REQUEST
-	// 		);
+		if (!circle)
+			throw new CustomError(
+				"Invalid circle provided.",
+				StatusCodes.BAD_REQUEST
+			);
 
-	// 	if (
-	// 		!(
-	// 			(circle.colead && circle.colead.id === req.user.id) ||
-	// 			(circle.lead && circle.lead.id === req.user.id) ||
-	// 			circle.members.find((member) => member.id === req.user.id)
-	// 		)
-	// 	)
-	// 		throw new CustomError(
-	// 			"You're not a member of the circle provided.",
-	// 			StatusCodes.BAD_REQUEST
-	// 		);
-	// }
+		if (!circle.members.find((member) => member.user.id === activeUser.id))
+			throw new CustomError(
+				"You're not a member of the circle provided.",
+				StatusCodes.BAD_REQUEST
+			);
+	}
 
 	if (createdBy) {
 		// Permission checking, admin or can add use to project permission only
@@ -259,7 +258,7 @@ export const CreateProjectService = async ({
 			name,
 			description,
 			tags: tags && tags,
-			// circleId: circleId ? Number(circleId) : undefined,
+			circleId: circleId ? Number(circleId) : undefined,
 			createdById: createdBy ? createdBy : activeUser.id,
 			github: github ? github : undefined,
 			liveLink: liveLink ? liveLink : undefined,
