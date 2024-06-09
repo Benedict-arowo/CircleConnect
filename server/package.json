@@ -6,11 +6,12 @@
 	"scripts": {
 		"test": "jest --watchAll",
 		"test-w-coverage": "jest --watchAll --collectCoverage",
-		"build": "npx tsc",
+		"build": "npm install && prisma migrate deploy && prisma generate && tsc",
 		"start": "node dist/server.js",
 		"dev": "nodemon --exec ts-node server.ts"
 	},
 	"prisma": {
+		"schema": "./prisma/schema.prisma",
 		"seed": "ts-node prisma/seed.ts"
 	},
 	"author": "",
