@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import CustomError from "../middlewear/CustomError";
+import CustomError from "../middlewares/CustomError";
 import prisma from "../model/db";
 import {
 	UserSelectClean,
@@ -237,8 +237,8 @@ export const CreateCircleService = async ({ body, user }: CreateCircleArgs) => {
 	try {
 		const Circle = await prisma.circle.create({
 			data: {
-				description: description,
-				id: Number(num),
+				description: description as string,
+				id: Number(circle_num),
 				// TODO: ability to add a lead, co lead when creating the user
 			},
 		});

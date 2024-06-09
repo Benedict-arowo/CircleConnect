@@ -5,8 +5,9 @@ import {
 	getRole,
 	getRoles,
 } from "../controllers/roles-controller";
-import isLoggedIn from "../middlewear/isLoggedIn";
-import wrapper from "../middlewear/wrapper";
+import isLoggedIn from "../middlewares/isLoggedIn";
+import { idSchema, validateParams } from "../middlewares/validators";
+import wrapper from "../middlewares/wrapper";
 
 const express = require("express");
 const roleRouter = express.Router();
@@ -18,8 +19,8 @@ roleRouter
 
 roleRouter
 	.route("/:id")
-	.get(wrapper(getRole))
-	.patch(isLoggedIn, wrapper(editRole))
-	.delete(isLoggedIn, wrapper(deleteRole));
+	.get(validateParams(idSchema), wrapper(getRole))
+	.patch(isLoggedIn, validateParams(idSchema), wrapper(editRole))
+	.delete(isLoggedIn, validateParams(idSchema), wrapper(deleteRole));
 
 export default roleRouter;
