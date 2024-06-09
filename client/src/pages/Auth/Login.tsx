@@ -191,7 +191,7 @@ const Login = () => {
 					</button>
 				</section>
 
-				<div className="rounded-[48px] bg-[#B9D6F0] w-full shadow-t-3xl">
+				<div className="rounded-[48px] bg-[#B9D6F0] w-full pb-6 shadow-t-3xl">
 					<form
 						onSubmit={SubmitForm}
 						className="flex flex-col gap-4 items-center pt-6 px-8"
@@ -271,7 +271,7 @@ const Login = () => {
 							</p>
 						</div>
 					</form>
-					<section className="flex items-center justify-center text-neutral-950 font-light mt-3">
+					{/* <section className="flex items-center justify-center text-neutral-950 font-light mt-3">
 						<p>Or Sign In with</p>
 					</section>
 					<section
@@ -286,13 +286,7 @@ const Login = () => {
 							/>
 						</button>
 
-						{/* <button onClick={handleGithubAuth}>
-							<img
-								src={Twitter}
-								alt="github"
-								className="w-5 mb-8"
-							/>
-						</button> */}
+						
 						<button onClick={handleGithubAuth}>
 							<img
 								src={githubicon}
@@ -301,7 +295,7 @@ const Login = () => {
 							/>
 						</button>
 						{isLoading && <Spinner />}
-					</section>
+					</section> */}
 				</div>
 			</div>
 		</main>
