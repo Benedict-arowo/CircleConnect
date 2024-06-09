@@ -1,13 +1,14 @@
 import { createContext, useContext } from "react";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
+import { SERVER_URL } from "../../config";
 
 const SocketContextProvider = createContext({});
 export const UseSocketContext = () => useContext(SocketContextProvider);
 
 const SocketContext = ({ children }) => {
 	// TODO: change url to a variable
-	const socket = io("http://localhost:8000", {
+	const socket = io(SERVER_URL, {
 		reconnectionDelay: 1000,
 		reconnection: true,
 		reconnectionAttempts: 10,

@@ -1,16 +1,36 @@
 import { ReactNode, createContext, useContext, useState } from "react";
+import { UserType } from "../types";
 
 const defaultValue = {
 	isLoggedIn: false,
 	connected: false,
 	info: {
-		id: null,
-		first_name: null,
-		last_name: null,
-		profile_picture: null,
-		email: null,
-		role: null,
+		id: undefined,
+		first_name: undefined,
+		last_name: undefined,
+		profile_picture: undefined,
+		email: undefined,
+		role: undefined,
+		circle: {
+			circleId: undefined,
+			role: undefined,
+			userId: undefined,
+		},
 	},
+};
+
+type defaultValueType = {
+	isLoggedIn: boolean;
+	connected: boolean;
+	info?: {
+		id?: string;
+		first_name?: string;
+		last_name?: string;
+		profile_picture?: string;
+		email?: string;
+		role?: UserType["role"];
+		circle?: { circleId: number; role: string; userId: string };
+	};
 };
 
 const UserContextProvider = createContext(defaultValue);
@@ -31,31 +51,24 @@ type updateUserProps = {
 		last_name: string;
 		profile_picture: string;
 		email: string;
-		role: null;
+		role: UserType["role"];
+		circle?: {
+			circleId: number;
+			role: string;
+			userId: string;
+		};
 	};
 };
 
 const UserContext = ({ children }: UserProviderProps) => {
-	const [user, setUser] = useState(defaultValue);
+	const [user, setUser] = useState<defaultValueType>(defaultValue);
 
 	const updateUser = (props: updateUserProps) => {
 		if (props.mode === "LOGOUT") {
-			setUser(() => {
-				return {
-					isLoggedIn: false,
-					connected: false,
-					info: {
-						id: null,
-						first_name: null,
-						last_name: null,
-						profile_picture: null,
-						email: null,
-						role: null,
-					},
-				};
-			});
+			setUser(() => defaultValue);
 		} else if (props.mode === "LOGIN") {
 			// TODO io_connection....
+
 			setUser(() => {
 				return {
 					isLoggedIn: true,
@@ -67,6 +80,7 @@ const UserContext = ({ children }: UserProviderProps) => {
 						profile_picture: props.data?.profile_picture,
 						email: props.data?.email,
 						role: props.data?.role,
+						circle: props.data?.circle,
 					},
 				};
 			});

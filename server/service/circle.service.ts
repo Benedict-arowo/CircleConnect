@@ -1,19 +1,18 @@
-import { ReasonPhrases, StatusCodes } from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import CustomError from "../middlewear/CustomError";
 import prisma from "../model/db";
 import {
 	UserSelectClean,
-	UserSelectFull,
 	UserSelectMinimized,
 	minimumCircleDescriptionLength,
 } from "../utils";
-import { Prisma } from "@prisma/client";
 import { User } from "../types";
 
 type CirclesServiceArgs = {
 	query: {
 		limit?: string;
 		sortedBy?: string;
+		page?: string;
 	};
 };
 
@@ -22,6 +21,7 @@ type CreateCircleArgs = {
 		circle_num?: number;
 		description?: string;
 	};
+	user: User;
 };
 
 type CircleRequestServiceArgs = {
@@ -74,7 +74,7 @@ export const calAverageRating = async (id: number) => {
 };
 
 export const CirclesService = async ({ query }: CirclesServiceArgs) => {
-	const { limit = "10", sortedBy } = query;
+	const { limit = "10", sortedBy, page = "1" } = query;
 	const sortedByValues = ["num-asc", "num-desc", "rating-asc", "rating-desc"];
 	const maxLimit = 25;
 	const minLimit = 1;
@@ -118,16 +118,12 @@ export const CirclesService = async ({ query }: CirclesServiceArgs) => {
 			description: true,
 			rating: true,
 			members: {
-				select: UserSelectMinimized,
-				orderBy: {
-					first_name: "desc",
+				select: {
+					role: true,
+					user: {
+						select: UserSelectMinimized,
+					},
 				},
-			},
-			lead: {
-				select: UserSelectMinimized,
-			},
-			colead: {
-				select: UserSelectMinimized,
 			},
 			projects: {
 				// TODO: Simplify this code to avoid repetition.
@@ -153,6 +149,7 @@ export const CirclesService = async ({ query }: CirclesServiceArgs) => {
 			createdAt: true,
 		},
 		take: limit ? parseInt(limit) : undefined,
+		skip: (parseInt(page) - 1) * parseInt(limit),
 	});
 
 	return Circles;
@@ -167,25 +164,11 @@ export const getCircleService = async (id: string) => {
 			id: true,
 			description: true,
 			members: {
-				select: UserSelectFull,
-				orderBy: {
-					first_name: "desc",
-				},
-			},
-			lead: {
-				select: UserSelectFull,
-			},
-			colead: {
-				select: UserSelectFull,
-			},
-			requests: {
 				select: {
-					id: true,
-					first_name: true,
-					last_name: true,
-					profile_picture: true,
-					projects: true,
-					email: true,
+					role: true,
+					user: {
+						select: UserSelectMinimized,
+					},
 				},
 			},
 			rating: true,
@@ -216,9 +199,16 @@ export const getCircleService = async (id: string) => {
 	return Circle;
 };
 
-export const CreateCircleService = async ({ body }: CreateCircleArgs) => {
+export const CreateCircleService = async ({ body, user }: CreateCircleArgs) => {
 	const { circle_num: num, description } = body;
 	// TODO: Option for adding circle lead, co-lead, and members when creating circle.
+
+	// Either the user role has the permission to create a circle or the user's role has isAdmin permission.
+	if (!(user.role.canCreateCircle || user.role.isAdmin))
+		throw new CustomError(
+			"You do not have permission to create circles.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	if (!description)
 		throw new CustomError(
@@ -280,7 +270,19 @@ export const RequestToJoinCircleService = async ({
 	circleId,
 	user,
 }: CircleRequestServiceArgs) => {
-	const { id: userId, first_name: userFirstName, role: userRole } = user;
+	const { id: userId, role: userRole } = user;
+
+	if (user.circle)
+		throw new CustomError(
+			"You're already a member of a circle, leave the circle before trying to join another circle.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	if (!(userRole.canJoinCircle || userRole.isAdmin))
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	const circle = await prisma.circle.findUnique({
 		where: {
@@ -288,19 +290,15 @@ export const RequestToJoinCircleService = async ({
 		},
 		select: {
 			members: {
-				select: UserSelectMinimized,
-				orderBy: {
-					first_name: "desc",
+				select: {
+					role: true,
+					user: {
+						select: {
+							id: true,
+							role: true,
+						},
+					},
 				},
-			},
-			lead: {
-				select: UserSelectMinimized,
-			},
-			colead: {
-				select: UserSelectMinimized,
-			},
-			requests: {
-				select: UserSelectMinimized,
 			},
 		},
 	});
@@ -308,65 +306,62 @@ export const RequestToJoinCircleService = async ({
 	if (!circle)
 		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
 
-	if (
-		(circle.lead && userId === circle.lead.id) ||
-		(circle.colead && userId === circle.colead.id)
-	)
-		throw new CustomError(
-			"You're already a member of this circle.",
-			StatusCodes.BAD_REQUEST
-		);
+	const userExists = circle.members.find(
+		(member) => member.user.id === userId
+	);
 
 	// Checks if the user trying to join the circle is already a member of the circle.
-	let memberExists = circle.members.some((member) => {
-		return member.id === userId;
-	});
-
-	if (memberExists) {
-		throw new CustomError(
-			"You're already a member of this circle.",
-			StatusCodes.BAD_REQUEST
-		);
-	}
-
 	// Checks if the user trying to join the circle is already in the circle request list(list of user's who are trying to join the circle).
-	let alreadyInRequestList = circle.requests.some((member) => {
-		return member.id === userId;
-	});
-
-	if (alreadyInRequestList) {
-		throw new CustomError(
-			"You're already in the request list of this circle.",
-			StatusCodes.BAD_REQUEST
-		);
+	if (userExists) {
+		if (userExists.role === "PENDING")
+			throw new CustomError(
+				"You're already in the request list of this circle.",
+				StatusCodes.BAD_REQUEST
+			);
+		else {
+			throw new CustomError(
+				"You're already a member of this circle.",
+				StatusCodes.BAD_REQUEST
+			);
+		}
 	}
 
-	const notifications = [];
+	const notifications: { content: string; userId: string; url: string }[] =
+		[];
 
-	if (circle.lead)
-		notifications.push({
-			content: `${userFirstName} has requested to join your circle.`,
-			userId: circle.lead.id,
-			url: "",
-		});
-
-	if (circle.colead)
-		notifications.push({
-			content: `${userFirstName} has requested to join your circle.`,
-			userId: circle.colead.id,
-			url: "",
-		});
+	circle.members.forEach((member) => {
+		if (member.role !== "PENDING") {
+			notifications.push({
+				content: `${
+					user.first_name + " " + user.last_name
+				} has requested to join your circle.`,
+				userId: member.user.id,
+				url: "",
+			});
+		}
+	});
 
 	const updatedCircle = await prisma.circle.update({
 		where: { id: Number(circleId) },
 		data: {
-			requests: {
-				connect: [{ id: userId }],
+			members: {
+				create: {
+					role: "PENDING",
+					userId,
+				},
 			},
 		},
 		include: {
-			requests: {
-				select: UserSelectMinimized,
+			members: {
+				select: {
+					role: true,
+					user: {
+						select: {
+							id: true,
+							role: true,
+						},
+					},
+				},
 			},
 		},
 	});
@@ -381,7 +376,13 @@ export const RemoveCircleRequestService = async ({
 	circleId,
 	user,
 }: CircleRequestServiceArgs) => {
-	const { id: userId } = user;
+	const { id: userId, role: userRole } = user;
+
+	if (!userRole.isAdmin && !userRole.canLeaveCircle)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.BAD_REQUEST
+		);
 
 	const circle = await prisma.circle.findUnique({
 		where: {
@@ -389,19 +390,15 @@ export const RemoveCircleRequestService = async ({
 		},
 		select: {
 			members: {
-				select: UserSelectMinimized,
-				orderBy: {
-					first_name: "desc",
+				select: {
+					role: true,
+					user: {
+						select: {
+							id: true,
+							role: true,
+						},
+					},
 				},
-			},
-			lead: {
-				select: UserSelectMinimized,
-			},
-			colead: {
-				select: UserSelectMinimized,
-			},
-			requests: {
-				select: UserSelectMinimized,
 			},
 		},
 	});
@@ -409,40 +406,47 @@ export const RemoveCircleRequestService = async ({
 	if (!circle)
 		throw new CustomError("Circle not found.", StatusCodes.NOT_FOUND);
 
-	// Checks if the user trying to leave the circle is a member of the circle.
-	let memberExists = circle.members.some((member) => {
-		return member.id === userId;
+	const userExists = circle.members.find((member) => {
+		return member.user.id === userId;
 	});
 
-	if (memberExists) {
-		throw new CustomError(
-			"You're already a member of this circle.",
-			StatusCodes.BAD_REQUEST
-		);
-	}
-
-	// Checks if the user trying to join the circle is in the circle request list(A list of user's trying to join the circle) of the circle.
-	let inCircleRequestList = circle.requests.some((member) => {
-		return member.id === userId;
-	});
-
-	if (!inCircleRequestList) {
+	if (!userExists)
 		throw new CustomError(
 			"User is not in circle request list.",
 			StatusCodes.BAD_REQUEST
 		);
-	}
+
+	if (userExists.role !== "PENDING")
+		throw new CustomError(
+			"User is already a member of the circle.",
+			StatusCodes.BAD_REQUEST
+		);
+
+	// Checks if the user trying to leave the circle is a member of the circle.
+
+	// Checks if the user trying to join the circle is in the circle request list(A list of user's trying to join the circle) of the circle.
 
 	const updatedCircle = await prisma.circle.update({
 		where: { id: Number(circleId) },
 		data: {
-			requests: {
-				disconnect: [{ id: userId }],
+			members: {
+				delete: {
+					userId,
+					circleId: parseInt(circleId),
+				},
 			},
 		},
 		include: {
-			requests: {
-				select: UserSelectMinimized,
+			members: {
+				select: {
+					role: true,
+					user: {
+						select: {
+							id: true,
+							role: true,
+						},
+					},
+				},
 			},
 		},
 	});
@@ -454,59 +458,44 @@ export const LeaveCircleService = async ({
 	circleId,
 	user,
 }: CircleRequestServiceArgs) => {
+	const { role: userRole } = user;
+
+	// User must have permission to leave a circle, or be an admin to be able to leave circle.
+	if (!(userRole.canLeaveCircle || userRole.isAdmin))
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
+
 	const circle = await prisma.circle.findUnique({
 		where: {
 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
 		},
 		select: {
 			members: {
-				select: UserSelectMinimized,
-				orderBy: {
-					first_name: "desc",
+				select: {
+					role: true,
+					user: {
+						select: {
+							id: true,
+							role: true,
+						},
+					},
 				},
-			},
-			lead: {
-				select: UserSelectMinimized,
-			},
-			colead: {
-				select: UserSelectMinimized,
-			},
-			requests: {
-				select: UserSelectMinimized,
 			},
 		},
 	});
 
-	const disconnectList:
-		| Prisma.UserWhereUniqueInput
-		| Prisma.UserWhereUniqueInput[] = [];
-	const coleadDisconnect: Prisma.UserWhereUniqueInput = { id: undefined };
-
 	if (!circle)
 		throw new CustomError("Circle not found.", StatusCodes.BAD_REQUEST);
 
-	if (!circle.lead)
-		throw new CustomError(
-			ReasonPhrases.INTERNAL_SERVER_ERROR,
-			StatusCodes.INTERNAL_SERVER_ERROR
-		);
+	const userDetails = circle.members.find(
+		(member) => member.user.id === user.id
+	);
 
-	// Make sure it's not the circle lead.
-	if (user.id === circle.lead.id)
+	if (!userDetails)
 		throw new CustomError(
-			"You may not leave this circle.",
-			StatusCodes.BAD_REQUEST
-		);
-
-	if (circle.colead && circle.colead.id === user.id) {
-		// Remove the user from co-lead
-		coleadDisconnect.id = user.id;
-	} else if (circle.members.find((member) => member.id === user.id)) {
-		// Remove the user from member list
-		disconnectList.push({ id: user.id });
-	} else
-		throw new CustomError(
-			"You are not a member of this circle.",
+			"User is not a member of this circle.",
 			StatusCodes.BAD_REQUEST
 		);
 
@@ -516,27 +505,25 @@ export const LeaveCircleService = async ({
 		},
 		data: {
 			members: {
-				disconnect:
-					disconnectList.length > 0 ? disconnectList : undefined,
-			},
-			colead: {
-				disconnect: coleadDisconnect.id ? coleadDisconnect : undefined,
+				delete: {
+					userId: user.id,
+					circleId: parseInt(circleId),
+				},
 			},
 		},
 		select: {
 			id: true,
 			description: true,
 			members: {
-				select: UserSelectMinimized,
-				orderBy: {
-					first_name: "desc",
+				select: {
+					role: true,
+					user: {
+						select: {
+							id: true,
+							role: true,
+						},
+					},
 				},
-			},
-			colead: {
-				select: UserSelectClean,
-			},
-			lead: {
-				select: UserSelectClean,
 			},
 			projects: {
 				select: {
@@ -555,28 +542,18 @@ export const LeaveCircleService = async ({
 
 	// Send notification to the circle members.
 
-	const circleMembers = updatedCircle.members.map((member) => {
+	const notifications = updatedCircle.members.map((member) => {
 		return {
-			userId: member.id,
-			content: `${user.first_name} has left your circle.`,
+			userId: member.user.id,
+			content: `${
+				user.first_name + " " + user.last_name
+			} has left your circle.`,
 		};
 	});
 
-	if (updatedCircle.colead)
-		circleMembers.push({
-			userId: updatedCircle.colead.id,
-			content: `${user.first_name} has left your circle.`,
-		});
-
 	return {
 		circle: updatedCircle,
-		notifications: [
-			{
-				userId: circle.lead.id,
-				content: `${user.first_name} has left your circle.`,
-			},
-			...circleMembers,
-		],
+		notifications,
 	};
 };
 
@@ -586,39 +563,42 @@ export const EditCircleService = async ({
 	body,
 }: EditCircleArgs) => {
 	const { description, request, removeUser, manageUser } = body;
-	const disconnectList:
-		| Prisma.UserWhereUniqueInput
-		| Prisma.UserWhereUniqueInput[] = [];
-	const connectList:
-		| Prisma.UserWhereUniqueInput
-		| Prisma.UserWhereUniqueInput[] = [];
-	const requestDisconnectList:
-		| Prisma.UserWhereUniqueInput
-		| Prisma.UserWhereUniqueInput[] = [];
-	const leadConnect: Prisma.UserWhereUniqueInput = { id: undefined };
-	const coleadConnect: Prisma.UserWhereUniqueInput = { id: undefined };
-	const coleadDisconnect: Prisma.UserWhereUniqueInput = { id: undefined };
+	const disconnectList: { circleId: number; userId: string }[] = [];
+	const connectList: {
+		userId: string;
+		role: "LEADER" | "COLEADER" | "MEMBER" | "PENDING";
+	}[] = [];
 	const notificationList = [];
+	const { role: userRole } = user;
+
+	if (
+		!(
+			userRole.canModifyOwnCircle ||
+			userRole.canModifyOtherCircle ||
+			userRole.isAdmin
+		)
+	)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
 
 	const circle = await prisma.circle.findUnique({
 		where: {
 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
 		},
 		select: {
+			id: true,
 			members: {
-				select: UserSelectMinimized,
-				orderBy: {
-					first_name: "desc",
+				select: {
+					role: true,
+					user: {
+						select: {
+							id: true,
+							role: true,
+						},
+					},
 				},
-			},
-			lead: {
-				select: UserSelectMinimized,
-			},
-			colead: {
-				select: UserSelectMinimized,
-			},
-			requests: {
-				select: UserSelectMinimized,
 			},
 		},
 	});
@@ -626,40 +606,31 @@ export const EditCircleService = async ({
 	if (!circle)
 		throw new CustomError("Circle not found.", StatusCodes.NOT_FOUND);
 
+	const activeUser = circle.members.find(
+		(member) => member.user.id === user.id
+	);
+
+	if (!activeUser)
+		throw new CustomError(
+			"User is not a member of circle.",
+			StatusCodes.BAD_REQUEST
+		);
+
 	// If user is not an admin, and they can't modify other circles, they must be a circle lead or colead to modify this circle.
 	if (!user.role.isAdmin && !user.role.canModifyOtherProject) {
-		if (
-			(circle.lead && circle.lead.id !== user.id) ||
-			(circle.colead && circle.colead.id !== user.id)
-		)
+		if (activeUser.role !== "LEADER" && activeUser.role !== "COLEADER")
 			throw new CustomError(
 				"You do not have permission to perform this action.",
 				StatusCodes.UNAUTHORIZED
 			);
 	}
 
-	// if (!circle.lead)
-	// 	throw new CustomError(
-	// 		ReasonPhrases.INTERNAL_SERVER_ERROR,
-	// 		StatusCodes.INTERNAL_SERVER_ERROR
-	// 	);
-
-	// if (
-	// 	!(
-	// 		req.user.id === circle.lead.id ||
-	// 		(circle.colead && req.user.id === circle.colead.id)
-	// 	)
-	// )
-	// 	throw new CustomError(
-	// 		"You must be the circle lead or co-lead to manage this operation.",
-	// 		StatusCodes.BAD_REQUEST
-	// 	);
-
 	if (request) {
 		// Checks if the user exists in the circle request
 		// If exists, add them to circle member, and remove them from request list.
-		const userExistsInCircleRequest = circle.requests.find(
-			(member) => member.id === request.userId
+
+		const userExistsInCircleRequest = circle.members.find(
+			(member) => member.user.id === request.userId
 		);
 
 		if (!userExistsInCircleRequest)
@@ -667,9 +638,19 @@ export const EditCircleService = async ({
 				"User has not requested to join the circle.",
 				StatusCodes.BAD_REQUEST
 			);
+
+		if (userExistsInCircleRequest.role !== "PENDING")
+			throw new CustomError(
+				"User is a member of this circle.",
+				StatusCodes.BAD_REQUEST
+			);
+
 		if (request.type === "ACCEPT") {
-			requestDisconnectList.push({ id: request.userId });
-			connectList.push({ id: request.userId });
+			disconnectList.push({
+				userId: request.userId,
+				circleId: circle.id,
+			});
+			connectList.push({ userId: request.userId, role: "MEMBER" });
 
 			// Send notification to the user that they've been accepted into the circle.
 			notificationList.push({
@@ -677,41 +658,47 @@ export const EditCircleService = async ({
 				content: `You have been accepted into circle ${circleId}.`,
 			});
 		} else if (request.type === "DECLINE") {
-			requestDisconnectList.push({ id: request.userId });
+			disconnectList.push({
+				userId: request.userId,
+				circleId: circle.id,
+			});
 			// Send notification to the user that they've been declined to join the circle.
 			notificationList.push({
 				userId: request.userId,
 				content: `Your request to join circle ${circleId} has been declined.`,
 			});
-		}
+		} else
+			throw new CustomError(
+				"request.type must be either ACCEPT or DECLINE",
+				StatusCodes.BAD_REQUEST
+			);
 	}
 
 	// Removing a user from the circle.
 	if (removeUser) {
 		// Checks if the user they are trying to remove exists as a member in their circle.
 		// If exists, remove them from the circle member.
+		const userExists = circle.members.find(
+			(member) => member.user.id === removeUser.userId
+		);
 
-		if (circle.colead && circle.colead.id === removeUser.userId) {
-			coleadDisconnect.id = removeUser.userId;
-			// Send notification to the co-lead that they've been removed from the circle.
-			notificationList.push({
-				userId: removeUser.userId,
-				content: `You have been kicked out of circle ${circleId}.`,
-			});
-		} else if (
-			circle.members.find((member) => member.id === removeUser.userId)
-		) {
-			disconnectList.push({ id: removeUser.userId });
-			// Send notification to the user that they've been removed from the circle.
-			notificationList.push({
-				userId: removeUser.userId,
-				content: `You have been kicked out of circle ${circleId}.`,
-			});
-		} else
+		if (!userExists)
 			throw new CustomError(
 				"User is not a member of this circle.",
 				StatusCodes.BAD_REQUEST
 			);
+
+		if (userExists.role === "LEADER" && !user.role.isAdmin)
+			throw new CustomError(
+				"You must be an administrator to perform this action.",
+				StatusCodes.UNAUTHORIZED
+			);
+
+		disconnectList.push({ userId: removeUser.userId, circleId: circle.id });
+		notificationList.push({
+			userId: removeUser.userId,
+			content: `You have been kicked out of circle ${circleId}.`,
+		});
 	}
 
 	if (description && !(description.length > minimumCircleDescriptionLength))
@@ -721,75 +708,149 @@ export const EditCircleService = async ({
 		);
 
 	if (manageUser) {
-		if (circle.lead && circle.lead.id === manageUser.userId)
+		if (manageUser.action !== "DEMOTE" && manageUser.action !== "PROMOTE")
+			throw new CustomError(
+				"Invalid manageUser.action provided.",
+				StatusCodes.BAD_REQUEST
+			);
+
+		const userExists = circle.members.find(
+			(member) => member.user.id === manageUser.userId
+		);
+
+		if (!userExists)
+			throw new CustomError(
+				"User is not a member of this circle.",
+				StatusCodes.BAD_REQUEST
+			);
+
+		if (userExists.role === "LEADER" && !user.role.isAdmin)
+			throw new CustomError(
+				"You must be an administrator to perform this action.",
+				StatusCodes.UNAUTHORIZED
+			);
+
+		if (userExists.role === "COLEADER" && user.id === manageUser.userId)
 			throw new CustomError(
 				"You cannot perform this action on yourself.",
 				StatusCodes.BAD_REQUEST
 			);
 
-		if (circle.colead && circle.colead.id === user.id)
-			throw new CustomError(
-				"You do not have the permission to perform this operation.",
-				StatusCodes.BAD_REQUEST
-			);
+		const currColead = circle.members.find(
+			(member) => member.role === "COLEADER"
+		);
+		const currLead = circle.members.find(
+			(member) => member.role === "LEADER"
+		);
 
 		// Checks if the user being managed is a colead, and if not, checks if the user is a member, and if not, an error gets thrown.
-		if (circle.colead && circle.colead.id === manageUser.userId) {
-			if (manageUser.action === "PROMOTE") {
-				// Promotting a circle co-lead to lead.
-				// 1. Makes the current circle lead a member
-				// 2. Remove the circle co-lead, and make the current circle co-lead the circle lead.
-				if (circle.lead) connectList.push({ id: circle.lead.id });
-				coleadDisconnect.id = circle.colead.id;
-				leadConnect.id = circle.colead.id;
-				// Send notification to the co-lead becoming lead that they've been promoted.
-				notificationList.push({
-					userId: circle.colead.id,
-					content: `You have been promoted to Circle-lead on Circle ${circleId}.`,
+		disconnectList.push({
+			userId: userExists.user.id,
+			circleId: circle.id,
+		});
+
+		if (manageUser.action === "PROMOTE") {
+			if (userExists.role === "MEMBER") {
+				connectList.push({
+					role: "COLEADER",
+					userId: userExists.user.id,
 				});
-			} else if (manageUser.action === "DEMOTE") {
-				// Demotting a circle co-lead back to a member.
-				coleadDisconnect.id = circle.colead.id;
-				connectList.push({ id: circle.colead.id });
-				// Send notification to the co-lead that they've been demoted.
-				notificationList.push({
-					userId: circle.colead.id,
-					content: `You have been demoted from Circle Co-lead to Circle Member on Circle ${circleId}.`,
-				});
-			}
-		} else if (
-			circle.members.find((member) => member.id === manageUser.userId)
-		) {
-			// Does nothing when you try to demote a member.
-			if (manageUser.action === "PROMOTE") {
-				// 1. Remove the user from the member list
-				// 2. If there's a co-lead already, make the co-lead a member
-				// 3. Makes the member a circle co-lead
-				coleadConnect.id = manageUser.userId;
-				if (circle.colead) {
-					connectList.push({ id: circle.colead.id });
-					// Send notification to the current co-lead that they've been demoted.
+
+				if (currColead) {
+					disconnectList.push({
+						userId: currColead.user.id,
+						circleId: circle.id,
+					});
+
+					connectList.push({
+						role: "MEMBER",
+						userId: currColead.user.id,
+					});
 					notificationList.push({
-						userId: circle.colead.id,
-						content: `You have been demoted from Circle Co-lead to Circle Member on Circle ${circleId}.`,
+						userId: currColead.user.id,
+						content: `You have been demoted to circle Member on Circle ${circleId}.`,
 					});
 				}
-				disconnectList.push({ id: manageUser.userId });
-				// Send notification to the member that they've been promoted.
+
 				notificationList.push({
-					userId: manageUser.userId,
-					content: `You have been promoted from Circle Member to Circle Co-lead on Circle ${circleId}.`,
+					userId: userExists.user.id,
+					content: `You have been promoted to circle Co-Lead on Circle ${circleId}.`,
 				});
-			} else if (manageUser.action === "DEMOTE")
+			} else if (userExists.role === "COLEADER") {
+				connectList.push({
+					role: "LEADER",
+					userId: userExists.user.id,
+				});
+
+				if (currLead) {
+					connectList.push({
+						role: "COLEADER",
+						userId: currLead.user.id,
+					});
+					disconnectList.push({
+						userId: currLead.user.id,
+						circleId: circle.id,
+					});
+					notificationList.push({
+						userId: currLead.user.id,
+						content: `You have been demoted to circle Co-Lead on Circle ${circleId}.`,
+					});
+				}
+
+				notificationList.push({
+					userId: userExists.user.id,
+					content: `You have been promoted to circle Lead on Circle ${circleId}.`,
+				});
+			} else {
 				throw new CustomError(
-					"Circle member cannot be demoted further!",
+					"You can not promote a circle lead",
 					StatusCodes.BAD_REQUEST
 				);
-		} else
-			throw new CustomError(
-				"User does not exist as a circle member.",
-				StatusCodes.BAD_REQUEST
-			);
+			}
+		} else if (manageUser.action === "DEMOTE") {
+			if (userExists.role === "COLEADER") {
+				connectList.push({
+					role: "MEMBER",
+					userId: userExists.user.id,
+				});
+
+				notificationList.push({
+					userId: userExists.user.id,
+					content: `You have been demoted to circle Member on Circle ${circleId}.`,
+				});
+			} else if (userExists.role === "LEADER") {
+				connectList.push({
+					role: "COLEADER",
+					userId: userExists.user.id,
+				});
+
+				if (currColead) {
+					connectList.push({
+						role: "LEADER",
+						userId: currColead.user.id,
+					});
+					disconnectList.push({
+						userId: currColead.user.id,
+						circleId: circle.id,
+					});
+
+					notificationList.push({
+						userId: currColead.user.id,
+						content: `You have been promoted to circle Lead on Circle ${circleId}.`,
+					});
+				}
+
+				notificationList.push({
+					userId: userExists.user.id,
+					content: `You have been demoted to circle Member on Circle ${circleId}.`,
+				});
+			} else {
+				throw new CustomError(
+					"You can not demote a circle member",
+					StatusCodes.BAD_REQUEST
+				);
+			}
+		}
 	}
 
 	const Circle = await prisma.circle.update({
@@ -803,31 +864,23 @@ export const EditCircleService = async ({
 					? description
 					: undefined,
 			members: {
-				connect: connectList.length > 0 ? connectList : undefined,
-				disconnect:
+				deleteMany:
 					disconnectList.length > 0 ? disconnectList : undefined,
-			},
-			requests: {
-				disconnect:
-					requestDisconnectList.length > 0
-						? requestDisconnectList
-						: undefined,
-			},
-			colead: {
-				disconnect: coleadDisconnect.id ? coleadDisconnect : undefined,
-				connect: coleadConnect.id ? coleadConnect : undefined,
-			},
-			lead: {
-				connect: leadConnect.id ? leadConnect : undefined,
+				create: connectList.length > 0 ? connectList : undefined,
 			},
 		},
 		select: {
 			id: true,
 			description: true,
 			members: {
-				select: UserSelectMinimized,
-				orderBy: {
-					first_name: "desc",
+				select: {
+					role: true,
+					user: {
+						select: {
+							id: true,
+							first_name: true,
+						},
+					},
 				},
 			},
 			projects: {
@@ -855,64 +908,78 @@ export const DeleteCircleService = async ({
 	circleId,
 	user,
 }: CircleRequestServiceArgs) => {
-	const Circle = await prisma.circle.findUnique({
+	const { role: userRole } = user;
+
+	if (
+		!(
+			userRole.canDeleteOwnCircle ||
+			userRole.canDeleteOtherCircles ||
+			userRole.isAdmin
+		)
+	)
+		throw new CustomError(
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
+		);
+
+	const circle = await prisma.circle.findUnique({
 		where: {
 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
 		},
 		include: {
-			lead: {
-				select: UserSelectClean,
-			},
-			colead: {
-				select: UserSelectClean,
-			},
 			members: {
-				select: UserSelectClean,
+				select: {
+					role: true,
+					user: {
+						select: {
+							id: true,
+							role: true,
+						},
+					},
+				},
 			},
 		},
 	});
 
-	if (!Circle)
+	if (!circle)
 		throw new CustomError("Circle does not exist.", StatusCodes.NOT_FOUND);
 
-	// If the user is the circle lead, has permission to delete other circles or the user is an admin.
+	const activeUser = circle.members.find(
+		(member) => member.user.id === user.id
+	);
+
+	if (!activeUser)
+		throw new CustomError(
+			"User is not a circle member.",
+			StatusCodes.BAD_REQUEST
+		);
+
 	if (
-		(Circle.lead && Circle.lead.id === user.id) ||
+		activeUser.role !== "LEADER" ||
 		user.role.isAdmin ||
 		user.role.canDeleteOtherCircles
-	) {
-		await prisma.circle.delete({
-			where: {
-				id: isNaN(Number(circleId)) ? undefined : Number(circleId),
-			},
-		});
-
-		// Send notifications to the circle members, and co-lead.
-		const circleMembers = Circle.members.map((member) => {
-			return {
-				userId: member.id,
-				content: `Your circle, circle ${Circle.id} has been deleted.`,
-			};
-		});
-
-		if (Circle.colead)
-			circleMembers.push({
-				userId: Circle.colead.id,
-				content: `Your circle, circle ${Circle.id} has been deleted.`,
-			});
-
-		if (Circle.lead)
-			circleMembers.push({
-				userId: Circle.lead.id,
-				content: `Your circle, circle ${Circle.id} has been deleted.`,
-			});
-
-		return {
-			notifications: circleMembers,
-		};
-	} else
+	)
 		throw new CustomError(
 			"You are not allowed to delete this circle.",
 			StatusCodes.BAD_REQUEST
 		);
+	// If the user is the circle lead, has permission to delete other circles or the user is an admin.
+
+	await prisma.circle.delete({
+		where: {
+			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+		},
+	});
+
+	// Send notifications to the circle members, and co-lead.
+	const notifications = circle.members.map((member) => {
+		return {
+			userId: member.user.id,
+			content: `Your circle, circle ${circle.id} has been deleted.`,
+		};
+	});
+
+	return {
+		notifications,
+	};
 };

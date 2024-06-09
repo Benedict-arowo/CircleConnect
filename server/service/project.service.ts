@@ -29,7 +29,7 @@ export type BodyUserArgs = {
 		name?: string;
 		description?: string;
 		circleId?: string;
-		tags?: string;
+		tags?: string[];
 		github?: string;
 		liveLink?: string;
 		pictures?: string;
@@ -201,37 +201,36 @@ export const CreateProjectService = async ({
 			StatusCodes.BAD_REQUEST
 		);
 
-	// // Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
-	// if (circleId) {
-	// 	const circle = await prisma.circle.findUnique({
-	// 		where: {
-	// 			id: isNaN(Number(circleId)) ? undefined : Number(circleId),
-	// 		},
-	// 		select: {
-	// 			members: true,
-	// 			colead: true,
-	// 			lead: true,
-	// 		},
-	// 	});
+	// Checks if the circle id the user provided is valid, and if the user has permission to create projects with the specified circle.
+	if (circleId) {
+		const circle = await prisma.circle.findUnique({
+			where: {
+				id: isNaN(Number(circleId)) ? undefined : Number(circleId),
+			},
+			select: {
+				members: {
+					select: {
+						role: true,
+						user: {
+							select: UserSelectMinimized,
+						},
+					},
+				},
+			},
+		});
 
-	// 	if (!circle)
-	// 		throw new CustomError(
-	// 			"Invalid circle provided.",
-	// 			StatusCodes.BAD_REQUEST
-	// 		);
+		if (!circle)
+			throw new CustomError(
+				"Invalid circle provided.",
+				StatusCodes.BAD_REQUEST
+			);
 
-	// 	if (
-	// 		!(
-	// 			(circle.colead && circle.colead.id === req.user.id) ||
-	// 			(circle.lead && circle.lead.id === req.user.id) ||
-	// 			circle.members.find((member) => member.id === req.user.id)
-	// 		)
-	// 	)
-	// 		throw new CustomError(
-	// 			"You're not a member of the circle provided.",
-	// 			StatusCodes.BAD_REQUEST
-	// 		);
-	// }
+		if (!circle.members.find((member) => member.user.id === activeUser.id))
+			throw new CustomError(
+				"You're not a member of the circle provided.",
+				StatusCodes.BAD_REQUEST
+			);
+	}
 
 	if (createdBy) {
 		// Permission checking, admin or can add use to project permission only
@@ -258,8 +257,8 @@ export const CreateProjectService = async ({
 		data: {
 			name,
 			description,
-			tags: tags ? tags.split("|") : undefined,
-			// circleId: circleId ? Number(circleId) : undefined,
+			tags: tags && tags,
+			circleId: circleId ? Number(circleId) : undefined,
 			createdById: createdBy ? createdBy : activeUser.id,
 			github: github ? github : undefined,
 			liveLink: liveLink ? liveLink : undefined,
@@ -298,8 +297,17 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 			circleId: true,
 			circle: {
 				select: {
-					lead: true,
-					colead: true,
+					members: {
+						select: {
+							role: true,
+							user: {
+								select: {
+									id: true,
+									role: true,
+								},
+							},
+						},
+					},
 				},
 			},
 			pinned: true,
@@ -361,11 +369,20 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 				StatusCodes.BAD_REQUEST
 			);
 
+		const activeUser = project.circle.members.find(
+			(member) => member.user.id === user.id
+		);
+
+		if (!activeUser && !user.role.isAdmin)
+			throw new CustomError(
+				"User is not a member of this circle",
+				StatusCodes.BAD_REQUEST
+			);
+
 		if (
-			!(
-				(project.circle.lead && project.circle.lead.id === user.id) ||
-				(project.circle.colead && project.circle.colead.id === user.id)
-			)
+			activeUser &&
+			activeUser.role !== "LEADER" &&
+			activeUser.role !== "COLEADER"
 		)
 			throw new CustomError(
 				"You do not have permission to pin/unpin this project.",
@@ -373,33 +390,35 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 			);
 	}
 
-	// if (tags) {
-	// 	if (!Array.isArray(tags))
-	// 		throw new CustomError(
-	// 			"tags must be an array.",
-	// 			StatusCodes.BAD_REQUEST
-	// 		);
-	// 	tags.forEach((tech) => {
-	// 		if (typeof tech !== "string")
-	// 			throw new CustomError(
-	// 				"Tech used must be an array of strings.",
-	// 				StatusCodes.BAD_REQUEST
-	// 			);
-	// 	});
-	// }
+	if (tags) {
+		if (!Array.isArray(tags))
+			throw new CustomError(
+				"tags must be an array.",
+				StatusCodes.BAD_REQUEST
+			);
+		tags.forEach((tech) => {
+			if (typeof tech !== "string")
+				throw new CustomError(
+					"tags must be an array of strings.",
+					StatusCodes.BAD_REQUEST
+				);
+		});
+	}
 
 	if (circleId) {
 		const circle = await prisma.circle.findUnique({
 			where: { id: Number(circleId) },
 			select: {
-				lead: {
-					select: UserSelectClean,
-				},
 				members: {
-					select: UserSelectClean,
-				},
-				colead: {
-					select: UserSelectClean,
+					select: {
+						role: true,
+						user: {
+							select: {
+								id: true,
+								role: true,
+							},
+						},
+					},
 				},
 			},
 		});
@@ -415,10 +434,7 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 			!(
 				user.role.isAdmin ||
 				(user.role.canAddProjectToCircle &&
-					circle.lead &&
-					user.id === circle.lead.id) ||
-				(circle.colead && user.id === circle.colead.id) ||
-				circle.members.some((member) => member.id === user.id)
+					circle.members.find((member) => member.user.id === user.id))
 			)
 		)
 			throw new CustomError(
@@ -433,7 +449,7 @@ export const EditProjectService = async ({ id, body, user }: BodyUserArgs) => {
 			name: name ? name : undefined,
 			description: description ? description : undefined,
 			github: github !== undefined ? github : undefined,
-			tags: tags ? tags.split("|") : undefined,
+			tags: tags ? tags : undefined,
 			liveLink: liveLink !== undefined ? liveLink : undefined,
 			circleVisibility: visibility
 				? (visibility as "PUBLIC" | "PRIVATE")
@@ -516,40 +532,39 @@ export const ManageProjectCircleService = async ({
 		);
 
 	if (circleId) {
-		const Circle = await prisma.circle.findUnique({
+		const circle = await prisma.circle.findUnique({
 			where: { id: Number(circleId) },
 			select: {
-				lead: true,
-				colead: true,
-				members: true,
+				members: {
+					select: {
+						role: true,
+						user: {
+							select: {
+								id: true,
+								role: true,
+							},
+						},
+					},
+				},
 			},
 		});
 
-		if (!Circle)
+		if (!circle)
 			throw new CustomError(
 				"Circle with a matching ID not found",
 				StatusCodes.NOT_FOUND
 			);
 
-		if (
-			!(
-				(Circle.lead && Circle.lead.id === user.id) ||
-				(Circle.colead && Circle.colead.id === user.id) ||
-				Circle.members.find((member) => member.id === user.id) ||
-				userRole.isAdmin
-			)
-		)
+		const activeUser = circle.members.find(
+			(member) => member.user.id === user.id
+		);
+
+		if (!activeUser && !user.role.isAdmin)
 			throw new CustomError(
 				"You do not have permission to add this project to this circle.",
 				StatusCodes.BAD_REQUEST
 			);
 	}
-
-	// if (!(req.user.id === Project.createdById))
-	// 	throw new CustomError(
-	// 		"You do not have permission to modify this project",
-	// 		StatusCodes.BAD_REQUEST
-	// 	);
 
 	if (circleId && Project.circleId === Number(circleId))
 		throw new CustomError(

@@ -7,6 +7,7 @@ export type User = {
 	email?: string;
 	username: string;
 	first_name: string;
+	last_name: string;
 	name: {
 		familyName: string;
 		givenName: string;
@@ -22,6 +23,9 @@ export type User = {
 	github_id: string;
 	emails: [{ value: string }];
 	role: Prisma.RoleCreateInput;
+	circle: {
+		circleId: string;
+	};
 	// role: {
 	// 	id: string;
 	// 	name: string;

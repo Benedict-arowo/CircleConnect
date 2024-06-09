@@ -37,6 +37,10 @@ export const getUser = async (req: Req, res: Response) => {
 					id: true,
 					name: true,
 					circle: true,
+					tags: true,
+					description: true,
+					github: true,
+					liveLink: true,
 				},
 			},
 			role: {
@@ -47,12 +51,14 @@ export const getUser = async (req: Req, res: Response) => {
 			},
 			track: true,
 			school: true,
-			coleadOf: true,
-			leadOf: true,
-			memberOf: true,
+			circle: {
+				select: {
+					circle: true,
+					role: true,
+				},
+			},
 			joined: true,
 			createdAt: true,
-			pendingRequest: true,
 			projectRatings: true,
 		},
 	});
