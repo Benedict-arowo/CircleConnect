@@ -6,8 +6,8 @@ import {
 	markAsRead,
 	markAsUnread,
 } from "../controllers/notifications-controller";
-import isLoggedIn from "../middlewear/isLoggedIn";
-import wrapper from "../middlewear/wrapper";
+import isLoggedIn from "../middlewares/isLoggedIn";
+import wrapper from "../middlewares/wrapper";
 
 const express = require("express");
 const notificationRouter = express.Router();
@@ -24,7 +24,7 @@ notificationRouter.patch("/:id/markAsRead", isLoggedIn, wrapper(markAsRead));
 notificationRouter.patch(
 	"/:id/markAsUnread",
 	isLoggedIn,
-	wrapper(markAsUnread),
+	wrapper(markAsUnread)
 );
 
 export default notificationRouter;

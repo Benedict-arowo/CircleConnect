@@ -132,14 +132,16 @@ const Nav = (props: Props) => {
 						!is_read ? "bg-red-50" : ""
 					}`}
 				>
-					<Avatar
-						name={`${user.info.first_name}`}
-						src={user.info.profile_picture}
-						width="32px"
-						height="32px"
-						className="cursor-pointer"
-						colorScheme="teal"
-					/>
+					{user.info && (
+						<Avatar
+							name={`${user.info.first_name}`}
+							src={user.info.profile_picture}
+							width="32px"
+							height="32px"
+							className="cursor-pointer"
+							colorScheme="teal"
+						/>
+					)}
 					<div className="flex flex-col gap-0">
 						<a href={url} className="font-light">
 							{content}

@@ -1,9 +1,8 @@
-import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
+dotenv.config();
 import makeApp from "./index";
 import prisma from "./model/db";
 
-dotenv.config();
 const { app, server } = makeApp(prisma);
 const port = process.env.PORT;
 

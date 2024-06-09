@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import CustomError from "../../middlewear/CustomError";
+import CustomError from "../../middlewares/CustomError";
 import { Req } from "../../types";
 import { Response } from "express";
 import prisma from "../../model/db";

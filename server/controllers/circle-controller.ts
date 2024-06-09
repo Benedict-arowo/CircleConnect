@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { Req } from "../types";
 import { StatusCodes } from "http-status-codes";
-import CustomError from "../middlewear/CustomError";
+import CustomError from "../middlewares/CustomError";
 import {
 	CirclesService,
 	CreateCircleService,
@@ -22,12 +22,6 @@ export const getCircles = async (req: Req, res: Response) => {
 export const getCircle = async (req: Req, res: Response) => {
 	const { id } = req.params;
 
-	if (!id)
-		throw new CustomError(
-			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST
-		);
-
 	const Circle = await getCircleService(id);
 	res.status(StatusCodes.OK).json({ success: true, data: Circle });
 };
@@ -47,12 +41,13 @@ export const createCircle = async (req: Req, res: Response) => {
 export const requestToJoinCircle = async (req: Req, res: Response) => {
 	const {
 		params: { id: circleId },
+		user: { role: userRole },
 	} = req;
 
-	if (!circleId)
+	if (!(userRole.canJoinCircle || userRole.isAdmin))
 		throw new CustomError(
-			"An ID must be provided.",
-			StatusCodes.BAD_REQUEST
+			"You do not have permission to perform this action.",
+			StatusCodes.UNAUTHORIZED
 		);
 
 	const { notifications, circle } = await RequestToJoinCircleService({
@@ -73,11 +68,12 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 export const removeCircleRequest = async (req: Req, res: Response) => {
 	const {
 		params: { id: circleId },
+		user: { role: userRole },
 	} = req;
 
-	if (!circleId)
+	if (!userRole.canLeaveCircle)
 		throw new CustomError(
-			"An ID must be provided.",
+			"You do not have permission to perform this action.",
 			StatusCodes.BAD_REQUEST
 		);
 

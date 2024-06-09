@@ -11,11 +11,12 @@ const ErrorHandler = (
 	err: any,
 	req: Request,
 	res: Response,
-	next: NextFunction,
+	next: NextFunction
 ) => {
 	let { code, message } = err;
 	// If the error is not an instance of the CustomError class meaning it won't have a code property.
-	console.log(err);
+	// Log the error only in testing environment
+	process.env.NODE_ENV === "test" ? console.log(err) : "";
 	if (!(err instanceof CustomError)) {
 		return res.status(404).json({
 			success: false,
