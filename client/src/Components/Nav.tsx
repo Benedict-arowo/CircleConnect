@@ -1,23 +1,13 @@
-import { Avatar, useDisclosure } from "@chakra-ui/react";
+import { Avatar } from "@chakra-ui/react";
 import { Link, NavLink } from "react-router-dom";
 import UseFetch from "./Fetch";
-// import { useDispatch } from "react-redux";
-import {
-	Drawer,
-	DrawerBody,
-	DrawerHeader,
-	DrawerOverlay,
-	DrawerContent,
-	DrawerCloseButton,
-} from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { NotificationType } from "../types";
 import { format } from "timeago.js";
 import { UseSocketContext } from "../contexts/SocketContext";
 import Notify from "./Notify";
 import { Socket } from "socket.io-client";
-import { UseSetUser, UseUser } from "../contexts/UserContext";
-import { LogoutFunc } from "./Fetch/LogoutFunc";
+import { UseUser } from "../contexts/UserContext";
 import Logo from "./Icons/Logo";
 import { Dialog } from "primereact/dialog";
 import AddProject from "./AddProject";
@@ -196,28 +186,31 @@ const Nav = (props: Props) => {
 								Discover
 							</NavLink> */}
 						{/* </li> */}
-						<li className="cursor-pointer text-lg">
-							<NavLink
-								to="/projects"
-								style={({ isActive }) => {
-									return isActive ? activeStyles : {};
-								}}
-								className="text-neutral-700 text-lg font-normal"
-							>
-								Projects
-							</NavLink>
-						</li>
+
 						<li>
 							<NavLink
-								to="/circles"
+								to="/discover"
 								style={({ isActive }) => {
 									return isActive ? activeStyles : {};
 								}}
 								className="text-neutral-700 text-lg font-normal"
 							>
-								Circles
+								Discover
 							</NavLink>
 						</li>
+						{user.isLoggedIn && user.info.circle && (
+							<li>
+								<NavLink
+									to={`/circle/${user.info.circle.circleId}`}
+									style={({ isActive }) => {
+										return isActive ? activeStyles : {};
+									}}
+									className="text-neutral-700 text-lg font-normal"
+								>
+									My Circle
+								</NavLink>
+							</li>
+						)}
 						{user.isLoggedIn && (
 							<li className="cursor-pointer text-lg">
 								<NavLink

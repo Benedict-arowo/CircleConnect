@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import UseFetch from "./Fetch";
 import { UserType } from "../types";
 import { useNavigate } from "react-router-dom";
+import { UseUser } from "../contexts/UserContext";
 
 const defaultData = {
 	circle: "",
@@ -28,6 +29,7 @@ const AddProject = () => {
 	const [users, setUsers] = useState<UserType[]>([]);
 	const [data, setData] = useState(defaultData);
 	const Navigate = useNavigate();
+	const user = UseUser();
 	const activeStyle = "text-white font-medium scale-105";
 
 	const fetchUsers = async () => {
@@ -91,7 +93,10 @@ const AddProject = () => {
 					liveLink: data.live_link,
 					github: data.github_link,
 					tags: data.tags,
-					circleId: data.circle && data.circle.code,
+					circleId:
+						mode === "CIRCLE"
+							? user.info.circle?.circleId ?? undefined
+							: undefined,
 					collaborators: data.collaborators.map(
 						(collaborator) => collaborator.code
 					),
@@ -138,14 +143,18 @@ const AddProject = () => {
 					>
 						Personal Project
 					</h3>
-					<h3
-						className={`cursor-pointer text-lg ${
-							mode == "CIRCLE" ? activeStyle : "text-slate-400"
-						}`}
-						onClick={() => setMode("CIRCLE")}
-					>
-						Circle Project
-					</h3>
+					{user.isLoggedIn && user.info.circle && (
+						<h3
+							className={`cursor-pointer text-lg ${
+								mode == "CIRCLE"
+									? activeStyle
+									: "text-slate-400"
+							}`}
+							onClick={() => setMode("CIRCLE")}
+						>
+							Circle Project
+						</h3>
+					)}
 				</header>
 				<section className="w-full bg-[#B9D6F0] py-2 px-3 rounded-t-[24px]">
 					<div className="px-2 flex flex-col gap-2 mt-2 w-full">
@@ -199,30 +208,6 @@ const AddProject = () => {
 								className="w-full py-1 text-medium px-2 text-slate-600"
 							/>
 						</span>
-
-						{mode == "CIRCLE" && (
-							<span className="flex flex-col gap-1 items-start">
-								<label
-									htmlFor="project_circle"
-									className="font-semibold text-sm text-slate-700"
-								>
-									Circle:
-								</label>
-								<Dropdown
-									value={data.circle}
-									onChange={(e) =>
-										setData((prev) => ({
-											...prev,
-											circle: e.value,
-										}))
-									}
-									options={data.circles}
-									optionLabel="name"
-									placeholder="Select a Circle"
-									className="w-full md:w-14rem"
-								/>
-							</span>
-						)}
 
 						<span className="flex flex-col gap-1 items-start">
 							<label

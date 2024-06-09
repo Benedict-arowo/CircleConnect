@@ -2,7 +2,7 @@ import wrapper from "../../middlewear/wrapper";
 import isLoggedIn from "../../middlewear/isLoggedIn";
 import logout from "../../controllers/Auth/logout";
 import { Req } from "../../types";
-import { UserSelectFull } from "../../utils";
+import { UserSelectClean } from "../../utils";
 import { Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import prisma from "../../model/db";
@@ -19,11 +19,11 @@ router.get(
 		// TODO: This route is currently just for testing purposes.
 		let user = await prisma.user.findUnique({
 			where: { id: req.user.id },
-			select: UserSelectFull,
+			select: UserSelectClean,
 		});
 
 		res.status(StatusCodes.OK).json(user);
-	}),
+	})
 );
 
 /**

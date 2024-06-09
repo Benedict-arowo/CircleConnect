@@ -9,6 +9,7 @@ import ListProjects from "../Components/Circle Page/ListProjects";
 import { useNavigate, useParams } from "react-router-dom";
 import { UserType } from "../types";
 import { FetchUsers } from "../Components/Fetch/Users";
+import { GET_ROLE_COLOR } from "../../config";
 
 const Profile = () => {
 	const { id } = useParams();
@@ -90,48 +91,27 @@ const Profile = () => {
 							<h3 className="font-semibold uppercase ">
 								{fectchedUser.track} - {fectchedUser.school}
 							</h3>
-							{fectchedUser.leadOf && (
-								<div className="flex flex-row gap-2 items-center">
-									<h3 className="bg-red-800 text-white px-2 text-sm rounded-sm py-1">
-										Lead
-									</h3>
-									<span>@</span>
-									<a
-										className="font-medium text-blue-700 hover:underline"
-										href={`/circle/${fectchedUser.leadOf.id}`}
-									>
-										Circle#{fectchedUser.leadOf.id}
-									</a>
-								</div>
-							)}
-							{fectchedUser.coleadOf && (
-								<div className="flex flex-row gap-2 items-center">
-									<h3 className="bg-blue-500 text-white px-2 text-sm rounded-sm py-1">
-										Colead
-									</h3>
-									<span>@</span>
-									<a
-										className="font-medium text-blue-700 hover:underline"
-										href={`/circle/${fectchedUser.coleadOf.id}`}
-									>
-										Circle#{fectchedUser.coleadOf.id}
-									</a>
-								</div>
-							)}
-							{fectchedUser.memberOf && (
-								<div className="flex flex-row gap-2 items-center">
-									<h3 className="bg-gray-500 text-white px-2 text-sm rounded-sm py-1">
-										Member
-									</h3>
-									<span>@</span>
-									<a
-										className="font-medium text-blue-700 hover:underline"
-										href={`/circle/${fectchedUser.memberOf.id}`}
-									>
-										Circle#{fectchedUser.memberOf.id}
-									</a>
-								</div>
-							)}
+
+							{fectchedUser.circle &&
+								fectchedUser.circle.role !== "PENDING" && (
+									<div className="flex flex-row gap-2 items-center">
+										<h3
+											className={`${GET_ROLE_COLOR(
+												fectchedUser.circle.role
+											)} text-white px-2 text-sm rounded-sm py-1`}
+										>
+											{fectchedUser.circle.role}
+										</h3>
+										<span>@</span>
+										<a
+											className="font-medium text-blue-700 hover:underline"
+											href={`/circle/${fectchedUser.circle.circle.id}`}
+										>
+											Circle#
+											{fectchedUser.circle.circle.id}
+										</a>
+									</div>
+								)}
 
 							{user.info.id &&
 								user.info.id === fectchedUser.id && (

@@ -4,7 +4,6 @@ import Nav from "../Components/Nav";
 import UseFetch from "../Components/Fetch";
 import { Button, Spinner, useDisclosure, useToast } from "@chakra-ui/react";
 import banner from "../assets/Hero.png";
-// import ProjectsComponent from "../Components/project_component";
 import { CircleMemberType, CircleType } from "../Components/types";
 import {
 	AlertDialog,
@@ -15,12 +14,9 @@ import {
 	AlertDialogOverlay,
 } from "@chakra-ui/react";
 
-// import { Avatar } from "@chakra-ui/react";
-import { useSelector } from "react-redux";
-// import ListMembers from "../Components/Circle Page/ListMembers";
-// import ListRequests from "../Components/Circle Page/ListRequests";
 import ListProjects from "../Components/Circle Page/ListProjects";
 import { Avatar } from "primereact/avatar";
+import { UseUser } from "../contexts/UserContext";
 
 type useToastPromise = {
 	fetch: Promise<any>;
@@ -67,7 +63,7 @@ const Circle = () => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
 	const cancelRef = React.useRef();
-	const User = useSelector((state) => state.user);
+	const user = UseUser();
 	const toast = useToast();
 
 	const UseToastPromise = ({
@@ -129,38 +125,28 @@ const Circle = () => {
 		});
 	};
 
-	const DisplayMembers = ({ members }: { members: CircleMemberType[] }) => {
-		return members.map((circleMember) => {
-			if (circleMember) {
-				const { profile_picture } = circleMember;
-				return (
-					<a
-						key={circleMember.id}
-						title={circleMember.first_name}
-						className=""
-						href={`/profile/${circleMember.id}`}
-					>
-						{/* <Avatar
-							size={"2xl"}
-							name={`${circleMember.first_name}`}
-							src={profile_picture}
-							
-						/> */}
-						<Avatar
-							label={`${circleMember.first_name[0]}`}
-							image={profile_picture}
-							style={{
-								backgroundColor: "#9c27b0",
-								color: "#ffffff",
-								fontSize: "32px",
-							}}
-							className="w-[128px] h-[128px] rounded-full cursor-pointer hover:outline-red-600 outline-none outline transition-all duration-300 object-cover overflow-hidden"
-						/>
-					</a>
-				);
-			}
+	const DisplayMembers = ({ members }: { members: CircleMemberType[] }) =>
+		members.map((circleMember) => {
+			return (
+				<a
+					key={circleMember.user.id}
+					title={circleMember.user.first_name}
+					className=""
+					href={`/profile/${circleMember.user.id}`}
+				>
+					<Avatar
+						label={`${circleMember.user.first_name[0]}`}
+						image={circleMember.user.profile_picture}
+						style={{
+							backgroundColor: "#9c27b0",
+							color: "#ffffff",
+							fontSize: "32px",
+						}}
+						className="w-[128px] h-[128px] rounded-full cursor-pointer hover:outline-red-600 outline-none outline transition-all duration-300 object-cover overflow-hidden"
+					/>
+				</a>
+			);
 		});
-	};
 
 	const fetchCircle = async () => {
 		await UseFetch({
@@ -178,64 +164,12 @@ const Circle = () => {
 				setCircle(() => data);
 				setErr(() => null);
 
-				// Conditions covered
-				// If user is a visitor
-				// If user is lead
-				// If user is colead
-				// If user is requesting to join
-				// If user is a member
-				console.log(data);
-				if (data.lead && data.lead.id === User.info.id) {
-					setState(() => {
-						return {
-							isMember: true,
-							isOwner: true,
-							isColead: false,
-							isRequesting: false,
-							isVisitor: false,
-						};
-					});
-				} else if (data.colead && data.colead.id === User.info.id) {
-					setState(() => {
-						return {
-							isMember: true,
-							isOwner: false,
-							isColead: true,
-							isRequesting: false,
-							isVisitor: false,
-						};
-					});
-				} else if (
-					data.members.some(
-						(members: CircleMemberType) =>
-							members.id === User.info.id
-					)
-				) {
-					setState(() => {
-						return {
-							isMember: true,
-							isOwner: false,
-							isColead: false,
-							isRequesting: false,
-							isVisitor: false,
-						};
-					});
-				} else if (
-					data.requests.some(
-						(member: CircleMemberType) => member.id === User.info.id
-					)
-				) {
-					setState(() => {
-						return {
-							isMember: false,
-							isOwner: false,
-							isColead: false,
-							isRequesting: true,
-							isVisitor: false,
-						};
-					});
-				} else {
-					setState(() => {
+				const activeUser = data.members.find(
+					(member) => member.user.id === user.info.id
+				);
+
+				if (!activeUser) {
+					return setState(() => {
 						return {
 							isMember: false,
 							isOwner: false,
@@ -245,6 +179,57 @@ const Circle = () => {
 						};
 					});
 				}
+
+				if (activeUser.role === "LEADER")
+					setState(() => {
+						return {
+							isMember: true,
+							isOwner: true,
+							isColead: false,
+							isRequesting: false,
+							isVisitor: false,
+						};
+					});
+
+				if (activeUser.role === "COLEADER")
+					setState(() => {
+						return {
+							isMember: true,
+							isOwner: false,
+							isColead: true,
+							isRequesting: false,
+							isVisitor: false,
+						};
+					});
+
+				if (activeUser.role === "MEMBER")
+					setState(() => {
+						return {
+							isMember: true,
+							isOwner: false,
+							isColead: false,
+							isRequesting: false,
+							isVisitor: false,
+						};
+					});
+
+				if (activeUser.role === "PENDING")
+					setState(() => {
+						return {
+							isMember: false,
+							isOwner: false,
+							isColead: false,
+							isRequesting: true,
+							isVisitor: true,
+						};
+					});
+
+				// Conditions covered
+				// If user is a visitor
+				// If user is lead
+				// If user is colead
+				// If user is requesting to join
+				// If user is a member
 			})
 			.catch((err) => {
 				setErr(() =>
@@ -429,8 +414,6 @@ const Circle = () => {
 		// UserProjects();
 		setIsLoading(() => false);
 	}, [id]);
-
-	// console.log(circle);
 	return (
 		<main>
 			<Nav className="" useBackground={false} />
@@ -456,53 +439,41 @@ const Circle = () => {
 									</h1>
 								</div>
 							</div>
-							{User.isLoggedIn && (
-								<button className="bg-blue-700 text-white font-light px-6 py-2 rounded-md w-fit self-end">
-									Join Circle
-								</button>
-							)}
-							<section className="flex flex-row justify-between items-center pt-4">
-								<h1 className="cursor-default font-bold text-6xl text-blue-700">
-									Circle #{circle.id}
-								</h1>
+							{!state.isMember &&
+								!state.isRequesting &&
+								user.info.role &&
+								user.info.role.canJoinCircle && (
+									<button
+										onClick={() =>
+											makeReq({
+												url: `circle/request/join/${circle.id}`,
+												method: "POST",
+												loadingMsg:
+													"Please wait while we try to join the circle.",
+												successMsg:
+													"Successfully requested to join the circle.",
+												successFunc: fetchCircle,
+											})
+										}
+										className="bg-blue-700 text-white font-light px-6 py-2 rounded-md w-fit self-end"
+									>
+										Join Circle
+									</button>
+								)}
 
-								{User.isLoggedIn && (
-									<div className="flex flex-row justify-end gap-3">
-										{state.isMember && !state.isOwner && (
-											<button
-												onClick={() => {
-													setAlertState(() => {
-														return {
-															body: "Are you sure you want to leave this circle? You can't undo this action afterwards.",
-															doneText:
-																"Leave Circle",
-															header: "Leave Circle",
-															doneFunc: () =>
-																makeReq({
-																	url: `circle/${circle.id}/leave`,
-																	method: "PATCH",
-																	loadingMsg:
-																		"Please wait while we try to leave the circle.",
-																	successMsg:
-																		"Successfully left circle.",
-																	successFunc:
-																		fetchCircle,
-																}),
-														};
-													});
-													onOpen();
-												}}
-												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1"
-											>
-												LEAVE CIRCLE
-											</button>
-										)}
-										{!state.isMember &&
-											!state.isRequesting && (
-												<button
-													onClick={() =>
+							{state.isRequesting &&
+								user.info.role &&
+								user.info.role.canLeaveCircle && (
+									<button
+										onClick={() => {
+											setAlertState(() => {
+												return {
+													body: "Are you sure you want you don't want to join this circle? You can't undo this action afterwards.",
+													doneText: "Cancel Request",
+													header: "Circle Request Cancellation",
+													doneFunc: () =>
 														makeReq({
-															url: `circle/request/join/${circle.id}`,
+															url: `circle/request/leave/${circle.id}`,
 															method: "POST",
 															loadingMsg:
 																"Please wait while we try to join the circle.",
@@ -510,34 +481,51 @@ const Circle = () => {
 																"Successfully requested to join the circle.",
 															successFunc:
 																fetchCircle,
-														})
-													}
-													className="text-green-500 bg-green-500 text-base rounded-sm hover:bg-green-700 hover:text-white bg-transparent border border-green-800 duration-300 px-8 py-1"
-												>
-													REQUEST TO JOIN
-												</button>
-											)}
-										{state.isRequesting && (
-											<button
-												onClick={() =>
-													makeReq({
-														url: `circle/request/leave/${circle.id}`,
-														method: "POST",
-														loadingMsg:
-															"Please wait while we try to leave the circle request.",
-														successMsg:
-															"Successfully left circle request.",
-														successFunc:
-															fetchCircle,
-													})
-												}
-												className="text-red-500 bg-red-500 text-base rounded-sm hover:bg-red-700 hover:text-white bg-transparent border border-red-800 duration-300 px-8 py-1"
-											>
-												CANCEL JOIN REQUEST
-											</button>
-										)}
-									</div>
+														}),
+												};
+											});
+											onOpen();
+										}}
+										className="bg-blue-700 text-white font-light px-6 py-2 rounded-md w-fit self-end"
+									>
+										Cancel Join Request
+									</button>
 								)}
+
+							{state.isMember &&
+								user.info.role &&
+								user.info.role.canLeaveCircle && (
+									<button
+										onClick={() => {
+											setAlertState(() => {
+												return {
+													body: "Are you sure you want to leave this circle? You can't undo this action afterwards.",
+													doneText: "Leave Circle",
+													header: "Leave Circle",
+													doneFunc: () =>
+														makeReq({
+															url: `circle/${circle.id}/leave`,
+															method: "PATCH",
+															loadingMsg:
+																"Please wait while we try to remove you from the circle.",
+															successMsg:
+																"Successfully removed you from the circle.",
+															successFunc:
+																fetchCircle,
+														}),
+												};
+											});
+											onOpen();
+										}}
+										className="bg-slate-500 text-white font-light px-6 py-2 rounded-md w-fit self-end"
+									>
+										Leave Circle
+									</button>
+								)}
+							<section className="flex flex-row justify-between items-center pt-4">
+								<h1 className="cursor-default font-bold text-6xl text-blue-700">
+									Circle #{circle.id}
+								</h1>
 							</section>
 							<p className="lg:max-w-[95%]">
 								{circle.description}
@@ -556,11 +544,10 @@ const Circle = () => {
 								</div>
 								<section className="flex flex-row gap-6 overflow-x-scroll snap-x snap-proximity custom-scroll h-fit pt-6 pb-7 px-4 pr:0">
 									<DisplayMembers
-										members={[
-											circle.lead,
-											circle.colead,
-											...circle.members,
-										]}
+										members={circle.members.filter(
+											(member) =>
+												member.role !== "PENDING"
+										)}
 									/>
 								</section>
 							</section>

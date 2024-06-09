@@ -45,9 +45,6 @@ export const UserSelectMinimized = {
 	},
 	track: true,
 	school: true,
-	coleadOf: true,
-	leadOf: true,
-	memberOf: true,
 	joined: true,
 	createdAt: true,
 };
@@ -59,6 +56,7 @@ export const UserSelectClean = {
 	first_name: true,
 	last_name: true,
 	role: true,
+	circle: true,
 };
 
 export const UserSelectFull = {
