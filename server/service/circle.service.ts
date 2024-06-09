@@ -238,7 +238,7 @@ export const CreateCircleService = async ({ body, user }: CreateCircleArgs) => {
 		const Circle = await prisma.circle.create({
 			data: {
 				description: description as string,
-				id: Number(circle_num),
+				id: Number(num),
 				// TODO: ability to add a lead, co lead when creating the user
 			},
 		});

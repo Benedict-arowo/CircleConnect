@@ -41,6 +41,7 @@ export const createCircle = async (req: Req, res: Response) => {
 export const requestToJoinCircle = async (req: Req, res: Response) => {
 	const {
 		params: { id: circleId },
+		user: { role: userRole },
 	} = req;
 
 	if (!(userRole.canJoinCircle || userRole.isAdmin))
@@ -67,6 +68,7 @@ export const requestToJoinCircle = async (req: Req, res: Response) => {
 export const removeCircleRequest = async (req: Req, res: Response) => {
 	const {
 		params: { id: circleId },
+		user: { role: userRole },
 	} = req;
 
 	if (!userRole.canLeaveCircle)
