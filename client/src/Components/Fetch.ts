@@ -25,6 +25,11 @@ const UseFetch = async ({ url, options }: FetchParams) => {
 			}
 		);
 
+		if (response.status === 204) {
+			if (options.returnResponse) return { data: {}, response };
+			else return {};
+		}
+		// If the response is not 204, parse the response body as JSON
 		const data = await response.json();
 
 		if (!response.ok && options.handleError) {

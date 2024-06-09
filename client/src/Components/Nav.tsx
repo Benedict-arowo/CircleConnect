@@ -1,34 +1,16 @@
-import {
-	Avatar,
-	Button,
-	Popover,
-	PopoverArrow,
-	PopoverBody,
-	PopoverCloseButton,
-	PopoverContent,
-	PopoverHeader,
-	PopoverTrigger,
-	useDisclosure,
-} from "@chakra-ui/react";
-import Logo from "./Logo";
+import { Avatar } from "@chakra-ui/react";
 import { Link, NavLink } from "react-router-dom";
 import UseFetch from "./Fetch";
-import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../slices/userSlice";
-import {
-	Drawer,
-	DrawerBody,
-	DrawerHeader,
-	DrawerOverlay,
-	DrawerContent,
-	DrawerCloseButton,
-} from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { NotificationType } from "../types";
 import { format } from "timeago.js";
 import { UseSocketContext } from "../contexts/SocketContext";
 import Notify from "./Notify";
 import { Socket } from "socket.io-client";
+import { UseUser } from "../contexts/UserContext";
+import Logo from "./Icons/Logo";
+import { Dialog } from "primereact/dialog";
+import AddProject from "./AddProject";
 
 type Props = {
 	className?: string;
@@ -39,6 +21,7 @@ type Props = {
 const activeStyles = {
 	color: "#E53E3E",
 	fontWeight: "normal",
+	textDecoration: "underline",
 };
 
 type Notification = {
@@ -47,17 +30,20 @@ type Notification = {
 };
 
 const Nav = (props: Props) => {
-	const dispatch = useDispatch();
+	// const dispatch = useDispatch();
 	const socket: Socket = UseSocketContext();
+	// const setUser = UseSetUser();
 	const { className, type = "dark", useBackground = true } = props;
-	const user = useSelector((state) => state.user);
+	// const user = useSelector((state) => state.user);
+	const user = UseUser();
 	// const { io, connected: socketConnected } = useSelector((state) => state.io);
-	const { isOpen, onOpen, onClose } = useDisclosure();
+	// const { isOpen, onOpen, onClose } = useDisclosure();
 	const [notifications, setNotifications] = useState<Notification>({
 		unread: [],
 		read: [],
 	});
-	const btnRef = useRef();
+	// const btnRef = useRef();
+	const [dialogIsVisible, setDialogIsVisible] = useState(false);
 
 	const fetchNotifications = async () => {
 		const { data, response } = await UseFetch({
@@ -97,25 +83,6 @@ const Nav = (props: Props) => {
 	useEffect(() => {
 		fetchNotifications();
 	}, []);
-
-	const logoutHandler = async () => {
-		dispatch(logoutUser());
-		onClose();
-		await UseFetch({
-			url: "logout",
-			options: {
-				method: "GET",
-				useServerUrl: true,
-				returnResponse: true,
-			},
-		})
-			.then(({ response }) => {
-				if (!response.ok) throw new Error();
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	};
 
 	const updateNotification = async (id: string, status: boolean) => {
 		const { data, response } = await UseFetch({
@@ -163,10 +130,11 @@ const Nav = (props: Props) => {
 					key={id}
 					className={`px-2 py-3 flex flex-row gap-3 items-center border-b border-b-slate-200 border-1 hover:bg-slate-100 duration-300 cursor-pointer bg-white ${
 						!is_read ? "bg-red-50" : ""
-					}`}>
+					}`}
+				>
 					<Avatar
-						name={`${user.first_name}`}
-						src={user.profile_picture}
+						name={`${user.info.first_name}`}
+						src={user.info.profile_picture}
 						width="32px"
 						height="32px"
 						className="cursor-pointer"
@@ -180,7 +148,8 @@ const Nav = (props: Props) => {
 							<p className=" ">{format(createdAt)}</p>
 							<button
 								className="hover:underline"
-								onClick={() => updateNotification(id, is_read)}>
+								onClick={() => updateNotification(id, is_read)}
+							>
 								{is_read ? "Unread" : "Mark as read"}
 							</button>
 						</div>
@@ -193,45 +162,82 @@ const Nav = (props: Props) => {
 	return (
 		<>
 			<header
-				className={`flex flex-row justify-between py-4 px-8 md:px-8 items-center ${className} ${
+				className={`flex flex-row justify-between py-4 pr-4 md:px-8 items-center ${className} ${
 					useBackground && "nav_background"
-				}`}>
-				<div className="flex-1 sm:flex hidden justify-between mx-auto items-center">
-					<Logo type={type} />
+				}`}
+			>
+				<div className="flex-1 sm:flex hidden justify-between items-center">
+					{/* <Logo type={type} /> */}
+					{/* <img src={Logo} className="w-[140px] object-cover" /> */}
+					<Logo />
 					<ul
 						className={`flex flex-row gap-6 font-light ${
 							type === "dark" ? "text-black" : "text-white"
-						}`}>
-						<li className="cursor-pointer text-lg">
-							<NavLink
-								to="/"
+						}`}
+					>
+						{/* <li className="cursor-pointer text-lg"> */}
+						{/* <NavLink
+								to="/discover"
 								style={({ isActive }) => {
 									return isActive ? activeStyles : {};
-								}}>
-								Home
-							</NavLink>
-						</li>
-						<li className="cursor-pointer text-lg">
+								}}
+								className="text-neutral-700 text-lg font-normal"
+							>
+								Discover
+							</NavLink> */}
+						{/* </li> */}
+
+						<li>
 							<NavLink
 								to="/discover"
 								style={({ isActive }) => {
 									return isActive ? activeStyles : {};
-								}}>
+								}}
+								className="text-neutral-700 text-lg font-normal"
+							>
 								Discover
 							</NavLink>
 						</li>
+						{user.isLoggedIn && user.info.circle && (
+							<li>
+								<NavLink
+									to={`/circle/${user.info.circle.circleId}`}
+									style={({ isActive }) => {
+										return isActive ? activeStyles : {};
+									}}
+									className="text-neutral-700 text-lg font-normal"
+								>
+									My Circle
+								</NavLink>
+							</li>
+						)}
+						{user.isLoggedIn && (
+							<li className="cursor-pointer text-lg">
+								<NavLink
+									to="/profile"
+									style={({ isActive }) => {
+										return isActive ? activeStyles : {};
+									}}
+									className="text-neutral-700 text-lg font-normal"
+								>
+									Profile
+								</NavLink>
+							</li>
+						)}
 					</ul>
 
 					<div>
 						{user.isLoggedIn && (
 							<section
-								className={`flex flex-row gap-4 items-center text-black`}>
-								<div>
+								className={`flex flex-row gap-4 items-center text-black`}
+							>
+								{/* <div>
 									<Popover>
 										<PopoverTrigger>
 											<Button
 												variant="unstyled"
-												className="relative">
+												className="relative"
+											>
 												<svg
 													xmlns="http://www.w3.org/2000/svg"
 													fill="none"
@@ -239,7 +245,8 @@ const Nav = (props: Props) => {
 													strokeWidth={1.25}
 													stroke="currentColor"
 													className={`w-6 h-6 cursor-pointer duration-300 active:text-red-300
-													${type === "dark" ? "text-black" : "text-white"}`}>
+													${type === "dark" ? "text-black" : "text-white"}`}
+												>
 													<path
 														strokeLinecap="round"
 														strokeLinejoin="round"
@@ -270,7 +277,8 @@ const Nav = (props: Props) => {
 													</h4>
 													<button
 														onClick={markAllAsRead}
-														className="font-light self-end text-xs text-gray-500">
+														className="font-light self-end text-xs text-gray-500"
+													>
 														Mark all as read
 													</button>
 												</div>
@@ -310,23 +318,39 @@ const Nav = (props: Props) => {
 										colorScheme="teal"
 										ref={btnRef}
 									/>
-								</a>
+								</a> */}
+								<button>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 24 24"
+										fill="currentColor"
+										className="w-16 h-16 text-blue-800 drop-shadow-md"
+										onClick={() => setDialogIsVisible(true)}
+									>
+										<path
+											fillRule="evenodd"
+											d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
+											clipRule="evenodd"
+										/>
+									</svg>
+								</button>
 							</section>
 						)}
 						{!user.isLoggedIn && (
 							<Link to={"/login"}>
-								<Button colorScheme="red" variant="outline">
+								<button className="px-4 py-2 border border-blue-800 text-blue-700 rounded-md font-medium">
 									Login
-								</Button>
+								</button>
 							</Link>
 						)}
 					</div>
-
+					{/* 
 					<Drawer
 						isOpen={isOpen}
 						placement="right"
 						onClose={onClose}
-						finalFocusRef={btnRef}>
+						finalFocusRef={btnRef}
+					>
 						<DrawerOverlay />
 						<DrawerContent>
 							<DrawerCloseButton />
@@ -369,38 +393,77 @@ const Nav = (props: Props) => {
 									<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
 										Circle
 									</button>
+									<Link to={"/dashboard"}>
+										<button className="px-2 py-1 text-left hover:outline outline-1 rounded-sm outline-slate-300">
+											Dashboard
+										</button>
+									</Link>
 								</section>
 								<div className="w-full h-[1px] rounded-md bg-gray-200 my-1"></div>
 
 								<button
-									onClick={logoutHandler}
-									className="mt-2 px-2 font-light">
+									onClick={() => {
+										LogoutFunc();
+										setUser({ mode: "LOGOUT" });
+										onClose();
+									}}
+									className="mt-2 px-2 font-light"
+								>
 									Logout
 								</button>
 							</DrawerBody>
 						</DrawerContent>
-					</Drawer>
+					</Drawer> */}
 				</div>
 
 				{/* Mobile Screens */}
-				<div className="flex flex-row justify-between items-center w-full sm:hidden">
-					<Logo type={type} />
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						strokeWidth={1.5}
-						stroke="currentColor"
-						className={`w-6 h-6 ${
-							type === "dark" ? "text-black" : "text-white"
-						}`}>
-						<path
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-						/>
-					</svg>
+				<div className="flex flex-row justify-between items-center w-full sm:hidden pl-3">
+					{/* <Logo type={type} /> */}
+					<Logo width={128} />
+					<div className="flex flex-row gap-1 items-center">
+						{user.isLoggedIn && (
+							<button>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 24"
+									fill="currentColor"
+									className="w-12 h-12 text-blue-800 drop-shadow-md"
+								>
+									<path
+										fillRule="evenodd"
+										d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
+										clipRule="evenodd"
+									/>
+								</svg>
+							</button>
+						)}
+						{!user.isLoggedIn && (
+							<Link to={"/login"}>
+								<button className="px-4 py-2 border border-blue-800 text-blue-700 rounded-md font-medium">
+									Login
+								</button>
+							</Link>
+						)}
+					</div>
 				</div>
+
+				<Dialog
+					visible={dialogIsVisible}
+					draggable={false}
+					onHide={() => setDialogIsVisible(false)}
+					closable={false}
+					closeOnEscape={true}
+					showHeader={false}
+					style={{
+						width: "100%",
+						maxWidth: "400px",
+					}}
+					contentClassName="p-0 rounded-t-3xl rounded-b-2xl"
+					dismissableMask
+					blockScroll
+				>
+					<AddProject />
+				</Dialog>
 			</header>
 		</>
 	);

@@ -7,7 +7,7 @@ const passport = require("passport");
 
 githubRouter.get(
 	"/",
-	passport.authenticate("github", { scope: ["user:email"] })
+	passport.authenticate("github", { scope: ["user:email"] }),
 );
 
 githubRouter.get(
@@ -18,7 +18,7 @@ githubRouter.get(
 	function (req: Req, res: Response) {
 		// Successful authentication, redirect home.
 		res.redirect(process.env.SIGN_IN_SUCCESSFULL_ROUTE as string);
-	}
+	},
 );
 
 export default githubRouter;

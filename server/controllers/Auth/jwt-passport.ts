@@ -31,6 +31,7 @@ passport.use(
 					where: { id },
 					include: {
 						role: true,
+						circle: true,
 					},
 				});
 

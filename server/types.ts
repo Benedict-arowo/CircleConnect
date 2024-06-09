@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { Request } from "express";
 import { Socket } from "socket.io";
 
@@ -6,6 +7,7 @@ export type User = {
 	email?: string;
 	username: string;
 	first_name: string;
+	last_name: string;
 	name: {
 		familyName: string;
 		givenName: string;
@@ -20,27 +22,35 @@ export type User = {
 	google_id: string;
 	github_id: string;
 	emails: [{ value: string }];
-	role: {
-		id: string;
-		name: string;
-		canCreateCircle: boolean;
-		canModifyOwnCircle: boolean;
-		canModifyOtherCircle: boolean;
-		canDeleteOwnCircle: boolean;
-		canDeleteOtherCircles: boolean;
-		canLeaveCircle: boolean;
-		canJoinCircle: boolean;
-		canCreateProject: boolean;
-		canModifyOwnProject: boolean;
-		canModifyOtherProject: boolean;
-		canDeleteOwnProject: boolean;
-		canDeleteOtherProject: boolean;
-		canAddProjectToCircle: boolean;
-		canRemoveProjectFromCircle: boolean;
-		canManageRoles: boolean;
-		canManageUsers: boolean;
-		isAdmin: boolean;
+	role: Prisma.RoleCreateInput;
+	circle: {
+		circleId: string;
 	};
+	// role: {
+	// 	id: string;
+	// 	name: string;
+	// 	canCreateCircle: boolean;
+	// 	canModifyOwnCircle: boolean;
+	// 	canModifyOtherCircle: boolean;
+	// 	canDeleteOwnCircle: boolean;
+	// 	canDeleteOtherCircles: boolean;
+	// 	canLeaveCircle: boolean;
+	// 	canJoinCircle: boolean;
+	// 	canCreateProject: boolean;
+	// 	canModifyOwnProject: boolean;
+	// 	canModifyOtherProject: boolean;
+	// 	canDeleteOwnProject: boolean;
+	// 	canDeleteOtherProject: boolean;
+	// 	canAddProjectToCircle: boolean;
+	// 	canRemoveProjectFromCircle: boolean;
+	// 	canManageRoles: boolean;
+	// 	canManageUsers: boolean;
+	// 	canCreateProjectReviews: boolean;
+	// 	canModifyOwnProjectReviews: boolean;
+	// 	canDeleteOwnProjectReviews: boolean;
+	// 	canManageProjectReviews: boolean;
+	// 	isAdmin: boolean;
+	// };
 };
 
 export interface Req extends Request {
@@ -74,7 +84,7 @@ export interface Req extends Request {
 		pinned?: boolean;
 		github?: string;
 		liveLink?: string;
-		techUsed?: string[];
+		tags?: string[];
 		roleId?: string;
 		school?: string;
 		profile_picture?: string;
@@ -95,6 +105,10 @@ export interface Req extends Request {
 			canDeleteOtherProject: boolean;
 			canAddProjectToCircle: boolean;
 			canRemoveProjectFromCircle: boolean;
+			canCreateProjectReviews: boolean;
+			canModifyOwnProjectReviews: boolean;
+			canManageProjectRevies: boolean;
+			canDeleteOwnProjectReviews: boolean;
 			isAdmin: boolean;
 		};
 		request?: {
@@ -108,6 +122,7 @@ export interface Req extends Request {
 			action: "PROMOTE" | "DEMOTE";
 			userId: string;
 		};
+		content?: string;
 	};
 	user: User;
 	logout: Function;

@@ -1,11 +1,8 @@
 import { UserType } from "../types";
 
 export type CircleMemberType = {
-	role: "LEAD" | "MEMBER" | "COLEAD";
-	email: string;
-	id: string;
-	profile_picture: string;
-	first_name: string;
+	role: "LEAD" | "MEMBER" | "COLEAD" | "PENDING";
+	user: UserType;
 };
 
 export type CircleRatingType = {
@@ -28,7 +25,7 @@ export type ProjectsType = {
 		user: UserType;
 		project: ProjectsType;
 	}[];
-	techUsed: string[];
+	tags: string[];
 	pinned: boolean;
 	id: string;
 };
@@ -36,13 +33,10 @@ export type ProjectsType = {
 export type CircleType = {
 	id: number;
 	description: string;
-	lead: CircleMemberType;
-	colead: CircleMemberType;
 	visibility: "PUBLIC" | "PRIVATE";
 	averageUserRating: number;
 	rating: number;
 	members: CircleMemberType[];
-	requests: CircleMemberType[];
 	projects: ProjectsType[];
 	createdAt: Date;
 	_count: {

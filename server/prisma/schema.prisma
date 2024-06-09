@@ -8,33 +8,38 @@ datasource db {
 }
 
 model Role {
-  id String @id @default(uuid())
+  id   String @id @default(uuid())
   name String @unique
 
-  canCreateCircle Boolean @default(false) 
-  canModifyOwnCircle Boolean @default(false)
-  canModifyOtherCircle Boolean @default(false)
-  canDeleteOwnCircle Boolean @default(false)
+  canCreateCircle       Boolean @default(false)
+  canModifyOwnCircle    Boolean @default(false)
+  canModifyOtherCircle  Boolean @default(false)
+  canDeleteOwnCircle    Boolean @default(false)
   canDeleteOtherCircles Boolean @default(false)
-  canLeaveCircle Boolean @default(false)
-  canJoinCircle Boolean @default(false)
+  canLeaveCircle        Boolean @default(false)
+  canJoinCircle         Boolean @default(false)
 
-  canCreateProject Boolean @default(false)
-  canModifyOwnProject Boolean @default(false)
-  canModifyOtherProject Boolean @default(false)
-  canDeleteOwnProject Boolean @default(false)
-  canDeleteOtherProject Boolean @default(false)
-  canAddProjectToCircle Boolean @default(false)
+  canCreateProject           Boolean @default(false)
+  canModifyOwnProject        Boolean @default(false)
+  canModifyOtherProject      Boolean @default(false)
+  canDeleteOwnProject        Boolean @default(false)
+  canDeleteOtherProject      Boolean @default(false)
+  canAddProjectToCircle      Boolean @default(false)
   canRemoveProjectFromCircle Boolean @default(false)
+  canAddUserToProject        Boolean @default(false)
 
   canManageRoles Boolean @default(false)
   canManageUsers Boolean @default(false)
 
-  isAdmin Boolean @default(false)
-  
-  users User[] 
-}
+  canCreateProjectReviews    Boolean @default(false)
+  canModifyOwnProjectReviews Boolean @default(false)
+  canDeleteOwnProjectReviews Boolean @default(false)
+  canManageProjectReviews    Boolean @default(false)
 
+  isAdmin Boolean @default(false)
+
+  users User[]
+}
 
 enum School {
   ENGINEERING
@@ -47,32 +52,26 @@ enum Track {
 }
 
 model User {
-  id               String          @id @default(uuid())
-  google_id        String?         @unique
-  github_id        String?         @unique
-  password         String?
-  first_name       String
-  last_name        String?
-  email            String          @unique
-  profile_picture  String?
-  joined           DateTime        @updatedAt()
-  last_login       DateTime?
-  role  Role @relation(fields: [roleId], references: [id])
-  roleId String
-  track Track?
-  school School @default(ENGINEERING)
-  leadOf           Circle?         @relation(fields: [leadOfId], references: [id], name: "leader of")
-  leadOfId         Int?            @unique
-  coleadOf         Circle?         @relation(fields: [coleadOfId], references: [id], name: "coleader of")
-  coleadOfId       Int?            @unique
-  pendingRequest   Circle?         @relation(fields: [pendingRequestId], references: [id], name: "Pending circle requests")
-  pendingRequestId Int?
-  memberOf         Circle?         @relation(fields: [memberOfId], references: [id], name: "member of")
-  memberOfId       Int?
-  projects         Project[]
-  projectRatings   ProjectRating[]
-  notifications    Notification[]
-  createdAt        DateTime        @default(now())
+  id              String          @id @default(uuid())
+  google_id       String?         @unique
+  github_id       String?         @unique
+  password        String?
+  first_name      String
+  last_name       String?
+  email           String          @unique
+  profile_picture String?
+  joined          DateTime        @updatedAt()
+  last_login      DateTime?
+  role            Role            @relation(fields: [roleId], references: [id])
+  roleId          String
+  track           Track?
+  school          School          @default(ENGINEERING)
+  circle          CircleMember?
+  projects        Project[]
+  projectRatings  ProjectRating[]
+  projectReviews  ProjectReview[]
+  notifications   Notification[]
+  createdAt       DateTime        @default(now())
 }
 
 model Session {
@@ -87,7 +86,7 @@ enum circleVisibility {
 }
 
 model ProjectRating {
-  rating    Int     @default(0) 
+  rating    Int     @default(0)
   user      User    @relation(fields: [userId], references: [id])
   userId    String
   project   Project @relation(fields: [projectId], references: [id])
@@ -96,35 +95,57 @@ model ProjectRating {
   @@id([userId, projectId])
 }
 
+model ProjectReview {
+  id        String   @unique @default(uuid())
+  review    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  createdAt DateTime @default(now())
+}
+
 model Project {
   id               String           @id @unique @default(uuid())
   name             String
   description      String
   github           String?
   liveLink         String?
-  techUsed         String[]
+  tags             String[]
   pictures         String[]
   createdBy        User             @relation(fields: [createdById], references: [id])
   createdById      String
   circleVisibility circleVisibility @default(PUBLIC)
   pinned           Boolean          @default(false)
   rating           ProjectRating[]
+  reviews          ProjectReview[]
   circleId         Int?
   circle           Circle?          @relation(fields: [circleId], references: [id])
   createdAt        DateTime         @default(now())
 }
 
+enum CircleStatus {
+  LEADER
+  COLEADER
+  MEMBER
+  PENDING
+}
+
 model Circle {
-  // id                String           @id @unique @default(uuid())
-  id                Int            @id @unique
-  members           User[]         @relation(name: "member of")
-  lead              User?          @relation(name: "leader of")
-  colead            User?          @relation(name: "coleader of")
-  projects          Project[]
-  description       String         
-  rating            Float          @default(0.0)
-  requests          User[]         @relation(name: "Pending circle requests")
-  createdAt         DateTime       @default(now())
+  id          Int            @id @unique
+  members     CircleMember[]
+  projects    Project[]
+  description String
+  rating      Float          @default(0.0)
+  createdAt   DateTime       @default(now())
+}
+
+model CircleMember {
+  circle   Circle       @relation(fields: [circleId], references: [id])
+  circleId Int
+  user     User         @relation(fields: [userId], references: [id])
+  userId   String       @id @unique
+  role     CircleStatus
 }
 
 model Search {
@@ -134,11 +155,11 @@ model Search {
 }
 
 model Notification {
-  id      String             @id @default(uuid())
-  content String
-  is_read  Boolean @default(false)
-  url String?
-  user    User               @relation(fields: [userId], references: [id])  
-  userId  String
-  createdAt         DateTime       @default(now())
+  id        String   @id @default(uuid())
+  content   String
+  is_read   Boolean  @default(false)
+  url       String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
 }

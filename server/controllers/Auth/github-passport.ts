@@ -16,6 +16,7 @@ passport.deserializeUser(async (id: string, done: Function) => {
 			where: { id },
 			include: {
 				role: true,
+				circle: true,
 			},
 		});
 		if (!user) {
@@ -34,7 +35,7 @@ passport.use(
 		{
 			clientID: process.env.GITHUB_CLIENT_ID as string,
 			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-			callbackURL: "http://localhost:8000/auth/github/callback",
+			callbackURL: `${process.env.SERVER_URL}/auth/github/callback`,
 		},
 
 		async function (

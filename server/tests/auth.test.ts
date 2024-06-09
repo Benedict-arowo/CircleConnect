@@ -109,7 +109,7 @@ describe("Authentication tests", () => {
 			const decodedCookie = decodeURIComponent(jwtTokenCookie);
 
 			expect(decodedCookie).toMatch(
-				/^\s*jwtToken=[^;]+; Path=\/; HttpOnly\s*$/
+				/^\s*jwtToken=[^;]+; Path=\/; HttpOnly\s*$/,
 			);
 		});
 
@@ -159,7 +159,7 @@ describe("Authentication tests", () => {
 			const decodedCookie = decodeURIComponent(jwtTokenCookie);
 
 			expect(decodedCookie).toMatch(
-				/^\s*jwtToken=[^;]+; Path=\/; HttpOnly\s*$/
+				/^\s*jwtToken=[^;]+; Path=\/; HttpOnly\s*$/,
 			);
 
 			expect(response.statusCode).toBe(200);
@@ -209,7 +209,7 @@ describe("Authentication tests", () => {
 			// Check if the response is a redirect (Google OAuth login page)
 			expect(response.status).toBe(302);
 			expect(response.header.location).toContain(
-				"github.com/login/oauth"
+				"github.com/login/oauth",
 			);
 			expect(response.header.location).toBeDefined();
 		});

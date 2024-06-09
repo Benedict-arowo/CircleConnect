@@ -43,7 +43,8 @@ const ListMembers = ({
 		return (
 			<div
 				className="flex flex-row justify-between border px-2 py-1 cursor-pointer"
-				key={member.id}>
+				key={member.id}
+			>
 				<h6 className="font-light text-xl">{member.first_name}</h6>
 
 				{circle.lead.id === User.info.id && (
@@ -74,7 +75,8 @@ const ListMembers = ({
 									};
 								});
 								onOpen();
-							}}>
+							}}
+						>
 							Promote
 						</p>
 						<p
@@ -105,7 +107,8 @@ const ListMembers = ({
 									};
 								});
 								onOpen();
-							}}>
+							}}
+						>
 							Demote
 						</p>
 						<svg
@@ -139,7 +142,8 @@ const ListMembers = ({
 								});
 								onOpen();
 							}}
-							className="w-4 h-4 hover:text-red-500 duration-300 transition-all">
+							className="w-4 h-4 hover:text-red-500 duration-300 transition-all"
+						>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"
